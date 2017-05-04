@@ -29,15 +29,6 @@ public class Move implements StringConvertible {
         return Builder.builder();
     }
 
-    private void appendList(StringBuilder sb) {
-        sb.append(" (");
-
-        for (Movetext var : variations)
-            sb.append(var.toPgnString()).append(' ');
-
-        sb.append(") ");
-    }
-
     public String move() {
         return move;
     }
@@ -93,7 +84,11 @@ public class Move implements StringConvertible {
         }
 
         if (variations.size() > 0) {
-            appendList(sb);
+            sb.append(" (");
+            for (Movetext var : variations) {
+                sb.append(var.toPgnString()).append(' ');
+            }
+            sb.append(") ");
         }
 
         return sb.toString();
