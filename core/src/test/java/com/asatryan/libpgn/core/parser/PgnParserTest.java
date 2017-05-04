@@ -57,11 +57,11 @@ public class PgnParserTest {
         assertNotNull(game);
         assertEquals(game.tagPairSection(), tagPairs);
 
-        moves.add(Movetext.of(1, MoveFactory.of("d4", "Better was e4."), MoveFactory.of("f5")));
-        moves.add(Movetext.of(2, "c4", "c5"));
-        moves.add(Movetext.of(3, "dxc5", "Qa5+"));
-        moves.add(Movetext.of(4, "Nc3", "Qxc5"));
-        moves.add(Movetext.of(5, "e4", "fxe4"));
+        moves.add(MovetextFactory.of(1, MoveFactory.of("d4", "Better was e4."), MoveFactory.of("f5")));
+        moves.add(MovetextFactory.of(2, "c4", "c5"));
+        moves.add(MovetextFactory.of(3, "dxc5", "Qa5+"));
+        moves.add(MovetextFactory.of(4, "Nc3", "Qxc5"));
+        moves.add(MovetextFactory.of(5, "e4", "fxe4"));
 
         assertEquals(game.moves(), moves);
         assertEquals(game.gameResult(), Game.Result.WHITE);
@@ -80,9 +80,9 @@ public class PgnParserTest {
                 MoveFactory.of("d4", "White Comment"),
                 MoveFactory.of("f5", "Black Comment"))
         );
-        moves.add(Movetext.of(2, "c4", "c5"));
-        moves.add(Movetext.of(3, "dxc5", "Qa5+"));
-        moves.add(Movetext.of(4, "Nc3", "Qxc5"));
+        moves.add(MovetextFactory.of(2, "c4", "c5"));
+        moves.add(MovetextFactory.of(3, "dxc5", "Qa5+"));
+        moves.add(MovetextFactory.of(4, "Nc3", "Qxc5"));
 
         assertThat(games.get(0).moves(), is(moves));
     }
@@ -98,8 +98,8 @@ public class PgnParserTest {
 
         List<Movetext> moves = new ArrayList<>();
 
-        final Movetext movetext = Movetext.of(1,
-                MoveFactory.of("d4", singletonList(Movetext.of(1, "d5", "d6"))),
+        final Movetext movetext = MovetextFactory.of(1,
+                MoveFactory.of("d4", singletonList(MovetextFactory.of(1, "d5", "d6"))),
                 MoveFactory.of("f5", "Black Comment")
         );
 
@@ -118,14 +118,14 @@ public class PgnParserTest {
 
         List<Movetext> moves = new ArrayList<>();
 
-        final Movetext movetext_1 = Movetext.of(1,
-                MoveFactory.of("e4", singletonList(Movetext.of(1, "d4", "Nf6"))),
+        final Movetext movetext_1 = MovetextFactory.of(1,
+                MoveFactory.of("e4", singletonList(MovetextFactory.of(1, "d4", "Nf6"))),
                 MoveFactory.of("c5", Arrays.asList(
-                        Movetext.of(1, null, "e5"),
-                        Movetext.of(2, "Nf3")
+                        MovetextFactory.of(1, null, "e5"),
+                        MovetextFactory.white(2, "Nf3")
                 ))
         );
-        final Movetext movetext_2 = Movetext.of(2, "Nf3", "d6");
+        final Movetext movetext_2 = MovetextFactory.of(2, "Nf3", "d6");
 
         moves.add(movetext_1);
         moves.add(movetext_2);
@@ -141,18 +141,18 @@ public class PgnParserTest {
         };
 
 
-        final List<Movetext> d3Var = singletonList(Movetext.of(1, "c5", "c6"));
-        final List<Movetext> d5Var = singletonList(Movetext.black(1, "d6"));
-        final List<Movetext> d4Var = singletonList(Movetext.of(1, MoveFactory.of("d3", d3Var)));
+        final List<Movetext> d3Var = singletonList(MovetextFactory.of(1, "c5", "c6"));
+        final List<Movetext> d5Var = singletonList(MovetextFactory.black(1, "d6"));
+        final List<Movetext> d4Var = singletonList(MovetextFactory.white(1, MoveFactory.of("d3", d3Var)));
         final List<Movetext> e4Var = singletonList(
-                Movetext.of(1, MoveFactory.of("d4", d4Var), MoveFactory.of("d5", d5Var))
+                MovetextFactory.of(1, MoveFactory.of("d4", d4Var), MoveFactory.of("d5", d5Var))
         );
 
-        final Movetext e4c5 = Movetext.of(1, MoveFactory.of("e4", e4Var), MoveFactory.of("c5"));
+        final Movetext e4c5 = MovetextFactory.of(1, MoveFactory.of("e4", e4Var), MoveFactory.of("c5"));
 
         List<Movetext> moves = new ArrayList<>();
         moves.add(e4c5);
-        moves.add(Movetext.of(2, "Nf3", "c6"));
+        moves.add(MovetextFactory.of(2, "Nf3", "c6"));
 
         assertMovesEquals(inputs, moves);
     }
@@ -166,12 +166,12 @@ public class PgnParserTest {
                 "  1  . e4 (    1.d4  {Comment}  (  1.  d3  {3d .1}  )  )*",
         };
 
-        final List<Movetext> d4Var = singletonList(Movetext.of(1, MoveFactory.of("d3", "3d .1")));
+        final List<Movetext> d4Var = singletonList(MovetextFactory.white(1, MoveFactory.of("d3", "3d .1")));
         final List<Movetext> e4Var = singletonList(
-                Movetext.of(1, MoveFactory.of("d4", "Comment", d4Var))
+                MovetextFactory.white(1, MoveFactory.of("d4", "Comment", d4Var))
         );
 
-        final Movetext e4 = Movetext.of(1, MoveFactory.of("e4", e4Var));
+        final Movetext e4 = MovetextFactory.white(1, MoveFactory.of("e4", e4Var));
 
         assertMovesEquals(inputs, singletonList(e4));
     }
@@ -184,25 +184,25 @@ public class PgnParserTest {
 
         List<Movetext> moves = new ArrayList<>();
         List<Movetext> d3Variation = singletonList(
-                Movetext.of(1, MoveFactory.of("c5", "3 Nested comment white"), MoveFactory.of("c6", "3 Nested comment black"))
+                MovetextFactory.of(1, MoveFactory.of("c5", "3 Nested comment white"), MoveFactory.of("c6", "3 Nested comment black"))
         );
         final List<Movetext> d4Variation = singletonList(
-                Movetext.of(1,
+                MovetextFactory.of(1,
                         MoveFactory.of("d3", "3e Nested comment whit", d3Variation),
                         MoveFactory.of("d5")
                 )
         );
         final List<Movetext> e4Variation = singletonList(
-                Movetext.of(1, MoveFactory.of("d4", d4Variation))
+                MovetextFactory.white(1, MoveFactory.of("d4", d4Variation))
         );
 
         final List<Movetext> c5Variation = Arrays.asList(
-                Movetext.black(1, "e5"),
-                Movetext.white(2, "Nf3")
+                MovetextFactory.black(1, "e5"),
+                MovetextFactory.white(2, "Nf3")
         );
 
-        moves.add(Movetext.of(1, MoveFactory.of("e4", e4Variation), MoveFactory.of("c5", c5Variation)));
-        moves.add(Movetext.white(2, "Nf3"));
+        moves.add(MovetextFactory.of(1, MoveFactory.of("e4", e4Variation), MoveFactory.of("c5", c5Variation)));
+        moves.add(MovetextFactory.white(2, "Nf3"));
 
         assertMovesEquals(inputs, moves);
     }
@@ -215,7 +215,7 @@ public class PgnParserTest {
                 "  100   .   e4   d5    101  .   Nc3    e5    *  "
         };
 
-        final List<Movetext> moves = Movetext.moves(100, "e4", "d5", "Nc3", "e5");
+        final List<Movetext> moves = MovetextFactory.moves(100, "e4", "d5", "Nc3", "e5");
 
         assertMovesEquals(inputs, moves);
     }
@@ -231,7 +231,7 @@ public class PgnParserTest {
         };
 
         final List<Movetext> moves = singletonList(
-                Movetext.of(1, MoveFactory.of("e4", new short[]{1, 2, 3}), MoveFactory.of("d5"))
+                MovetextFactory.of(1, MoveFactory.of("e4", new short[]{1, 2, 3}), MoveFactory.of("d5"))
         );
 
         assertMovesEquals(inputs, moves);
@@ -248,7 +248,7 @@ public class PgnParserTest {
         };
 
         final List<Movetext> moves = singletonList(
-                Movetext.of(1, MoveFactory.of("e4", "CommentCommentComment"), MoveFactory.of("e5"))
+                MovetextFactory.of(1, MoveFactory.of("e4", "CommentCommentComment"), MoveFactory.of("e5"))
         );
 
         assertMovesEquals(inputs, moves);

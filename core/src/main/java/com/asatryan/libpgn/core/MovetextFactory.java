@@ -133,6 +133,10 @@ public class MovetextFactory {
         return of(moveNo, whiteMove, null);
     }
 
+    public static Movetext white(int moveNo, @Nonnull Move whiteMove) {
+        return of(moveNo, whiteMove, null);
+    }
+
     public static Movetext of(String moveNumber, Move white, Move black) {
         return of(Integer.parseInt(moveNumber), white, black);
     }

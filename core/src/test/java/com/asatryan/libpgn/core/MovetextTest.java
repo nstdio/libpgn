@@ -53,47 +53,47 @@ public class MovetextTest {
 
     @Test
     public void equalsSimple() throws Exception {
-        Movetext m1 = Movetext.of(1, "d4");
-        Movetext m2 = Movetext.of(1, "d4");
+        Movetext m1 = MovetextFactory.white(1, "d4");
+        Movetext m2 = MovetextFactory.white(1, "d4");
 
         assertEquals(m1, m2);
 
-        m1 = Movetext.of(1, null, "d5");
-        m2 = Movetext.of(1, null, "d5");
+        m1 = MovetextFactory.of(1, null, "d5");
+        m2 = MovetextFactory.of(1, null, "d5");
 
         assertEquals(m1, m2);
 
-        m1 = Movetext.of(1, "d5");
-        m2 = Movetext.of(2, "d5");
+        m1 = MovetextFactory.white(1, "d5");
+        m2 = MovetextFactory.white(2, "d5");
 
         assertNotEquals(m1, m2);
 
-        m1 = Movetext.of(1, "d5");
-        m2 = Movetext.of(1, "d4");
+        m1 = MovetextFactory.white(1, "d5");
+        m2 = MovetextFactory.white(1, "d4");
 
         assertNotEquals(m1, m2);
 
-        m1 = Movetext.of(1, "d5");
-        m2 = Movetext.of(2, "d4");
+        m1 = MovetextFactory.white(1, "d5");
+        m2 = MovetextFactory.white(2, "d4");
 
         assertNotEquals(m1, m2);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void nullStrings() throws Exception {
-        Movetext.of(1, (String) null, null);
+        MovetextFactory.of(1, (String) null, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void nullMoves() throws Exception {
-        Movetext.of(1, (Move) null, null);
+        MovetextFactory.of(1, (Move) null, null);
     }
 
     @Test
     public void factory() throws Exception {
-        Movetext m = Movetext.white(1, "d4");
-        Movetext m2 = Movetext.of(1, "d4");
-        Movetext m3 = Movetext.of(1, MoveFactory.of("d4"));
+        Movetext m = MovetextFactory.white(1, "d4");
+        Movetext m2 = MovetextFactory.white(1, "d4");
+        Movetext m3 = MovetextFactory.white(1, MoveFactory.of("d4"));
 
         assertEquals(m, m2);
         assertEquals(m, m3);
@@ -103,7 +103,7 @@ public class MovetextTest {
         assertEquals("d4", m.whiteMove());
         assertNull(m.black());
 
-        m = Movetext.black(1, "d4");
+        m = MovetextFactory.black(1, "d4");
 
         assertEquals(1, m.moveNo());
         assertEquals("d4", m.blackMove());
@@ -113,54 +113,54 @@ public class MovetextTest {
     @Test
     public void listFactory() throws Exception {
         List<Movetext> expected = Arrays.asList(
-                Movetext.of(1, "d4", "Nf6"),
-                Movetext.of(2, "c4", "e6"),
-                Movetext.of(3, "Nc3", "d5"),
-                Movetext.of(4, "Bg5", "Nbd7"),
-                Movetext.of(5, "e3", "Be7"),
-                Movetext.of(6, "Nf3", "O-O"),
-                Movetext.of(7, "Qc2", "c5")
+                MovetextFactory.of(1, "d4", "Nf6"),
+                MovetextFactory.of(2, "c4", "e6"),
+                MovetextFactory.of(3, "Nc3", "d5"),
+                MovetextFactory.of(4, "Bg5", "Nbd7"),
+                MovetextFactory.of(5, "e3", "Be7"),
+                MovetextFactory.of(6, "Nf3", "O-O"),
+                MovetextFactory.of(7, "Qc2", "c5")
         );
 
-        List<Movetext> actual = Movetext.moves("d4", "Nf6", "c4", "e6", "Nc3", "d5", "Bg5", "Nbd7", "e3", "Be7",
+        List<Movetext> actual = MovetextFactory.moves("d4", "Nf6", "c4", "e6", "Nc3", "d5", "Bg5", "Nbd7", "e3", "Be7",
                 "Nf3", "O-O", "Qc2", "c5");
 
         assertEquals(expected, actual);
 
-        assertNotNull(Movetext.moves());
-        assertEquals(0, Movetext.moves().size());
+        assertNotNull(MovetextFactory.moves());
+        assertEquals(0, MovetextFactory.moves().size());
 
-        final List<Movetext> d4 = Collections.singletonList(Movetext.of(1, "d4"));
+        final List<Movetext> d4 = Collections.singletonList(MovetextFactory.white(1, "d4"));
 
-        assertEquals(d4, Movetext.moves("d4"));
-
-        expected = Arrays.asList(
-                Movetext.of(3, "d4", "Nf6"),
-                Movetext.of(4, "c4")
-        );
-
-        assertEquals(expected, Movetext.moves(3, "d4", "Nf6", "c4"));
+        assertEquals(d4, MovetextFactory.moves("d4"));
 
         expected = Arrays.asList(
-                Movetext.of(1, "d4", "Nf6"),
-                Movetext.of(2, "c4", "e6"),
-                Movetext.of(3, "Nc3")
+                MovetextFactory.of(3, "d4", "Nf6"),
+                MovetextFactory.white(4, "c4")
         );
 
-        assertEquals(expected, Movetext.moves(-1, "d4", "Nf6", "c4", "e6", "Nc3"));
-
-        assertNotNull(Movetext.moves((String[]) null));
+        assertEquals(expected, MovetextFactory.moves(3, "d4", "Nf6", "c4"));
 
         expected = Arrays.asList(
-                Movetext.of(Integer.MAX_VALUE - 2, "d4", "d5"),
-                Movetext.of(Integer.MAX_VALUE - 1, "Nc3")
+                MovetextFactory.of(1, "d4", "Nf6"),
+                MovetextFactory.of(2, "c4", "e6"),
+                MovetextFactory.white(3, "Nc3")
         );
 
-        assertEquals(expected, Movetext.moves(Integer.MAX_VALUE, "d4", "d5", "Nc3"));
+        assertEquals(expected, MovetextFactory.moves(-1, "d4", "Nf6", "c4", "e6", "Nc3"));
+
+        assertNotNull(MovetextFactory.moves((String[]) null));
+
+        expected = Arrays.asList(
+                MovetextFactory.of(Integer.MAX_VALUE - 2, "d4", "d5"),
+                MovetextFactory.white(Integer.MAX_VALUE - 1, "Nc3")
+        );
+
+        assertEquals(expected, MovetextFactory.moves(Integer.MAX_VALUE, "d4", "d5", "Nc3"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void passingNull() throws Exception {
-        Movetext.moves((String) null);
+        MovetextFactory.moves((String) null);
     }
 }
