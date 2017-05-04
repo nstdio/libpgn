@@ -47,7 +47,11 @@ public class Move implements StringConvertible {
     }
 
     public short[] nag() {
-        return nag;
+        if (nag == EMPTY) {
+            return nag;
+        }
+
+        return nag.clone();
     }
 
     public List<Movetext> variations() {
