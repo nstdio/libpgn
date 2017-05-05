@@ -282,6 +282,28 @@ public class PgnParserTest {
         assertSame(tagPair2, tagPairs.get(1));
     }
 
+    @Test
+    public void skipComment() throws Exception {
+        final String[] inputs = {
+                "1. e4 {Comment} {Other Comment} *",
+                "1. e4 {Comment} {Other Comment} d5 {Comment} *",
+        };
+
+        final Configuration config = Configuration.defaultBuilder()
+                .skipComment(true)
+                .build();
+
+        parser = new PgnParser(config);
+
+        for (String input : inputs) {
+            final List<Game> games = parser.parse(input);
+            for (Movetext movetext : games.get(0).moves()) {
+                assertNull(input, movetext.whiteComment());
+                assertNull(input, movetext.blackComment());
+            }
+        }
+    }
+
     private void assertMovesEquals(String[] inputs, List<Movetext> moves) {
         for (String pgn : inputs) {
             List<Game> games = parser.parse(pgn);

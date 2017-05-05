@@ -24,8 +24,9 @@ class TagPairParser extends AbstractParser implements Parser<List<TagPair>> {
 
         while (lexer.lastToken() == TP_BEGIN) {
             final TagPair tagPair = parseTagPair();
-
-            section.add(tagPair);
+            if (!config.skipTagPairSection()) {
+                section.add(tagPair);
+            }
         }
 
         return section;

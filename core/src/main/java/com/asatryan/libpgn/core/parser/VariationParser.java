@@ -43,6 +43,6 @@ class VariationParser extends AbstractParser implements Parser<List<Movetext>> {
             variation = parse();
             lexer.nextToken();
         }
-        return variation;
+        return config.skipVariations() ? null : variation;
     }
 }

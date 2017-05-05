@@ -23,9 +23,10 @@ class MovetextSequenceParser extends AbstractParser implements InputParser<List<
         final List<Movetext> moves = new ArrayList<>();
 
         while (lexer.lastToken() != termToken) {
-            Movetext move = movetextParser.parse();
-
-            moves.add(move);
+            final Movetext move = movetextParser.parse();
+            if (!config.skipMovetext()) {
+                moves.add(move);
+            }
         }
 
         return tryUseSingletonList(moves);

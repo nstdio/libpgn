@@ -47,6 +47,6 @@ class CommentParser extends AbstractParser implements Parser<String> {
             return comment.substring(0, config.commentMaxLength());
         }
 
-        return comment;
+        return config.skipComment() ? null : comment;
     }
 }
