@@ -3,30 +3,86 @@ package com.asatryan.libpgn.core.parser;
 import com.asatryan.libpgn.core.TokenTypes;
 import com.asatryan.libpgn.core.internal.CharUtils;
 
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+
 import static com.asatryan.libpgn.core.TokenTypes.*;
 
-// TODO: 03.05.2017 make this public.
-class PgnLexer {
+/**
+ * Converts input data to specific tokens declared in {@link TokenTypes}.
+ */
+@SuppressWarnings("WeakerAccess")
+public class PgnLexer {
+    private static final char[] EMPTY_CHAR_ARRAY = new char[0];
     private int line = 1;
     private char[] data;
     private int dataPosition;
-    private int dataLength;
     private byte lastToken;
     private int tokenLength;
-    private byte scope;
+    private byte scope = LexicalScope.UNDEFINED;
 
-    void init(char[] data) {
+    /**
+     * Constructs a new {@code PgnLexer} with {@code data}. No copies of {@code data} are made. Any changes on {@code
+     * data} from outside will affect internal state of object.
+     *
+     * @param data The input data that need to be tokenized.
+     */
+    public PgnLexer(@Nonnull final char[] data) {
+        initInternal(data);
+    }
+
+    /**
+     * Constructs a new {@code PgnLexer} with copy of {@code data}.
+     *
+     * @param data The input data that need to be tokenized.
+     * @param copy This parameter is needed to indicate whether copy {@code data} or not.
+     */
+    public PgnLexer(@Nonnull final char[] data, boolean copy) {
+        init(data, copy);
+    }
+
+    /**
+     * Constructs a new {@code PgnLexer} with empty input data.
+     */
+    public PgnLexer() {
+        this(EMPTY_CHAR_ARRAY);
+    }
+
+    /**
+     * Single difference from {@link #init(char[])} is that this method will create a copy of array.
+     *
+     * @param data The input data that need to be tokenized.
+     * @param copy The parameter that indicates that input array will be copied. This parameter expected always true.
+     */
+    @SuppressWarnings("unused")
+    public void init(@Nonnull final char[] data, boolean copy) {
+        initInternal(Arrays.copyOf(data, data.length));
+    }
+
+    /**
+     * NO COPIES of the input array are made. Any changes will affect internal state of object. If the object was
+     * initialized with {@link #PgnLexer(char[])} no need to call this method before calling {@link #nextToken()}. This
+     * method exists for reinitializing an instance. If you construct object with default constructor first you must
+     * call this method before any other.
+     *
+     * @param data The input data that need to be tokenized.
+     */
+    public void init(@Nonnull final char[] data) {
+        initInternal(data);
+    }
+
+    private void initInternal(final char[] data) {
         this.data = data;
-        dataLength = data.length;
         dataPosition = 0;
         tokenLength = 0;
+        line = 1;
         lastToken = UNDEFINED;
 
         skipWhiteSpace();
-        defineScope();
+        determineScope();
     }
 
-    private void defineScope() {
+    private void determineScope() {
         final char current = data[dataPosition];
 
         if (current == '[') {
@@ -38,7 +94,7 @@ class PgnLexer {
         }
     }
 
-    byte nextToken() {
+    public byte nextToken() {
         try {
             switch (scope) {
                 case LexicalScope.TAG_PAIR:
@@ -49,7 +105,7 @@ class PgnLexer {
                     break;
                 case LexicalScope.GAMETERM:
                     skipWhiteSpace();
-                    defineScope();
+                    determineScope();
                     nextToken();
                     break;
                 case LexicalScope.UNDEFINED:
@@ -60,27 +116,14 @@ class PgnLexer {
         } catch (ArrayIndexOutOfBoundsException e) {
             lastToken = UNDEFINED;
             scope = UNDEFINED;
+            dataPosition = data.length - 1;
         }
 
         return lastToken;
     }
 
-    String extract() {
-        int startPos = dataPosition;
-        positionAlign();
-
-        return new String(data, startPos, tokenLength);
-    }
-
     char[] data() {
         return data;
-    }
-
-    byte nextAlignedToken() {
-        nextToken();
-        positionAlign();
-
-        return lastToken;
     }
 
     @Override
@@ -213,12 +256,15 @@ class PgnLexer {
             nextToken();
         } else {
             skipWhiteSpace();
-            defineScope();
+            determineScope();
             nextToken();
         }
 
     }
 
+    /**
+     * Determine last token if current character is {@literal "}
+     */
     private void lastTokenIfCurrentQuote() {
         switch (lastToken) {
             case TP_VALUE:
@@ -268,7 +314,7 @@ class PgnLexer {
     private int untilChar(char c) {
         int pos = dataPosition;
         final char[] data = this.data;
-        final int dataLength = this.dataLength;
+        final int dataLength = data.length;
 
         for (pos++; pos < dataLength; pos++) {
             if (data[pos] == c) {
@@ -297,27 +343,78 @@ class PgnLexer {
         }
     }
 
-    byte lastToken() {
+    /**
+     * Extracts the string.
+     * <p>
+     * Preconditions: The caller must call {@link #init(char[])} first to initialize the array.
+     * This method creates new {@code String} object each time and aligns the position of lexer by
+     * {@link #tokenLength()}.
+     *
+     * @return The slice of input {@code data} from {@link #position()} to {@link #tokenLength()} + {@link #position()}
+     * @see #positionAlign()
+     */
+    public String extract() {
+        int startPos = dataPosition;
+        positionAlign();
+
+        return new String(data, startPos, tokenLength);
+    }
+
+    /**
+     * The last determined token.
+     *
+     * @return The last determined token.
+     */
+    public byte lastToken() {
         return lastToken;
     }
 
-    int position() {
+    /**
+     * Preconditions: The caller must call {@link #init(char[])} first to initialize the array.
+     *
+     * @return The length of the input array.
+     */
+    public int length() {
+        return data.length;
+    }
+
+    /**
+     * @return The position of the lexer in the input data.
+     */
+    public int position() {
         return dataPosition;
     }
 
-    void positionOffset(int offset) {
+    /**
+     * Changes the position by {@code offset} steps. If {@code offset} is negative, the position will shift back.
+     * There are no checks to go beyond the array.
+     *
+     * @param offset How much to move the position.
+     */
+    public void positionOffset(int offset) {
         dataPosition += offset;
     }
 
-    void positionAlign() {
+    /**
+     * Aligns the position with the length of the last token.
+     */
+    public void positionAlign() {
         positionOffset(tokenLength);
     }
 
-    int tokenLength() {
+    /**
+     * @return The token length.
+     */
+    public int tokenLength() {
         return tokenLength;
     }
 
-    int line() {
+    /**
+     * The line number is incremented only when {@literal \n} occurred.
+     *
+     * @return The current line.
+     */
+    public int line() {
         return line;
     }
 }

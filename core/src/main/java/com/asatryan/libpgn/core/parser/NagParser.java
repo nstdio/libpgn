@@ -21,7 +21,8 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
      */
     private void pollExcluded() {
         while (lexer.lastToken() == NAG) {
-            lexer.nextAlignedToken();
+            lexer.nextToken();
+            lexer.positionAlign();
         }
     }
 
