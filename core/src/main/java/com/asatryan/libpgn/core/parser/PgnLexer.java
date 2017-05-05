@@ -71,15 +71,18 @@ public class PgnLexer {
         initInternal(data);
     }
 
-    private void initInternal(final char[] data) {
+    private void initInternal(@Nonnull final char[] data) {
         this.data = data;
         dataPosition = 0;
         tokenLength = 0;
         line = 1;
         lastToken = UNDEFINED;
+        scope = LexicalScope.UNDEFINED;
 
-        skipWhiteSpace();
-        determineScope();
+        if (data.length > 0) {
+            skipWhiteSpace();
+            determineScope();
+        }
     }
 
     private void determineScope() {
