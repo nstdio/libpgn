@@ -86,6 +86,11 @@ public class PgnLexer {
     }
 
     private void determineScope() {
+        if (dataPosition >= data.length) {
+            scope = LexicalScope.UNDEFINED;
+            return;
+        }
+
         final char current = data[dataPosition];
 
         if (current == '[') {
@@ -139,7 +144,7 @@ public class PgnLexer {
     private void moveText() {
         final char current = data[dataPosition];
 
-        if (((current == '1' || current == '0') && (data[dataPosition + 1] == '-' || data[dataPosition + 1] == '/'))
+        if (((current == '1' || current == '0') && (dataPosition < data.length - 1 && (data[dataPosition + 1] == '-' || data[dataPosition + 1] == '/')))
                 || current == '*') {
             lastToken = GAMETERM;
             scope = LexicalScope.GAMETERM;
@@ -331,8 +336,9 @@ public class PgnLexer {
     private void skipWhiteSpace() {
         boolean isWhiteSpace = true;
         final char[] data = this.data;
+        final int length = data.length;
 
-        while (isWhiteSpace) {
+        while (isWhiteSpace && dataPosition < length) {
             switch (data[dataPosition]) {
                 case ' ':
                 case '\r':

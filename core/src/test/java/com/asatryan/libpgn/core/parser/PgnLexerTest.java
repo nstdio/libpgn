@@ -313,4 +313,38 @@ public class PgnLexerTest {
 
         AssertUtils.assertSameResult(lexer, games, tokens);
     }
+
+    @Test
+    public void emptyInput() throws Exception {
+        final char[] data = "".toCharArray();
+
+        lexer.init(data);
+
+        assertEquals(UNDEFINED, lexer.nextToken());
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test(expected = IllegalArgumentException.class)
+    public void nullInputWithInit() throws Exception {
+        lexer.init(null);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test(expected = IllegalArgumentException.class)
+    public void nullInputWithConstructor() throws Exception {
+        new PgnLexer(null);
+    }
+
+    @Test
+    public void illegalInput() throws Exception {
+        final String[] inputs = {
+                "\n", "", "\n\r", "  \t", ";", ".", "\0",
+                "\r\n",
+        };
+
+        for (String input : inputs) {
+            lexer.init(input.toCharArray());
+            assertEquals(UNDEFINED, lexer.nextToken());
+        }
+    }
 }
