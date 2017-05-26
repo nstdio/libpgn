@@ -8,6 +8,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import static com.asatryan.libpgn.core.Configuration.COMMENT_LENGTH_UNLIMITED;
 import static com.asatryan.libpgn.core.TokenTypes.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -79,6 +80,13 @@ public class CommentParserTest extends MockedLexerAware {
         final String actual = commentParser.tryParse();
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void skipComment() throws Exception {
+        when(configuration.skipComment()).thenReturn(true);
+
+        assertNull(commentParser.tryParse());
     }
 
     private void mockLexerMethodResults(String comment) {

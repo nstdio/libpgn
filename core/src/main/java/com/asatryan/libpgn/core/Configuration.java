@@ -144,6 +144,13 @@ public class Configuration {
     }
 
     /**
+     * @see Configuration.ConfigurationBuilder#useNullOnInvalidNag(boolean)
+     */
+    public boolean useNullOnInvalidNag() {
+        return useNullOnInvalidNag;
+    }
+
+    /**
      * @see Configuration.ConfigurationBuilder#trimComment(boolean)
      */
     public boolean trimComment() {
@@ -279,7 +286,8 @@ public class Configuration {
          * 1. e4 $1 $1 $2 $2 will result in {1, 2}
          * </pre></blockquote>
          *
-         * @param allowDuplicationsInNags Whether should allow duplicate nags on same move or not. Default is <code>false</code>
+         * @param allowDuplicationsInNags Whether should allow duplicate nags on same move or not. Default is
+         *                                <code>false</code>
          *
          * @return ConfigurationBuilder itself.
          */
@@ -296,8 +304,8 @@ public class Configuration {
          * 1. e4 $a $b will result in {0, 0} // {@link #allowDuplicationsInNags} == false
          * </pre></blockquote>
          *
-         * @param useNullOnInvalidNag Whether when parser determine invalid nag value should use <code>0</code> instead or
-         *                            throw exception.
+         * @param useNullOnInvalidNag Whether when parser determine invalid nag value should use <code>0</code> instead
+         *                            or throw exception.
          *
          * @return ConfigurationBuilder itself.
          */

@@ -27,6 +27,10 @@ public class TagPair implements StringConvertible {
         return new TagPair(tagPair.tag, tagPair.value);
     }
 
+    public static int hashCode(@Nonnull final String tag, @Nonnull final String value) {
+        return 31 * tag.hashCode() + value.hashCode();
+    }
+
     @Nonnull
     public String getTag() {
         return tag;
@@ -55,8 +59,7 @@ public class TagPair implements StringConvertible {
     @Override
     public int hashCode() {
         if (hasCode == 0) {
-            int result = tag.hashCode();
-            hasCode = 31 * result + value.hashCode();
+            hasCode = hashCode(tag, value);
         }
 
         return hasCode;

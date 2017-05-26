@@ -3,6 +3,7 @@ package com.asatryan.libpgn.core.parser;
 import com.asatryan.libpgn.core.Configuration;
 import com.asatryan.libpgn.core.Move;
 import com.asatryan.libpgn.core.Movetext;
+import com.asatryan.libpgn.core.MovetextFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,7 +54,7 @@ class MovetextParser extends AbstractParser implements Parser<Movetext> {
             black = moveInputParser.parse(MOVE_BLACK);
         }
 
-        return Movetext.of(moveNumber, white, black);
+        return MovetextFactory.of(moveNumber, white, black);
     }
 
     @Nullable

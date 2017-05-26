@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static com.asatryan.libpgn.core.TokenTypes.*;
+import static org.junit.Assert.*;
 
 public class PgnLexerTest {
     private PgnLexer lexer;
@@ -11,6 +12,39 @@ public class PgnLexerTest {
     @Before
     public void setUp() throws Exception {
         lexer = new PgnLexer();
+    }
+
+    @Test
+    public void initialState() throws Exception {
+        lexer = new PgnLexer();
+
+        assertEquals(1, lexer.line());
+
+        assertNotNull(lexer.data());
+        assertEquals(0, lexer.length());
+
+        assertEquals(UNDEFINED, lexer.lastToken());
+        assertEquals(0, lexer.position());
+        assertEquals(0, lexer.tokenLength());
+    }
+
+    @Test
+    public void noCopyInput() throws Exception {
+        final char[] input = "1. e4 *".toCharArray();
+
+        lexer.init(input);
+
+        assertSame(input, lexer.data());
+    }
+
+    @Test
+    public void copyInput() throws Exception {
+        final char[] input = "1. e4 *".toCharArray();
+
+        lexer.init(input, true);
+
+        assertNotSame(input, lexer.data());
+        assertArrayEquals(input, lexer.data());
     }
 
     @Test
@@ -278,5 +312,39 @@ public class PgnLexerTest {
         };
 
         AssertUtils.assertSameResult(lexer, games, tokens);
+    }
+
+    @Test
+    public void emptyInput() throws Exception {
+        final char[] data = "".toCharArray();
+
+        lexer.init(data);
+
+        assertEquals(UNDEFINED, lexer.nextToken());
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test(expected = IllegalArgumentException.class)
+    public void nullInputWithInit() throws Exception {
+        lexer.init(null);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test(expected = IllegalArgumentException.class)
+    public void nullInputWithConstructor() throws Exception {
+        new PgnLexer(null);
+    }
+
+    @Test
+    public void illegalInput() throws Exception {
+        final String[] inputs = {
+                "\n", "", "\n\r", "  \t", ";", ".", "\0",
+                "\r\n",
+        };
+
+        for (String input : inputs) {
+            lexer.init(input.toCharArray());
+            assertEquals(UNDEFINED, lexer.nextToken());
+        }
     }
 }

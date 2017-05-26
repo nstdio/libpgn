@@ -1,10 +1,12 @@
 package com.asatryan.libpgn.core.parser;
 
 import com.asatryan.libpgn.core.Configuration;
+import com.asatryan.libpgn.core.exception.InvalidNagException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.TreeSet;
 
 import static com.asatryan.libpgn.core.TokenTypes.NAG;
@@ -21,7 +23,8 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
      */
     private void pollExcluded() {
         while (lexer.lastToken() == NAG) {
-            lexer.nextAlignedToken();
+            lexer.nextToken();
+            lexer.positionAlign();
         }
     }
 
@@ -47,7 +50,7 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
 
         final int mergeWithLen = mergeWith == null ? 0 : mergeWith.length;
 
-        final Set<Short> nags = toSet(mergeWith);
+        final Collection<Short> nags = toCollection(mergeWith);
 
         final int estimatedSize = limit - mergeWithLen;
         do {
@@ -59,27 +62,23 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
         return toArray(nags);
     }
 
-    private Set<Short> toSet(final @Nullable short[] src) {
-        return src == null ? setImpl() : toSetImpl(src);
-    }
-
-    @Nonnull
-    private Set<Short> setImpl() {
-        return new TreeSet<>();
-    }
-
-    private Set<Short> toSetImpl(final @Nonnull short[] src) {
-        if (src.length == 0) {
-            return setImpl();
+    private Collection<Short> toCollection(final @Nullable short[] src) {
+        if (src == null || src.length == 0) {
+            return collectionImpl();
         }
 
-        final Set<Short> nags = setImpl();
+        final Collection<Short> nags = collectionImpl();
 
         for (short i : src) {
             nags.add(i);
         }
 
         return nags;
+    }
+
+    @Nonnull
+    private Collection<Short> collectionImpl() {
+        return config.allowDuplicationsInNags() ? new ArrayList<Short>() : new TreeSet<Short>();
     }
 
     /**
@@ -93,7 +92,11 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
 
             return Short.valueOf(lexer.extract().substring(1));
         } catch (NumberFormatException e) {
-            return (short) 0;
+            if (config.useNullOnInvalidNag()) {
+                return (short) 0;
+            }
+
+            throw new InvalidNagException("Invalid NAG.", e);
         }
     }
 

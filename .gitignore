@@ -18,3 +18,4 @@ src/test/coverage-report/
 
 /core/src/test/coverage-report/
 *.iml
+/core/src/main/java/com/asatryan/libpgn/core/Main.java
