@@ -54,7 +54,6 @@ public class PgnLexer {
      * @param data The input data that need to be tokenized.
      * @param copy The parameter that indicates that input array will be copied. This parameter expected always true.
      */
-    @SuppressWarnings("unused")
     public void init(@Nonnull final char[] data, boolean copy) {
         initInternal(Arrays.copyOf(data, data.length));
     }

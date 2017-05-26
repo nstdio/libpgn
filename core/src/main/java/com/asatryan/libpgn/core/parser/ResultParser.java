@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 
 import static com.asatryan.libpgn.core.TokenTypes.GAMETERM;
 
-public class ResultParser extends AbstractParser implements Parser<Game.Result> {
+class ResultParser extends AbstractParser implements Parser<Game.Result> {
 
     ResultParser(@Nonnull PgnLexer lexer, @Nonnull Configuration config) {
         super(lexer, config);

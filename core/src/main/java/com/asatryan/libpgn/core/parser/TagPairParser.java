@@ -62,16 +62,9 @@ class TagPairParser extends AbstractParser implements Parser<List<TagPair>> {
         return cached(tag, value);
     }
 
-    private int tagPairHashCode(String tag, String value) {
-        int result = tag.hashCode();
-
-        return 31 * result + value.hashCode();
-    }
-
-
     @Nonnull
     private TagPair cached(String tag, String value) {
-        final int hashCode = tagPairHashCode(tag, value);
+        final int hashCode = TagPair.hashCode(tag, value);
 
         if (cache.containsKey(hashCode)) {
             return cache.get(hashCode);
