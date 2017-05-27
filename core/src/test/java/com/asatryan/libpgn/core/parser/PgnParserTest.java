@@ -106,7 +106,6 @@ public class PgnParserTest {
         moves.add(movetext);
 
         assertMovesEquals(input, moves);
-
     }
 
     @Test
@@ -131,7 +130,6 @@ public class PgnParserTest {
         moves.add(movetext_2);
 
         assertMovesEquals(inputs, moves);
-
     }
 
     @Test

@@ -22,10 +22,7 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
      * Poll all {@code NAG} tokens until non {@code NAG} token occurrence.
      */
     private void pollExcluded() {
-        while (lexer.lastToken() == NAG) {
-            lexer.nextToken();
-            lexer.positionAlign();
-        }
+        lexer.poll(NAG);
     }
 
     /**

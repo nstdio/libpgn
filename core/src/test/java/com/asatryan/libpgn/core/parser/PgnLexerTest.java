@@ -3,6 +3,8 @@ package com.asatryan.libpgn.core.parser;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Queue;
+
 import static com.asatryan.libpgn.core.TokenTypes.*;
 import static org.junit.Assert.*;
 
@@ -346,5 +348,14 @@ public class PgnLexerTest {
             lexer.init(input.toCharArray());
             assertEquals(UNDEFINED, lexer.nextToken());
         }
+    }
+
+    @Test
+    public void lineNumber() throws Exception {
+        String input = "1.e4 d4\r\n2.e4 d4\r\n *";
+
+        lexer.init(input.toCharArray());
+
+        final Queue<Byte> stream = lexer.stream();
     }
 }

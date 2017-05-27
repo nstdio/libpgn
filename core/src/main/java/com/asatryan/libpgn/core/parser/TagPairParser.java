@@ -33,9 +33,7 @@ class TagPairParser extends AbstractParser implements Parser<List<TagPair>> {
     }
 
     private TagPair parseTagPair() {
-        nextNotEqThrow(TP_NAME);
-
-        final String tag = lexer.extract();
+        final String tag = extractNextIfNotEqThrow(TP_NAME);
         final String value;
 
         nextNotEqThrow(TP_NAME_VALUE_SEP);

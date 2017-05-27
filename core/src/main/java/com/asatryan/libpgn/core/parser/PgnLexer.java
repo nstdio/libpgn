@@ -4,16 +4,18 @@ import com.asatryan.libpgn.core.TokenTypes;
 import com.asatryan.libpgn.core.internal.CharUtils;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Queue;
 
 import static com.asatryan.libpgn.core.TokenTypes.*;
+import static com.asatryan.libpgn.core.internal.EmptyArrays.EMPTY_CHAR_ARRAY;
 
 /**
  * Converts input data to specific tokens declared in {@link TokenTypes}.
  */
 @SuppressWarnings("WeakerAccess")
 public class PgnLexer {
-    private static final char[] EMPTY_CHAR_ARRAY = new char[0];
     private int line = 1;
     private char[] data;
     private int dataPosition;
@@ -54,7 +56,7 @@ public class PgnLexer {
      * @param data The input data that need to be tokenized.
      * @param copy The parameter that indicates that input array will be copied. This parameter expected always true.
      */
-    public void init(@Nonnull final char[] data, boolean copy) {
+    public void init(@Nonnull final char[] data, @SuppressWarnings("unused") boolean copy) {
         initInternal(Arrays.copyOf(data, data.length));
     }
 
@@ -155,21 +157,23 @@ public class PgnLexer {
             } else {
                 tokenLength = 7;
             }
-
+            positionAlign();
         } else if (lastToken == COMMENT_BEGIN && CharUtils.isDefined(current)) {
             lastToken = COMMENT;
             final int commentEnd = CharUtils.unescapedChar(data, dataPosition + 1, '}');
             tokenLength = commentEnd - dataPosition;
+            positionAlign();
         } else if (CharUtils.isDigit(current)) {
             lastToken = MOVE_NUMBER;
             final int whiteSpace = moveNumberEndPos() + 1;
             final int i = whiteSpace - dataPosition;
             tokenLength = i == 1 ? 1 : i - 1;
+            positionAlign();
         } else if (current == '.') {
             if (data[dataPosition + 1] == '.' && data[dataPosition + 2] == '.') {
                 lastToken = SKIP_PREV_MOVE;
-                dataPosition++;
-                tokenLength = 2;
+                tokenLength = 3;
+                positionAlign();
             } else {
                 lastToken = DOT;
                 dataPosition++;
@@ -182,10 +186,12 @@ public class PgnLexer {
             if (lastToken == DOT || lastToken == UNDEFINED || lastToken == MOVE_BLACK) {
                 lastToken = MOVE_WHITE;
                 tokenLengthForMove();
+                positionAlign();
             } else if (lastToken == MOVE_WHITE || lastToken == COMMENT_END || lastToken == VARIATION_END
                     || lastToken == NAG || lastToken == SKIP_PREV_MOVE || lastToken == ROL_COMMENT) {
                 lastToken = MOVE_BLACK;
                 tokenLengthForMove();
+                positionAlign();
             }
         } else if (current == '{') {
             lastToken = COMMENT_BEGIN;
@@ -200,6 +206,7 @@ public class PgnLexer {
             dataPosition++;
             final int commentEnd = CharUtils.newLine(data, dataPosition);
             tokenLength = commentEnd - dataPosition;
+            positionAlign();
         } else if (current == '(') {
             lastToken = VARIATION_BEGIN;
             dataPosition++;
@@ -212,6 +219,7 @@ public class PgnLexer {
             lastToken = NAG;
             final int endPos = CharUtils.whitespaceOrChar(data, dataPosition + 1, '$', '{', '(', ')', '*');
             tokenLength = endPos - dataPosition;
+            positionAlign();
         } else if (current == '\n' || current == '\r') {
             if (current == '\n') {
                 line++;
@@ -306,11 +314,13 @@ public class PgnLexer {
                 lastToken = TP_NAME;
                 final int whiteSpace = untilChar(' ');
                 tokenLength = whiteSpace - dataPosition;
+                positionAlign();
                 break;
             case TP_VALUE_BEGIN:
                 lastToken = TP_VALUE;
                 final int ch = untilChar('"');
                 tokenLength = ch - dataPosition;
+                positionAlign();
                 break;
             default:
                 lastToken = UNDEFINED;
@@ -355,17 +365,13 @@ public class PgnLexer {
      * Extracts the string.
      * <p>
      * Preconditions: The caller must call {@link #init(char[])} first to initialize the array.
-     * This method creates new {@code String} object each time and aligns the position of lexer by
-     * {@link #tokenLength()}.
+     * This method creates new {@code String} object each time.
      *
      * @return The slice of input {@code data} from {@link #position()} to {@link #tokenLength()} + {@link #position()}
      * @see #positionAlign()
      */
     public String extract() {
-        int startPos = dataPosition;
-        positionAlign();
-
-        return new String(data, startPos, tokenLength);
+        return new String(data, dataPosition - tokenLength, tokenLength);
     }
 
     /**
@@ -424,5 +430,49 @@ public class PgnLexer {
      */
     public int line() {
         return line;
+    }
+
+    /**
+     * Records all tokens between {@link #lastToken()} until {@link TokenTypes#UNDEFINED} first occurrence.
+     *
+     * @return The tokens {@code Queue} between last token and {@link TokenTypes#UNDEFINED}.
+     * @see #stream(byte)
+     */
+    public Queue<Byte> stream() {
+        return stream(UNDEFINED);
+    }
+
+    /**
+     * Records all tokens between {@link #lastToken()} and {@code terminationToken}. This implementation will not
+     * include {@code terminationToken} as last element in returned {@code Queue}.
+     *
+     * @param terminationToken When lexer occurs this token it'll stops.
+     *
+     * @return The tokens {@code Queue} between current token and {@code terminationToken}
+     */
+    public Queue<Byte> stream(final byte terminationToken) {
+        final ArrayDeque<Byte> stream = new ArrayDeque<>();
+
+        do {
+            stream.add(nextToken());
+        } while (lastToken != terminationToken && lastToken != UNDEFINED);
+
+        if (stream.getLast() == terminationToken) {
+            stream.removeLast();
+        }
+
+        return stream;
+    }
+
+    /**
+     * Polls all tokens until first occurrence of {@code terminationToken} or {@link TokenTypes#UNDEFINED}. In result of
+     * method invocation {@code lastToken() == terminationToken} condition will be {@code true}.
+     *
+     * @param terminationToken When lexer occurs this token or {@link TokenTypes#UNDEFINED} it'll stops.
+     */
+    public void poll(final byte terminationToken) {
+        while (lastToken == terminationToken && lastToken != UNDEFINED) {
+            nextToken();
+        }
     }
 }

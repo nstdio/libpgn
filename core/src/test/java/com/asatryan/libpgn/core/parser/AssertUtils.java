@@ -1,6 +1,8 @@
 package com.asatryan.libpgn.core.parser;
 
-import static com.asatryan.libpgn.core.TokenTypes.*;
+import java.util.Collection;
+import java.util.Queue;
+
 import static org.junit.Assert.assertEquals;
 
 class AssertUtils {
@@ -8,36 +10,30 @@ class AssertUtils {
     static void assertSameResult(PgnLexer lexer, final String[] pgnStrings, final byte[] tokens) {
         for (String pgnString : pgnStrings) {
             assertTokensEqual(lexer, pgnString, tokens);
-
         }
     }
 
     static void assertTokensEqual(PgnLexer lexer, String pgnString, byte[] tokens) {
         lexer.init(pgnString.toCharArray());
+        Queue<Byte> queue = lexer.stream();
 
         for (byte token : tokens) {
-            final byte actual = lexer.nextToken();
-            if (lexer.tokenLength() > 1 || shouldOffsetIncreased(lexer)) {
-                lexer.positionOffset(lexer.tokenLength());
-            }
+            final byte actual = queue.poll();
 
             assertEquals(
                     String.format("<%s> at position %d", pgnString, lexer.position()),
                     token,
                     actual);
         }
+
+        assertEmpty(queue);
     }
 
-    private static boolean shouldOffsetIncreased(PgnLexer lexer) {
-        final byte token = lexer.lastToken();
+    static <T> void assertSize(final int expected, Collection<T> collection) {
+        assertEquals(expected, collection.size());
+    }
 
-        return token == TP_VALUE
-                || token == MOVE_NUMBER
-                || token == MOVE_WHITE
-                || token == MOVE_BLACK
-                || token == COMMENT
-                || token == GAMETERM
-                || token == NAG
-                || token == ROL_COMMENT;
+    static <T> void assertEmpty(Collection<T> collection) {
+        assertSize(0, collection);
     }
 }
