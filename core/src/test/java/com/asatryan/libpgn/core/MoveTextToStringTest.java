@@ -1,7 +1,5 @@
 package com.asatryan.libpgn.core;
 
-import com.asatryan.libpgn.core.Move;
-import com.asatryan.libpgn.core.Movetext;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -31,8 +29,7 @@ public class MoveTextToStringTest {
 
     @Test
     public void blackMoveOnly() {
-        Move blackMove = Move.builder().withMove("Nf6").build();
-        Movetext movetext = new Movetext(24, null, blackMove);
+        Movetext movetext = new Movetext(24, null, MoveFactory.of("Nf6"));
 
         String expected = "24... Nf6";
 

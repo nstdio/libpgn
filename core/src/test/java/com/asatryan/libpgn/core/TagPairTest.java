@@ -1,6 +1,5 @@
 package com.asatryan.libpgn.core;
 
-import com.asatryan.libpgn.core.TagPair;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -28,6 +27,7 @@ public class TagPairTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void tagNameCannotBeNull() throws Exception {
+        //noinspection ConstantConditions
         new TagPair(null, "");
     }
 
@@ -57,6 +57,7 @@ public class TagPairTest {
         assertEquals(tp1, tp2);
         assertFalse(tp1.equals(tp3));
         assertFalse(tp3.equals(tp4));
+        //noinspection ObjectEqualsNull
         assertFalse(tp3.equals(null));
     }
 

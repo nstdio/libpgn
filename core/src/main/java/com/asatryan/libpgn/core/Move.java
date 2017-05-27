@@ -6,9 +6,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static com.asatryan.libpgn.core.internal.EmptyArrays.EMPTY_SHORT_ARRAY;
+
 @SuppressWarnings("WeakerAccess")
 public class Move implements StringConvertible {
-    private final static short[] EMPTY = {};
     @Nonnull
     private final String move;
     @Nullable
@@ -22,7 +23,7 @@ public class Move implements StringConvertible {
         this.move = move;
         this.comment = comment;
         this.variations = variations == null ? Collections.<Movetext>emptyList() : variations;
-        this.nag = nag == null ? EMPTY : nag;
+        this.nag = nag == null ? EMPTY_SHORT_ARRAY : nag;
     }
 
     public static Builder builder() {
@@ -38,7 +39,7 @@ public class Move implements StringConvertible {
     }
 
     public short[] nag() {
-        if (nag == EMPTY) {
+        if (nag == EMPTY_SHORT_ARRAY) {
             return nag;
         }
 
