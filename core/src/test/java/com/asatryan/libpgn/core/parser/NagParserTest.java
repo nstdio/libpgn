@@ -34,7 +34,7 @@ public class NagParserTest {
 
     private void initAndIterateUntilNag(String input) {
         lexer.init(input.toCharArray());
-        lexer.poll(TokenTypes.NAG);
+        lexer.stream(TokenTypes.NAG);
     }
 
     @Test
@@ -43,6 +43,7 @@ public class NagParserTest {
 
         final short[] nags = parseWithLimit();
 
+        assertNotNull(nags);
         assertEquals(limit, nags.length);
     }
 
