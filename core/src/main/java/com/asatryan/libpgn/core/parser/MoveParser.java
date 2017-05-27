@@ -35,7 +35,7 @@ class MoveParser extends AbstractParser implements InputParser<Move, Byte> {
         short[] nags = null;
         String move = lexer.extract();
 
-        if (config.extractInlineNags()) {
+        if (config.extractLiteralNags()) {
             final Pair<String, short[]> pair = inlineNag.split(move);
             move = pair.first;
             nags = pair.second;

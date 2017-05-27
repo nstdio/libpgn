@@ -83,7 +83,7 @@ public class Configuration {
     /**
      * @see Configuration.ConfigurationBuilder#extractLiteralNags(boolean)
      */
-    public boolean extractInlineNags() {
+    public boolean extractLiteralNags() {
         return extractLiteralNags;
     }
 
@@ -336,7 +336,9 @@ public class Configuration {
         }
 
         /**
-         * @param extractLiteralNags Whether should extract literal nags. By default {@c }
+         * Configuration flag for extracting literal NAG's.
+         *
+         * @param extractLiteralNags Whether should extract literal nags. By default {@code false}
          *
          * @return ConfigurationBuilder itself.
          */
