@@ -1,6 +1,10 @@
 package com.asatryan.libpgn.core;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
+
+import static com.asatryan.libpgn.core.internal.EmptyArrays.EMPTY_STRING_ARRAY;
 
 @SuppressWarnings("WeakerAccess")
 public class Game implements StringConvertible {
@@ -30,8 +34,18 @@ public class Game implements StringConvertible {
         return tag("White");
     }
 
+    @Nonnull
+    public String[] whiteMultiple() {
+        return multiple(white());
+    }
+
     public String black() {
         return tag("Black");
+    }
+
+    @Nonnull
+    public String[] blackMultiple() {
+        return multiple(black());
     }
 
     public String event() {
@@ -78,6 +92,11 @@ public class Game implements StringConvertible {
         }
 
         return null;
+    }
+
+    @Nonnull
+    private String[] multiple(@Nullable final String wb) {
+        return wb == null ? EMPTY_STRING_ARRAY : wb.split(":");
     }
 
     @Override
