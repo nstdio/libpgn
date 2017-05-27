@@ -72,7 +72,6 @@ public class MovetextFactory {
         return Arrays.asList(ret);
     }
 
-
     /**
      * Creates instance with white and black moves only.
      * <p>
