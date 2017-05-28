@@ -72,6 +72,163 @@ public class PgnLexer {
         initInternal(data);
     }
 
+    /**
+     * <p>
+     * Tries to find the next token. Returned {@code
+     * byte} value will be one of {@link TokenTypes} constants. If lexer cannot find any valid token it'll return {@link
+     * TokenTypes#UNDEFINED}.
+     * Preconditions: The caller must call {@link #init(char[])} or create this object with {@link #PgnLexer(char[])} or
+     * {@link #PgnLexer(char[], boolean)} to initialize the array.
+     *
+     * @return The next occurred token.
+     */
+    public byte nextToken() {
+        try {
+            switch (scope) {
+                case LexicalScope.TAG_PAIR:
+                    tagPair();
+                    break;
+                case LexicalScope.MOVE_TEXT:
+                    moveText();
+                    break;
+                case LexicalScope.GAMETERM:
+                    skipWhiteSpace();
+                    determineScope();
+                    nextToken();
+                    break;
+                case LexicalScope.UNDEFINED:
+                    lastToken = UNDEFINED;
+                    break;
+            }
+
+        } catch (ArrayIndexOutOfBoundsException e) {
+            lastToken = UNDEFINED;
+            scope = UNDEFINED;
+            dataPosition = data.length - 1;
+        }
+
+        return lastToken;
+    }
+
+    /**
+     * Extracts the string.
+     * <p>
+     * Preconditions: The caller must call {@link #init(char[])} first to initialize the array.
+     * This method creates new {@code String} object each time.
+     *
+     * @return The slice of input {@code data} from {@link #position()} to {@link #tokenLength()} + {@link #position()}
+     * @see #positionAlign()
+     */
+    public String extract() {
+        return new String(data, dataPosition - tokenLength, tokenLength);
+    }
+
+    /**
+     * The last determined token.
+     *
+     * @return The last determined token.
+     */
+    public byte lastToken() {
+        return lastToken;
+    }
+
+    /**
+     * Preconditions: The caller must call {@link #init(char[])} first to initialize the array.
+     *
+     * @return The length of the input array.
+     */
+    public int length() {
+        return data.length;
+    }
+
+    /**
+     * @return The position of the lexer in the input data.
+     */
+    public int position() {
+        return dataPosition;
+    }
+
+    /**
+     * Changes the position by {@code offset} steps. If {@code offset} is negative, the position will shift back.
+     * There are no checks to go beyond the array.
+     *
+     * @param offset How much to move the position.
+     */
+    public void positionOffset(int offset) {
+        dataPosition += offset;
+    }
+
+    /**
+     * Aligns the position with the length of the last token.
+     */
+    public void positionAlign() {
+        positionOffset(tokenLength);
+    }
+
+    /**
+     * @return The token length.
+     */
+    public int tokenLength() {
+        return tokenLength;
+    }
+
+    /**
+     * The line number is incremented only when {@literal \n} occurred.
+     *
+     * @return The current line.
+     */
+    public int line() {
+        return line;
+    }
+
+    /**
+     * Records all tokens between {@link #lastToken()} until {@link TokenTypes#UNDEFINED} first occurrence.
+     *
+     * @return The tokens {@code Queue} between last token and {@link TokenTypes#UNDEFINED}.
+     * @see #stream(byte)
+     */
+    public Queue<Byte> stream() {
+        return stream(UNDEFINED);
+    }
+
+    /**
+     * Records all tokens between {@link #lastToken()} and {@code terminationToken}. This implementation will not
+     * include {@code terminationToken} as last element in returned {@code Queue}.
+     *
+     * @param terminationToken When lexer occurs this token it'll stops.
+     *
+     * @return The tokens {@code Queue} between current token and {@code terminationToken}
+     */
+    public Queue<Byte> stream(final byte terminationToken) {
+        final ArrayDeque<Byte> stream = new ArrayDeque<>();
+
+        do {
+            stream.add(nextToken());
+        } while (lastToken != terminationToken && lastToken != UNDEFINED);
+
+        if (stream.getLast() == terminationToken) {
+            stream.removeLast();
+        }
+
+        return stream;
+    }
+
+    /**
+     * Polls all tokens until first occurrence of {@code terminationToken} or {@link TokenTypes#UNDEFINED}. In result of
+     * method invocation {@code lastToken() == terminationToken} condition will be {@code true}.
+     *
+     * @param terminationToken When lexer occurs this token or {@link TokenTypes#UNDEFINED} it'll stops.
+     */
+    public void poll(final byte terminationToken) {
+        while (lastToken != terminationToken && lastToken != UNDEFINED) {
+            nextToken();
+        }
+    }
+
+    char[] data() {
+        return data;
+    }
+
     private void initInternal(@Nonnull final char[] data) {
         this.data = data;
         dataPosition = 0;
@@ -101,38 +258,6 @@ public class PgnLexer {
         } else {
             scope = LexicalScope.UNDEFINED;
         }
-    }
-
-    public byte nextToken() {
-        try {
-            switch (scope) {
-                case LexicalScope.TAG_PAIR:
-                    tagPair();
-                    break;
-                case LexicalScope.MOVE_TEXT:
-                    moveText();
-                    break;
-                case LexicalScope.GAMETERM:
-                    skipWhiteSpace();
-                    determineScope();
-                    nextToken();
-                    break;
-                case LexicalScope.UNDEFINED:
-                    lastToken = UNDEFINED;
-                    break;
-            }
-
-        } catch (ArrayIndexOutOfBoundsException e) {
-            lastToken = UNDEFINED;
-            scope = UNDEFINED;
-            dataPosition = data.length - 1;
-        }
-
-        return lastToken;
-    }
-
-    char[] data() {
-        return data;
     }
 
     @Override
@@ -358,121 +483,6 @@ public class PgnLexer {
                 default:
                     isWhiteSpace = false;
             }
-        }
-    }
-
-    /**
-     * Extracts the string.
-     * <p>
-     * Preconditions: The caller must call {@link #init(char[])} first to initialize the array.
-     * This method creates new {@code String} object each time.
-     *
-     * @return The slice of input {@code data} from {@link #position()} to {@link #tokenLength()} + {@link #position()}
-     * @see #positionAlign()
-     */
-    public String extract() {
-        return new String(data, dataPosition - tokenLength, tokenLength);
-    }
-
-    /**
-     * The last determined token.
-     *
-     * @return The last determined token.
-     */
-    public byte lastToken() {
-        return lastToken;
-    }
-
-    /**
-     * Preconditions: The caller must call {@link #init(char[])} first to initialize the array.
-     *
-     * @return The length of the input array.
-     */
-    public int length() {
-        return data.length;
-    }
-
-    /**
-     * @return The position of the lexer in the input data.
-     */
-    public int position() {
-        return dataPosition;
-    }
-
-    /**
-     * Changes the position by {@code offset} steps. If {@code offset} is negative, the position will shift back.
-     * There are no checks to go beyond the array.
-     *
-     * @param offset How much to move the position.
-     */
-    public void positionOffset(int offset) {
-        dataPosition += offset;
-    }
-
-    /**
-     * Aligns the position with the length of the last token.
-     */
-    public void positionAlign() {
-        positionOffset(tokenLength);
-    }
-
-    /**
-     * @return The token length.
-     */
-    public int tokenLength() {
-        return tokenLength;
-    }
-
-    /**
-     * The line number is incremented only when {@literal \n} occurred.
-     *
-     * @return The current line.
-     */
-    public int line() {
-        return line;
-    }
-
-    /**
-     * Records all tokens between {@link #lastToken()} until {@link TokenTypes#UNDEFINED} first occurrence.
-     *
-     * @return The tokens {@code Queue} between last token and {@link TokenTypes#UNDEFINED}.
-     * @see #stream(byte)
-     */
-    public Queue<Byte> stream() {
-        return stream(UNDEFINED);
-    }
-
-    /**
-     * Records all tokens between {@link #lastToken()} and {@code terminationToken}. This implementation will not
-     * include {@code terminationToken} as last element in returned {@code Queue}.
-     *
-     * @param terminationToken When lexer occurs this token it'll stops.
-     *
-     * @return The tokens {@code Queue} between current token and {@code terminationToken}
-     */
-    public Queue<Byte> stream(final byte terminationToken) {
-        final ArrayDeque<Byte> stream = new ArrayDeque<>();
-
-        do {
-            stream.add(nextToken());
-        } while (lastToken != terminationToken && lastToken != UNDEFINED);
-
-        if (stream.getLast() == terminationToken) {
-            stream.removeLast();
-        }
-
-        return stream;
-    }
-
-    /**
-     * Polls all tokens until first occurrence of {@code terminationToken} or {@link TokenTypes#UNDEFINED}. In result of
-     * method invocation {@code lastToken() == terminationToken} condition will be {@code true}.
-     *
-     * @param terminationToken When lexer occurs this token or {@link TokenTypes#UNDEFINED} it'll stops.
-     */
-    public void poll(final byte terminationToken) {
-        while (lastToken == terminationToken && lastToken != UNDEFINED) {
-            nextToken();
         }
     }
 }
