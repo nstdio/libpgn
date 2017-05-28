@@ -14,7 +14,7 @@ public class Configuration {
     public static final int DEFAULT_TAG_PAIR_CACHE_SIZE = 512;
 
     private final Set<TagPair> predefinedCache;
-
+    private final GameFilter gameFilter;
     private final boolean skipTagPairSection;
     private final boolean skipMovetext;
     private final boolean skipComment;
@@ -33,11 +33,12 @@ public class Configuration {
     private final int commentMaxLength;
     private final int tagPairCacheSize;
 
-    private Configuration(Set<TagPair> predefinedCache, boolean skipTagPairSection, boolean skipMovetext, boolean skipComment, boolean skipVariations,
+    private Configuration(Set<TagPair> predefinedCache, GameFilter gameFilter, boolean skipTagPairSection, boolean skipMovetext, boolean skipComment, boolean skipVariations,
                           boolean stopOnError, String threatNagAsComment, boolean strict, boolean allowDuplicationsInNags,
                           boolean useNullOnInvalidNag, boolean sortNags,
                           boolean trimComment, boolean extractLiteralNags, boolean cacheTagPair, int nagLimit, int tagPairValueMaxLength, int commentMaxLength, int tagPairCacheSize) {
         this.predefinedCache = predefinedCache;
+        this.gameFilter = gameFilter;
         this.skipTagPairSection = skipTagPairSection;
         this.skipMovetext = skipMovetext;
         this.skipComment = skipComment;
@@ -78,6 +79,11 @@ public class Configuration {
     @Nullable
     public Set<TagPair> predefinedCache() {
         return predefinedCache;
+    }
+
+    @Nullable
+    public GameFilter gameFilter() {
+        return gameFilter;
     }
 
     /**
@@ -180,6 +186,7 @@ public class Configuration {
 
     public static final class ConfigurationBuilder {
         private Set<TagPair> predefinedCache;
+        private GameFilter gameFilter;
         private boolean skipTagPairSection;
         private boolean skipMovetext;
         private boolean skipComment;
@@ -215,6 +222,16 @@ public class Configuration {
                 this.predefinedCache.addAll(predefinedCache);
             }
 
+            return this;
+        }
+
+        /**
+         * @param gameFilter The game
+         *
+         * @return ConfigurationBuilder itself.
+         */
+        public ConfigurationBuilder gameFilter(final @Nonnull GameFilter gameFilter) {
+            this.gameFilter = gameFilter;
             return this;
         }
 
@@ -473,7 +490,9 @@ public class Configuration {
 
         public Configuration build() {
             return new Configuration(
-                    predefinedCache, skipTagPairSection,
+                    predefinedCache,
+                    gameFilter,
+                    skipTagPairSection,
                     skipMovetext,
                     skipComment,
                     skipVariations,
