@@ -22,7 +22,7 @@ class MovetextParser extends AbstractParser implements Parser<Movetext> {
 
     @Override
     public Movetext parse() {
-        nextNotEqThrow(MOVE_NUMBER);
+        lastNotEqThrow(MOVE_NUMBER);
         final String moveNumber = lexer.extract();
         Move black = null, white = null;
 
@@ -32,7 +32,6 @@ class MovetextParser extends AbstractParser implements Parser<Movetext> {
             lexer.nextToken();
             white = moveInputParser.parse(MOVE_WHITE);
         } else if (lexer.lastToken() == SKIP_PREV_MOVE) {
-            lexer.positionAlign();
             lexer.nextToken();
             black = moveInputParser.parse(MOVE_BLACK);
         } else {
@@ -45,7 +44,6 @@ class MovetextParser extends AbstractParser implements Parser<Movetext> {
                 if (lexer.nextToken() != SKIP_PREV_MOVE && !moveNumber.equals(moveNumber2)) { // "1. d4 (1. d5) 45... f5"
                     throw syntaxException(lexer, SKIP_PREV_MOVE);
                 }
-                lexer.positionAlign(); // ...
                 lexer.nextToken();
             }
         }

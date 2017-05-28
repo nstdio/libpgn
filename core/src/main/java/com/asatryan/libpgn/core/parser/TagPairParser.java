@@ -1,7 +1,9 @@
 package com.asatryan.libpgn.core.parser;
 
 import com.asatryan.libpgn.core.Configuration;
+import com.asatryan.libpgn.core.GameFilter;
 import com.asatryan.libpgn.core.TagPair;
+import com.asatryan.libpgn.core.exception.FilterException;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import javax.annotation.Nonnull;
@@ -20,22 +22,28 @@ class TagPairParser extends AbstractParser implements Parser<List<TagPair>> {
 
     @Override
     public List<TagPair> parse() {
+        if (config.skipTagPairSection()) {
+            lexer.poll(MOVE_NUMBER);
+
+            return null;
+        }
+
         final List<TagPair> section = new ArrayList<>();
 
         while (lexer.lastToken() == TP_BEGIN) {
-            final TagPair tagPair = parseTagPair();
-            if (!config.skipTagPairSection()) {
-                section.add(tagPair);
-            }
+            section.add(parseTagPair());
+        }
+
+        GameFilter gameFilter = config.gameFilter();
+        if (gameFilter != null && !gameFilter.test(section)) {
+            throw new FilterException("Skip this game.");
         }
 
         return section;
     }
 
     private TagPair parseTagPair() {
-        nextNotEqThrow(TP_NAME);
-
-        final String tag = lexer.extract();
+        final String tag = extractNextIfNotEqThrow(TP_NAME);
         final String value;
 
         nextNotEqThrow(TP_NAME_VALUE_SEP);

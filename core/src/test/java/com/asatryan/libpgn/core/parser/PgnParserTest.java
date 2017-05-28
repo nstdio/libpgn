@@ -106,7 +106,6 @@ public class PgnParserTest {
         moves.add(movetext);
 
         assertMovesEquals(input, moves);
-
     }
 
     @Test
@@ -131,7 +130,6 @@ public class PgnParserTest {
         moves.add(movetext_2);
 
         assertMovesEquals(inputs, moves);
-
     }
 
     @Test
@@ -302,6 +300,33 @@ public class PgnParserTest {
                 assertNull(input, movetext.blackComment());
             }
         }
+    }
+
+    @Test
+    public void skipTagPair() throws Exception {
+        String input = "[Event \"Leipzig8990 m\"]\n" +
+                "[Site \"Leipzig\"]\n" +
+                "[Date \"1889.??.??\"]\n" +
+                "[Round \"1\"]\n" +
+                "[White \"Lasker, Emanuel\"]\n" +
+                "[Black \"Mieses, Jacques\"]\n" +
+                "[Result \"1-0\"]\n" +
+                "[WhiteElo \"\"]\n" +
+                "[BlackElo \"\"]\n" +
+                "[ECO \"A84\"]\n" +
+                "\n" +
+                "1.d4 *";
+
+        final Configuration config = Configuration.defaultBuilder()
+                .skipTagPairSection(true)
+                .build();
+
+        List<Game> games = new PgnParser(config).parse(input);
+
+        final Game firstGame = games.get(0);
+        assertNull(firstGame.tagPairSection());
+        assertEquals(firstGame.moves().get(0).whiteMove(), "d4");
+        assertEquals(firstGame.gameResult(), Game.Result.UNKNOWN);
     }
 
     private void assertMovesEquals(String[] inputs, List<Movetext> moves) {

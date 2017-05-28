@@ -1,7 +1,13 @@
 package com.asatryan.libpgn.core.parser;
 
+import com.asatryan.libpgn.core.Game;
+import com.asatryan.libpgn.core.MovetextFactory;
+import com.asatryan.libpgn.core.TagPair;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.asatryan.libpgn.core.TokenTypes.*;
 import static org.junit.Assert.*;
@@ -346,5 +352,32 @@ public class PgnLexerTest {
             lexer.init(input.toCharArray());
             assertEquals(UNDEFINED, lexer.nextToken());
         }
+    }
+
+    @Test
+    public void poll() throws Exception {
+        List<TagPair> tagPairs = new ArrayList<>();
+        tagPairs.add(TagPair.of("Event", "Leipzig8990 m"));
+        tagPairs.add(TagPair.of("Site", "Leipzig"));
+
+        final String input = new Game(tagPairs, MovetextFactory.moves("d4"), Game.Result.UNKNOWN).toPgnString();
+
+        lexer.init(input.toCharArray());
+        lexer.nextToken();
+
+        lexer.poll(TP_NAME_VALUE_SEP);
+        assertEquals(TP_NAME_VALUE_SEP, lexer.lastToken());
+
+        lexer.poll(TP_VALUE);
+        assertEquals(TP_VALUE, lexer.lastToken());
+
+        lexer.poll(MOVE_WHITE);
+        assertEquals(MOVE_WHITE, lexer.lastToken());
+
+        lexer.poll(UNDEFINED);
+        assertEquals(UNDEFINED, lexer.lastToken());
+        assertEquals(UNDEFINED, lexer.nextToken());
+
+        assertEquals(input.length(), lexer.position());
     }
 }
