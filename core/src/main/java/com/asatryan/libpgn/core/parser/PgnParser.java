@@ -4,6 +4,7 @@ import com.asatryan.libpgn.core.Configuration;
 import com.asatryan.libpgn.core.Game;
 import com.asatryan.libpgn.core.Movetext;
 import com.asatryan.libpgn.core.TagPair;
+import com.asatryan.libpgn.core.exception.FilterException;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -56,11 +57,16 @@ public class PgnParser extends AbstractParser {
 
             switch (token) {
                 case TP_BEGIN:
-                    final List<TagPair> section = tagPairParser.parse();
-                    final List<Movetext> moves = movetextSequenceParser.parse(GAMETERM);
-                    final Game.Result result = resultParser.parse();
+                    try {
+                        final List<TagPair> section = tagPairParser.parse();
+                        final List<Movetext> moves = movetextSequenceParser.parse(GAMETERM);
+                        final Game.Result result = resultParser.parse();
 
-                    db.add(new Game(section, moves, result));
+                        db.add(new Game(section, moves, result));
+                    } catch (FilterException e) {
+                        lexer.poll(GAMETERM);
+                    }
+
                     break;
                 case MOVE_NUMBER:
                     final List<Movetext> parse = movetextSequenceParser.parse(GAMETERM);

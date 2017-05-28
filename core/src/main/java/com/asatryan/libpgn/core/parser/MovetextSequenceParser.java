@@ -2,12 +2,12 @@ package com.asatryan.libpgn.core.parser;
 
 import com.asatryan.libpgn.core.Configuration;
 import com.asatryan.libpgn.core.Movetext;
+import com.asatryan.libpgn.core.TokenTypes;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
-import static java.util.Collections.singletonList;
 
 class MovetextSequenceParser extends AbstractParser implements InputParser<List<Movetext>, Byte> {
 
@@ -20,20 +20,18 @@ class MovetextSequenceParser extends AbstractParser implements InputParser<List<
 
     @Override
     public List<Movetext> parse(Byte termToken) {
+        if (config.skipMovetext()) {
+            lexer.poll(TokenTypes.GAMETERM);
+
+            return Collections.emptyList();
+        }
+
         final List<Movetext> moves = new ArrayList<>();
 
         while (lexer.lastToken() != termToken) {
-            final Movetext move = movetextParser.parse();
-            if (!config.skipMovetext()) {
-                moves.add(move);
-            }
+            moves.add(movetextParser.parse());
         }
 
-        return tryUseSingletonList(moves);
-    }
-
-    @Nonnull
-    private List<Movetext> tryUseSingletonList(final List<Movetext> moves) {
-        return moves.size() == 1 ? singletonList(moves.get(0)) : moves;
+        return moves;
     }
 }
