@@ -39,14 +39,14 @@ public class PgnParser extends AbstractParser {
     }
 
     public List<Game> parse(@Nonnull final String input) {
-        return parse0(input.toCharArray());
+        return parse0(input.getBytes());
     }
 
-    public List<Game> parse(@Nonnull final char[] input) {
+    public List<Game> parse(@Nonnull final byte[] input) {
         return parse0(input);
     }
 
-    private List<Game> parse0(final char[] input) {
+    private List<Game> parse0(final byte[] input) {
         lexer.init(input);
         lexer.nextToken();
 

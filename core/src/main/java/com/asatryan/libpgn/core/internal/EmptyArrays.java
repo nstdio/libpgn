@@ -6,5 +6,5 @@ public class EmptyArrays {
 
     public static final short[] EMPTY_SHORT_ARRAY = new short[0];
 
-    public static final char[] EMPTY_CHAR_ARRAY = new char[0];
+    public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 }

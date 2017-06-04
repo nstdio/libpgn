@@ -33,7 +33,7 @@ public class NagParserTest {
     }
 
     private void initAndIterateUntilNag(String input) {
-        lexer.init(input.toCharArray());
+        lexer.init(input.getBytes());
         lexer.stream(TokenTypes.NAG);
     }
 
@@ -77,7 +77,7 @@ public class NagParserTest {
 
     @Test
     public void mergeWithInvalidTopElement() throws Exception {
-        lexer.init("1. e4 $2 *".toCharArray());
+        lexer.init("1. e4 $2 *".getBytes());
         lexer.nextToken();
 
         final short[] nags = parseWithLimit();
@@ -96,7 +96,7 @@ public class NagParserTest {
     }
 
     @Test
-    public void negativeLimit() throws Exception {
+    public void nullInput() throws Exception {
         final short[] nags = parser.parse(null);
 
         assertNull(nags);

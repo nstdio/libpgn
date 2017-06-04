@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.asatryan.libpgn.core.TokenTypes.*;
+import static com.asatryan.libpgn.core.parser.AssertUtils.assertSameResult;
 import static org.junit.Assert.*;
 
 public class PgnLexerTest {
@@ -36,7 +37,7 @@ public class PgnLexerTest {
 
     @Test
     public void noCopyInput() throws Exception {
-        final char[] input = "1. e4 *".toCharArray();
+        final byte[] input = "1. e4 *".getBytes();
 
         lexer.init(input);
 
@@ -45,7 +46,7 @@ public class PgnLexerTest {
 
     @Test
     public void copyInput() throws Exception {
-        final char[] input = "1. e4 *".toCharArray();
+        final byte[] input = "1. e4 *".getBytes();
 
         lexer.init(input, true);
 
@@ -104,7 +105,7 @@ public class PgnLexerTest {
                 "[Event \"Rapid 15m+4s\"]\n\n1  .  d4   {White Comment}  Nf6  {Black Comment}  2  .c4 e6 3 . Nc3 d5 4 .    Bg5 Nbd7 0-1",
         };
 
-        AssertUtils.assertSameResult(lexer, inputs, tokens);
+        assertSameResult(lexer, inputs, tokens);
     }
 
     @Test
@@ -142,7 +143,7 @@ public class PgnLexerTest {
                 "[Event \"Rapid 15m+4s\"]\n\n1. d4$1 $2 $3 e5$11 *",
         };
 
-        AssertUtils.assertSameResult(lexer, inputs, tokens);
+        assertSameResult(lexer, inputs, tokens);
     }
 
     @Test
@@ -162,7 +163,7 @@ public class PgnLexerTest {
                 "[Event \"Rapid 15m+4s\"]\n\n   1  .  d4   e5 (   1   ...   Nf6     {C})   *   ",
         };
 
-        AssertUtils.assertSameResult(lexer, inputs, tokens);
+        assertSameResult(lexer, inputs, tokens);
     }
 
     @Test
@@ -192,7 +193,7 @@ public class PgnLexerTest {
                 "\n\n   1.\r\nd4$1$2{Comment}\n\ne5\n\n{Comment}\n*",
         };
 
-        AssertUtils.assertSameResult(lexer, games, tokens);
+        assertSameResult(lexer, games, tokens);
     }
 
     @Test
@@ -210,7 +211,7 @@ public class PgnLexerTest {
                 "1. d4;d3\n\n\nd5\n*",
         };
 
-        AssertUtils.assertSameResult(lexer, games, tokens);
+        assertSameResult(lexer, games, tokens);
     }
 
     @Test
@@ -230,7 +231,7 @@ public class PgnLexerTest {
                 "\n\n\n  d4     {Comment}a5    Nf3     Bc6     *     ",
         };
 
-        AssertUtils.assertSameResult(lexer, games, tokens);
+        assertSameResult(lexer, games, tokens);
     }
 
     @Test
@@ -249,7 +250,7 @@ public class PgnLexerTest {
                 TP_BEGIN, TP_NAME, TP_NAME_VALUE_SEP, TP_VALUE_BEGIN, TP_VALUE_END, TP_END,
         };
 
-        AssertUtils.assertSameResult(lexer, games, tokens);
+        assertSameResult(lexer, games, tokens);
     }
 
     @Test
@@ -270,7 +271,7 @@ public class PgnLexerTest {
                 GAMETERM
         };
 
-        AssertUtils.assertSameResult(lexer, games, tokens);
+        assertSameResult(lexer, games, tokens);
     }
 
     @Test
@@ -291,7 +292,7 @@ public class PgnLexerTest {
                 GAMETERM
         };
 
-        AssertUtils.assertSameResult(lexer, games, tokens);
+        assertSameResult(lexer, games, tokens);
     }
 
     @Test
@@ -317,12 +318,12 @@ public class PgnLexerTest {
                 GAMETERM
         };
 
-        AssertUtils.assertSameResult(lexer, games, tokens);
+        assertSameResult(lexer, games, tokens);
     }
 
     @Test
     public void emptyInput() throws Exception {
-        final char[] data = "".toCharArray();
+        final byte[] data = "".getBytes();
 
         lexer.init(data);
 
@@ -349,7 +350,7 @@ public class PgnLexerTest {
         };
 
         for (String input : inputs) {
-            lexer.init(input.toCharArray());
+            lexer.init(input.getBytes());
             assertEquals(UNDEFINED, lexer.nextToken());
         }
     }
@@ -362,7 +363,7 @@ public class PgnLexerTest {
 
         final String input = new Game(tagPairs, MovetextFactory.moves("d4"), Game.Result.UNKNOWN).toPgnString();
 
-        lexer.init(input.toCharArray());
+        lexer.init(input.getBytes());
         lexer.nextToken();
 
         lexer.poll(TP_NAME_VALUE_SEP);

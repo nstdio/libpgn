@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
 public class GameFilterTest {
@@ -26,12 +25,5 @@ public class GameFilterTest {
     @Test
     public void res() throws Exception {
         Assert.assertNotNull(res);
-
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        byte[] buffer = new byte[4096];
-        int length;
-        while ((length = res.read(buffer)) != -1) {
-            result.write(buffer, 0, length);
-        }
     }
 }

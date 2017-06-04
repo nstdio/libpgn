@@ -1,7 +1,7 @@
 package com.asatryan.libpgn.core.parser;
 
 import com.asatryan.libpgn.core.TokenTypes;
-import com.asatryan.libpgn.core.internal.CharUtils;
+import com.asatryan.libpgn.core.internal.ByteUtils;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayDeque;
@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Queue;
 
 import static com.asatryan.libpgn.core.TokenTypes.*;
-import static com.asatryan.libpgn.core.internal.EmptyArrays.EMPTY_CHAR_ARRAY;
+import static com.asatryan.libpgn.core.internal.EmptyArrays.EMPTY_BYTE_ARRAY;
 
 /**
  * Converts input data to specific tokens declared in {@link TokenTypes}.
@@ -17,7 +17,7 @@ import static com.asatryan.libpgn.core.internal.EmptyArrays.EMPTY_CHAR_ARRAY;
 @SuppressWarnings("WeakerAccess")
 public class PgnLexer {
     private int line = 1;
-    private char[] data;
+    private byte[] data;
     private int dataPosition;
     private byte lastToken;
     private int tokenLength;
@@ -29,7 +29,7 @@ public class PgnLexer {
      *
      * @param data The input data that need to be tokenized.
      */
-    public PgnLexer(@Nonnull final char[] data) {
+    public PgnLexer(@Nonnull final byte[] data) {
         initInternal(data);
     }
 
@@ -39,7 +39,7 @@ public class PgnLexer {
      * @param data The input data that need to be tokenized.
      * @param copy This parameter is needed to indicate whether copy {@code data} or not.
      */
-    public PgnLexer(@Nonnull final char[] data, boolean copy) {
+    public PgnLexer(@Nonnull final byte[] data, boolean copy) {
         init(data, copy);
     }
 
@@ -47,28 +47,28 @@ public class PgnLexer {
      * Constructs a new {@code PgnLexer} with empty input data.
      */
     public PgnLexer() {
-        this(EMPTY_CHAR_ARRAY);
+        this(EMPTY_BYTE_ARRAY);
     }
 
     /**
-     * Single difference from {@link #init(char[])} is that this method will create a copy of array.
+     * Single difference from {@link #init(byte[])} is that this method will create a copy of array.
      *
      * @param data The input data that need to be tokenized.
      * @param copy The parameter that indicates that input array will be copied. This parameter expected always true.
      */
-    public void init(@Nonnull final char[] data, @SuppressWarnings("unused") boolean copy) {
+    public void init(@Nonnull final byte[] data, @SuppressWarnings("unused") boolean copy) {
         initInternal(Arrays.copyOf(data, data.length));
     }
 
     /**
      * NO COPIES of the input array are made. Any changes will affect internal state of object. If the object was
-     * initialized with {@link #PgnLexer(char[])} no need to call this method before calling {@link #nextToken()}. This
+     * initialized with {@link #PgnLexer(byte[])} no need to call this method before calling {@link #nextToken()}. This
      * method exists for reinitializing an instance. If you construct object with default constructor first you must
      * call this method before any other.
      *
      * @param data The input data that need to be tokenized.
      */
-    public void init(@Nonnull final char[] data) {
+    public void init(@Nonnull final byte[] data) {
         initInternal(data);
     }
 
@@ -77,8 +77,8 @@ public class PgnLexer {
      * Tries to find the next token. Returned {@code
      * byte} value will be one of {@link TokenTypes} constants. If lexer cannot find any valid token it'll return {@link
      * TokenTypes#UNDEFINED}.
-     * Preconditions: The caller must call {@link #init(char[])} or create this object with {@link #PgnLexer(char[])} or
-     * {@link #PgnLexer(char[], boolean)} to initialize the array.
+     * Preconditions: The caller must call {@link #init(byte[])} or create this object with {@link #PgnLexer(byte[])} or
+     * {@link #PgnLexer(byte[], boolean)} to initialize the array.
      *
      * @return The next occurred token.
      */
@@ -113,7 +113,7 @@ public class PgnLexer {
     /**
      * Extracts the string.
      * <p>
-     * Preconditions: The caller must call {@link #init(char[])} first to initialize the array.
+     * Preconditions: The caller must call {@link #init(byte[])} first to initialize the array.
      * This method creates new {@code String} object each time.
      *
      * @return The slice of input {@code data} from {@link #position()} to {@link #tokenLength()} + {@link #position()}
@@ -133,7 +133,7 @@ public class PgnLexer {
     }
 
     /**
-     * Preconditions: The caller must call {@link #init(char[])} first to initialize the array.
+     * Preconditions: The caller must call {@link #init(byte[])} first to initialize the array.
      *
      * @return The length of the input array.
      */
@@ -225,11 +225,11 @@ public class PgnLexer {
         }
     }
 
-    char[] data() {
+    byte[] data() {
         return data;
     }
 
-    private void initInternal(@Nonnull final char[] data) {
+    private void initInternal(@Nonnull final byte[] data) {
         this.data = data;
         dataPosition = 0;
         tokenLength = 0;
@@ -249,7 +249,7 @@ public class PgnLexer {
             return;
         }
 
-        final char current = data[dataPosition];
+        final byte current = data[dataPosition];
 
         if (current == '[') {
             scope = LexicalScope.TAG_PAIR;
@@ -268,7 +268,7 @@ public class PgnLexer {
     }
 
     private void moveText() {
-        final char current = data[dataPosition];
+        final byte current = data[dataPosition];
 
         if (((current == '1' || current == '0') && (dataPosition < data.length - 1 && (data[dataPosition + 1] == '-' || data[dataPosition + 1] == '/')))
                 || current == '*') {
@@ -283,14 +283,14 @@ public class PgnLexer {
                 tokenLength = 7;
             }
             positionAlign();
-        } else if (lastToken == COMMENT_BEGIN && CharUtils.isDefined(current)) {
+        } else if (lastToken == COMMENT_BEGIN && ByteUtils.isDefined(current)) {
             lastToken = COMMENT;
-            final int commentEnd = CharUtils.unescapedChar(data, dataPosition + 1, '}');
+            final int commentEnd = ByteUtils.unescapedChar(data, dataPosition + 1, '}');
             tokenLength = commentEnd - dataPosition;
             positionAlign();
-        } else if (CharUtils.isDigit(current)) {
+        } else if (ByteUtils.isDigit(current)) {
             lastToken = MOVE_NUMBER;
-            final int whiteSpace = CharUtils.whitespaceOrChar(data, dataPosition, ' ', '.') + 1;
+            final int whiteSpace = ByteUtils.whitespaceOrChar(data, dataPosition, ' ', '.') + 1;
             final int i = whiteSpace - dataPosition;
             tokenLength = i == 1 ? 1 : i - 1;
             positionAlign();
@@ -307,15 +307,15 @@ public class PgnLexer {
         } else if (current == ' ') {
             skipWhiteSpace();
             nextToken();
-        } else if (CharUtils.isLetter(current)) {
+        } else if (ByteUtils.isLetter(current)) {
             if (lastToken == DOT || lastToken == UNDEFINED || lastToken == MOVE_BLACK) {
                 lastToken = MOVE_WHITE;
-                tokenLength = CharUtils.moveEnd(data, dataPosition) - dataPosition;
+                tokenLength = ByteUtils.moveEnd(data, dataPosition) - dataPosition;
                 positionAlign();
             } else if (lastToken == MOVE_WHITE || lastToken == COMMENT_END || lastToken == VARIATION_END
                     || lastToken == NAG || lastToken == SKIP_PREV_MOVE || lastToken == ROL_COMMENT) {
                 lastToken = MOVE_BLACK;
-                tokenLength = CharUtils.moveEnd(data, dataPosition) - dataPosition;
+                tokenLength = ByteUtils.moveEnd(data, dataPosition) - dataPosition;
                 positionAlign();
             }
         } else if (current == '{') {
@@ -329,7 +329,7 @@ public class PgnLexer {
         } else if (current == ';') {
             lastToken = ROL_COMMENT;
             dataPosition++;
-            final int commentEnd = CharUtils.newLine(data, dataPosition);
+            final int commentEnd = ByteUtils.newLine(data, dataPosition);
             tokenLength = commentEnd - dataPosition;
             positionAlign();
         } else if (current == '(') {
@@ -342,7 +342,7 @@ public class PgnLexer {
             tokenLength = 1;
         } else if (current == '$') {
             lastToken = NAG;
-            final int endPos = CharUtils.whitespaceOrChar(data, dataPosition + 1, '$', '{', '(', ')', '*');
+            final int endPos = ByteUtils.whitespaceOrChar(data, dataPosition + 1, '$', '{', '(', ')', '*');
             tokenLength = endPos - dataPosition;
             positionAlign();
         } else if (current == '\n' || current == '\r') {
@@ -355,13 +355,13 @@ public class PgnLexer {
     }
 
     private void tagPair() {
-        final char current = data[dataPosition];
+        final byte current = data[dataPosition];
 
         if (current == '[') {
             lastToken = TP_BEGIN;
             dataPosition++;
             tokenLength = 1;
-        } else if (CharUtils.isLetter(current)) {
+        } else if (ByteUtils.isLetter(current)) {
             lastTokenIfCurrentLetter();
         } else if (current == '"') {
             lastTokenIfCurrentQuote();
@@ -442,7 +442,7 @@ public class PgnLexer {
 
     private int untilChar(char c) {
         int pos = dataPosition;
-        final char[] data = this.data;
+        final byte[] data = this.data;
         final int dataLength = data.length;
 
         for (pos++; pos < dataLength; pos++) {
@@ -456,7 +456,7 @@ public class PgnLexer {
 
     private void skipWhiteSpace() {
         boolean isWhiteSpace = true;
-        final char[] data = this.data;
+        final byte[] data = this.data;
         final int length = data.length;
 
         while (isWhiteSpace && dataPosition < length) {
