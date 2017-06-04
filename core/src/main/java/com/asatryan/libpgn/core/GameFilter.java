@@ -1,22 +1,24 @@
 package com.asatryan.libpgn.core;
 
-import com.asatryan.libpgn.core.filter.Filter;
-
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class GameFilter {
-    private final List<Filter<List<TagPair>>> tagPairFilter;
+    private final List<Predicate<List<TagPair>>> tagPairFilter;
+    private final List<Predicate<List<Movetext>>> movetextFilter;
+
     private final boolean negate;
 
-    public GameFilter(List<Filter<List<TagPair>>> filters, boolean negate) {
+    public GameFilter(List<Predicate<List<TagPair>>> filters, List<Predicate<List<Movetext>>> movetextFilter, boolean negate) {
         tagPairFilter = filters;
+        this.movetextFilter = movetextFilter;
         this.negate = negate;
     }
 
     public GameFilter() {
-        this(null, false);
+        this(null, null, false);
     }
 
     public static GameFilterBuilder builder() {
@@ -24,12 +26,20 @@ public class GameFilter {
     }
 
     public boolean test(final @Nonnull List<TagPair> tagPairs) {
-        if (tagPairFilter == null) {
+        return testImpl(tagPairFilter, tagPairs);
+    }
+
+    public boolean testMovetext(final @Nonnull List<Movetext> movetextList) {
+        return testImpl(movetextFilter, movetextList);
+    }
+
+    private <T> boolean testImpl(final List<Predicate<T>> filters, final T input) {
+        if (filters == null) {
             return true;
         }
 
-        for (Filter<List<TagPair>> filter : tagPairFilter) {
-            if (!filter.test(tagPairs)) {
+        for (Predicate<T> filter : filters) {
+            if (!filter.test(input)) {
                 return false;
             }
         }
@@ -38,7 +48,8 @@ public class GameFilter {
     }
 
     public static final class GameFilterBuilder {
-        private List<Filter<List<TagPair>>> tagPairFilter;
+        private List<Predicate<List<TagPair>>> tagPairFilter;
+        private List<Predicate<List<Movetext>>> movetextFilter;
         private boolean negate;
 
         private GameFilterBuilder() {
@@ -48,8 +59,14 @@ public class GameFilter {
             return new GameFilterBuilder();
         }
 
-        public GameFilterBuilder tagPairFilter(final @Nonnull Filter<List<TagPair>> filter) {
+        public GameFilterBuilder tagPairFilter(final @Nonnull Predicate<List<TagPair>> filter) {
             tagPairs().add(filter);
+
+            return this;
+        }
+
+        public GameFilterBuilder movetextFilter(final @Nonnull Predicate<List<Movetext>> filter) {
+            movetext().add(filter);
 
             return this;
         }
@@ -61,15 +78,27 @@ public class GameFilter {
         }
 
         public GameFilter build() {
-            return new GameFilter(tagPairFilter, negate);
+            return new GameFilter(tagPairFilter, movetextFilter, negate);
         }
 
-        private List<Filter<List<TagPair>>> tagPairs() {
-            if (tagPairFilter == null) {
-                tagPairFilter = new ArrayList<>();
-            }
+        private List<Predicate<List<TagPair>>> tagPairs() {
+            tagPairFilter = lazyCreateContainer(tagPairFilter);
 
             return tagPairFilter;
+        }
+
+        private List<Predicate<List<Movetext>>> movetext() {
+            movetextFilter = lazyCreateContainer(movetextFilter);
+
+            return movetextFilter;
+        }
+
+        private <T> List<Predicate<T>> lazyCreateContainer(List<Predicate<T>> container) {
+            if (container == null) {
+                return new ArrayList<>();
+            }
+
+            return container;
         }
     }
 }

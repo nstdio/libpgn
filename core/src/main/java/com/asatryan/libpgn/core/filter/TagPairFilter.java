@@ -4,26 +4,25 @@ import com.asatryan.libpgn.core.TagPair;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.asatryan.libpgn.core.filter.TagPairFilter.Elo.*;
 
-class TagPairFilter implements Filter<List<TagPair>> {
+class TagPairFilter implements Predicate<List<TagPair>> {
     final String name;
     final String value;
 
-    TagPairFilter(String name, String value) {
+    TagPairFilter(final String name, final String value) {
         this.name = name;
         this.value = value;
     }
 
     private static TagPair find(final List<TagPair> input, final String name) {
-        for (TagPair tagPair : input) {
-            if (tagPair.getTag().equals(name)) {
-                return tagPair;
-            }
-        }
-
-        return null;
+        return input
+                .stream()
+                .filter(tagPair -> tagPair.getTag().equals(name))
+                .findFirst()
+                .orElse(null);
     }
 
     @Nullable
@@ -32,11 +31,10 @@ class TagPairFilter implements Filter<List<TagPair>> {
     }
 
     @Override
-    public boolean test(List<TagPair> input) {
+    public boolean test(final List<TagPair> input) {
         final TagPair named = named(input);
 
         return named != null && named.getValue().equals(value);
-
     }
 
     /**
@@ -47,20 +45,20 @@ class TagPairFilter implements Filter<List<TagPair>> {
             super(tag, lastName);
         }
 
-        static Filter<List<TagPair>> whiteLastNameEquals(final String lastName) {
+        static Predicate<List<TagPair>> whiteLastNameEquals(final String lastName) {
             return new LastNameEquals("White", lastName);
         }
 
-        static Filter<List<TagPair>> blackLastNameEquals(final String lastName) {
+        static Predicate<List<TagPair>> blackLastNameEquals(final String lastName) {
             return new LastNameEquals("Black", lastName);
         }
 
-        static Filter<List<TagPair>> lastNameEquals(final String lastName) {
+        static Predicate<List<TagPair>> lastNameEquals(final String lastName) {
             return new PlayerLastNameEquals(lastName);
         }
 
         @Override
-        public boolean test(List<TagPair> input) {
+        public boolean test(final List<TagPair> input) {
             final TagPair tagPair = named(input);
             if (tagPair != null) {
                 String[] parts = tagPair.getValue().split(",");
@@ -76,9 +74,9 @@ class TagPairFilter implements Filter<List<TagPair>> {
     /**
      *
      */
-    private static class PlayerLastNameEquals implements Filter<List<TagPair>> {
-        private final Filter<List<TagPair>> whiteFilter;
-        private final Filter<List<TagPair>> blackFilter;
+    private static class PlayerLastNameEquals implements Predicate<List<TagPair>> {
+        private final Predicate<List<TagPair>> whiteFilter;
+        private final Predicate<List<TagPair>> blackFilter;
 
         PlayerLastNameEquals(final String lastName) {
             whiteFilter = LastNameEquals.whiteLastNameEquals(lastName);
@@ -86,7 +84,7 @@ class TagPairFilter implements Filter<List<TagPair>> {
         }
 
         @Override
-        public boolean test(List<TagPair> input) {
+        public boolean test(final List<TagPair> input) {
             return whiteFilter.test(input) || blackFilter.test(input);
         }
     }
@@ -102,7 +100,7 @@ class TagPairFilter implements Filter<List<TagPair>> {
             elo = value;
         }
 
-        static Filter<List<TagPair>> whiteGreaterThen(final int elo) {
+        static Predicate<List<TagPair>> whiteGreaterThen(final int elo) {
             return new Elo("WhiteElo", elo) {
                 @Override
                 boolean test(int elo) {
@@ -111,7 +109,7 @@ class TagPairFilter implements Filter<List<TagPair>> {
             };
         }
 
-        static Filter<List<TagPair>> whiteLessThen(final int elo) {
+        static Predicate<List<TagPair>> whiteLessThen(final int elo) {
             return new Elo("WhiteElo", elo) {
                 @Override
                 boolean test(int elo) {
@@ -120,7 +118,7 @@ class TagPairFilter implements Filter<List<TagPair>> {
             };
         }
 
-        static Filter<List<TagPair>> blackGreaterThen(final int elo) {
+        static Predicate<List<TagPair>> blackGreaterThen(final int elo) {
             return new Elo("BlackElo", elo) {
                 @Override
                 boolean test(int elo) {
@@ -129,7 +127,7 @@ class TagPairFilter implements Filter<List<TagPair>> {
             };
         }
 
-        static Filter<List<TagPair>> blackLessThen(final int elo) {
+        static Predicate<List<TagPair>> blackLessThen(final int elo) {
             return new Elo("BlackElo", elo) {
                 @Override
                 boolean test(int elo) {
@@ -139,7 +137,7 @@ class TagPairFilter implements Filter<List<TagPair>> {
         }
 
         @Override
-        public boolean test(List<TagPair> input) {
+        public boolean test(final List<TagPair> input) {
             final TagPair tagPair = named(input);
 
             if (tagPair != null) {
@@ -160,35 +158,35 @@ class TagPairFilter implements Filter<List<TagPair>> {
     /**
      *
      */
-    abstract static class PlayerElo implements Filter<List<TagPair>> {
-        private final Filter<List<TagPair>> white;
-        private final Filter<List<TagPair>> black;
+    abstract static class PlayerElo implements Predicate<List<TagPair>> {
+        private final Predicate<List<TagPair>> white;
+        private final Predicate<List<TagPair>> black;
 
-        PlayerElo(Filter<List<TagPair>> white, Filter<List<TagPair>> black) {
+        PlayerElo(Predicate<List<TagPair>> white, Predicate<List<TagPair>> black) {
             this.white = white;
             this.black = black;
         }
 
-        static PlayerElo greaterThen(final int elo) {
-            return new PlayerElo(whiteGreaterThen(elo), whiteGreaterThen(elo)) {
+        static Predicate<List<TagPair>> greaterThen(final int elo) {
+            return new PlayerElo(whiteGreaterThen(elo), blackGreaterThen(elo)) {
                 @Override
-                public boolean test(List<TagPair> input) {
+                public boolean test(final List<TagPair> input) {
                     return super.test(input);
                 }
             };
         }
 
-        static PlayerElo lessThen(final int elo) {
+        static Predicate<List<TagPair>> lessThen(final int elo) {
             return new PlayerElo(whiteLessThen(elo), blackLessThen(elo)) {
                 @Override
-                public boolean test(List<TagPair> input) {
+                public boolean test(final List<TagPair> input) {
                     return super.test(input);
                 }
             };
         }
 
         @Override
-        public boolean test(List<TagPair> input) {
+        public boolean test(final List<TagPair> input) {
             return white.test(input) || black.test(input);
         }
     }
@@ -196,14 +194,14 @@ class TagPairFilter implements Filter<List<TagPair>> {
     /**
      *
      */
-    abstract static class YearFilter implements Filter<List<TagPair>> {
+    abstract static class YearFilter implements Predicate<List<TagPair>> {
         final int year;
 
         private YearFilter(int year) {
             this.year = year;
         }
 
-        static Filter<List<TagPair>> yearEquals(final int year) {
+        static Predicate<List<TagPair>> yearEquals(final int year) {
             return new YearFilter(year) {
                 @Override
                 boolean test(int year) {
@@ -212,7 +210,7 @@ class TagPairFilter implements Filter<List<TagPair>> {
             };
         }
 
-        static Filter<List<TagPair>> yearGreaterThen(final int year) {
+        static Predicate<List<TagPair>> yearGreaterThen(final int year) {
             return new YearFilter(year) {
                 @Override
                 boolean test(int year) {
@@ -221,7 +219,7 @@ class TagPairFilter implements Filter<List<TagPair>> {
             };
         }
 
-        static Filter<List<TagPair>> yearGreaterThenOrEquals(final int year) {
+        static Predicate<List<TagPair>> yearGreaterThenOrEquals(final int year) {
             return new YearFilter(year) {
                 @Override
                 boolean test(int year) {
@@ -230,7 +228,7 @@ class TagPairFilter implements Filter<List<TagPair>> {
             };
         }
 
-        static Filter<List<TagPair>> yearLessThen(final int year) {
+        static Predicate<List<TagPair>> yearLessThen(final int year) {
             return new YearFilter(year) {
                 @Override
                 boolean test(int year) {
@@ -239,7 +237,7 @@ class TagPairFilter implements Filter<List<TagPair>> {
             };
         }
 
-        static Filter<List<TagPair>> yearLessThenOrEquals(final int year) {
+        static Predicate<List<TagPair>> yearLessThenOrEquals(final int year) {
             return new YearFilter(year) {
                 @Override
                 boolean test(int year) {
@@ -248,7 +246,7 @@ class TagPairFilter implements Filter<List<TagPair>> {
             };
         }
 
-        static Filter<List<TagPair>> yearBetween(final int start, final int end) {
+        static Predicate<List<TagPair>> yearBetween(final int start, final int end) {
             if (end < start) {
                 throw new IllegalArgumentException("end < start");
             }
@@ -266,7 +264,7 @@ class TagPairFilter implements Filter<List<TagPair>> {
         }
 
         @Override
-        public final boolean test(List<TagPair> input) {
+        public final boolean test(final List<TagPair> input) {
             final TagPair tagPair = TagPairFilter.find(input, "Date");
             if (tagPair != null) {
                 final String value = tagPair.getValue();

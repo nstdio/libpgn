@@ -1,9 +1,12 @@
 package com.asatryan.libpgn.core.filter;
 
+import com.asatryan.libpgn.core.Movetext;
+import com.asatryan.libpgn.core.MovetextFactory;
 import com.asatryan.libpgn.core.TagPair;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.asatryan.libpgn.core.filter.TagPairFilter.Elo.*;
 import static com.asatryan.libpgn.core.filter.TagPairFilter.LastNameEquals;
@@ -21,7 +24,7 @@ public class Filters {
      *
      * @return The filter object.
      */
-    public static Filter<List<TagPair>> tagEquals(final @Nonnull String name, final @Nonnull String value) {
+    public static Predicate<List<TagPair>> tagEquals(final @Nonnull String name, final @Nonnull String value) {
         return new TagPairFilter(name, value);
     }
 
@@ -30,7 +33,7 @@ public class Filters {
      *
      * @return The filter object.
      */
-    public static Filter<List<TagPair>> whiteWins() {
+    public static Predicate<List<TagPair>> whiteWins() {
         return tagEquals("Result", "1-0");
     }
 
@@ -39,7 +42,7 @@ public class Filters {
      *
      * @return The filter object.
      */
-    public static Filter<List<TagPair>> blackWins() {
+    public static Predicate<List<TagPair>> blackWins() {
         return tagEquals("Result", "0-1");
     }
 
@@ -48,7 +51,7 @@ public class Filters {
      *
      * @return The filter object.
      */
-    public static Filter<List<TagPair>> draw() {
+    public static Predicate<List<TagPair>> draw() {
         return tagEquals("Result", "1/2-1/2");
     }
 
@@ -67,7 +70,7 @@ public class Filters {
      *
      * @return The filter object.
      */
-    public static Filter<List<TagPair>> whiteEquals(final @Nonnull String whiteName) {
+    public static Predicate<List<TagPair>> whiteEquals(final @Nonnull String whiteName) {
         return tagEquals("White", whiteName);
     }
 
@@ -81,76 +84,83 @@ public class Filters {
      * @see Filters#whiteEquals(String)
      * @see Filters#tagEquals(String, String)
      */
-    public static Filter<List<TagPair>> blackEquals(final @Nonnull String blackName) {
+    public static Predicate<List<TagPair>> blackEquals(final @Nonnull String blackName) {
         return tagEquals("Black", blackName);
     }
 
-
-    public static Filter<List<TagPair>> eventEquals(final @Nonnull String event) {
+    public static Predicate<List<TagPair>> eventEquals(final @Nonnull String event) {
         return tagEquals("Event", event);
     }
 
-    public static Filter<List<TagPair>> siteEquals(final @Nonnull String site) {
+    public static Predicate<List<TagPair>> siteEquals(final @Nonnull String site) {
         return tagEquals("Site", site);
     }
 
-    public static Filter<List<TagPair>> whiteLastNameEquals(final @Nonnull String whiteLastName) {
+    public static Predicate<List<TagPair>> whiteLastNameEquals(final @Nonnull String whiteLastName) {
         return LastNameEquals.whiteLastNameEquals(whiteLastName);
     }
 
-    public static Filter<List<TagPair>> blackLastNameEquals(final @Nonnull String blackLastName) {
+    public static Predicate<List<TagPair>> blackLastNameEquals(final @Nonnull String blackLastName) {
         return LastNameEquals.blackLastNameEquals(blackLastName);
     }
 
-    public static Filter<List<TagPair>> lastNameEquals(final @Nonnull String playerLastName) {
+    public static Predicate<List<TagPair>> lastNameEquals(final @Nonnull String playerLastName) {
         return LastNameEquals.lastNameEquals(playerLastName);
     }
 
-    public static Filter<List<TagPair>> whiteEloGreaterThen(final int elo) {
+    public static Predicate<List<TagPair>> whiteEloGreaterThen(final int elo) {
         return whiteGreaterThen(elo);
     }
 
-    public static Filter<List<TagPair>> whiteEloLessThen(final int elo) {
+    public static Predicate<List<TagPair>> whiteEloLessThen(final int elo) {
         return whiteLessThen(elo);
     }
 
-    public static Filter<List<TagPair>> blackEloGreaterThen(final int elo) {
+    public static Predicate<List<TagPair>> blackEloGreaterThen(final int elo) {
         return blackGreaterThen(elo);
     }
 
-    public static Filter<List<TagPair>> blackEloLessThen(final int elo) {
+    public static Predicate<List<TagPair>> blackEloLessThen(final int elo) {
         return blackLessThen(elo);
     }
 
-    public static Filter<List<TagPair>> eloGreaterThen(final int elo) {
+    public static Predicate<List<TagPair>> eloGreaterThen(final int elo) {
         return greaterThen(elo);
     }
 
-    public static Filter<List<TagPair>> eloLessThen(final int elo) {
+    public static Predicate<List<TagPair>> eloLessThen(final int elo) {
         return lessThen(elo);
     }
 
-    public static Filter<List<TagPair>> yearEquals(final int year) {
+    public static Predicate<List<TagPair>> yearEquals(final int year) {
         return YearFilter.yearEquals(year);
     }
 
-    public static Filter<List<TagPair>> yearGreaterThen(final int year) {
+    public static Predicate<List<TagPair>> yearGreaterThen(final int year) {
         return YearFilter.yearGreaterThen(year);
     }
 
-    public static Filter<List<TagPair>> yearGreaterThenOrEquals(final int year) {
+    public static Predicate<List<TagPair>> yearGreaterThenOrEquals(final int year) {
         return YearFilter.yearGreaterThenOrEquals(year);
     }
 
-    public static Filter<List<TagPair>> yearLessThen(final int year) {
+    public static Predicate<List<TagPair>> yearLessThen(final int year) {
         return YearFilter.yearLessThen(year);
     }
 
-    public static Filter<List<TagPair>> yearLessThenOrEquals(final int year) {
+    public static Predicate<List<TagPair>> yearLessThenOrEquals(final int year) {
         return YearFilter.yearLessThenOrEquals(year);
     }
 
-    public static Filter<List<TagPair>> yearBetween(final int start, final int end) {
+    public static Predicate<List<TagPair>> yearBetween(final int start, final int end) {
         return YearFilter.yearBetween(start, end);
+    }
+
+    public static Predicate<List<Movetext>> opening(final @Nonnull List<Movetext> movetextList) {
+        return new OpeningFilter(movetextList);
+    }
+
+    public static Predicate<List<Movetext>> opening(final String... moves) {
+        return new OpeningFilter(MovetextFactory.moves(moves));
     }
 }
