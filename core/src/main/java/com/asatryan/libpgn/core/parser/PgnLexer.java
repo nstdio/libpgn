@@ -290,7 +290,7 @@ public class PgnLexer {
             positionAlign();
         } else if (CharUtils.isDigit(current)) {
             lastToken = MOVE_NUMBER;
-            final int whiteSpace = moveNumberEndPos() + 1;
+            final int whiteSpace = CharUtils.whitespaceOrChar(data, dataPosition, ' ', '.') + 1;
             final int i = whiteSpace - dataPosition;
             tokenLength = i == 1 ? 1 : i - 1;
             positionAlign();
@@ -310,12 +310,12 @@ public class PgnLexer {
         } else if (CharUtils.isLetter(current)) {
             if (lastToken == DOT || lastToken == UNDEFINED || lastToken == MOVE_BLACK) {
                 lastToken = MOVE_WHITE;
-                tokenLengthForMove();
+                tokenLength = CharUtils.moveEnd(data, dataPosition) - dataPosition;
                 positionAlign();
             } else if (lastToken == MOVE_WHITE || lastToken == COMMENT_END || lastToken == VARIATION_END
                     || lastToken == NAG || lastToken == SKIP_PREV_MOVE || lastToken == ROL_COMMENT) {
                 lastToken = MOVE_BLACK;
-                tokenLengthForMove();
+                tokenLength = CharUtils.moveEnd(data, dataPosition) - dataPosition;
                 positionAlign();
             }
         } else if (current == '{') {
@@ -352,19 +352,6 @@ public class PgnLexer {
             dataPosition++;
             nextToken();
         }
-    }
-
-    private void tokenLengthForMove() {
-        final int moveEnd = moveEndPos();
-        tokenLength = moveEnd - dataPosition;
-    }
-
-    private int moveNumberEndPos() {
-        return CharUtils.whitespaceOrChar(data, dataPosition, ' ', '.');
-    }
-
-    private int moveEndPos() {
-        return CharUtils.moveEnd(data, dataPosition);
     }
 
     private void tagPair() {

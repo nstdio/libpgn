@@ -1,8 +1,10 @@
 package com.asatryan.libpgn.core.parser;
 
 import com.asatryan.libpgn.core.Configuration;
+import com.asatryan.libpgn.core.GameFilter;
 import com.asatryan.libpgn.core.Movetext;
 import com.asatryan.libpgn.core.TokenTypes;
+import com.asatryan.libpgn.core.exception.FilterException;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -30,6 +32,11 @@ class MovetextSequenceParser extends AbstractParser implements InputParser<List<
 
         while (lexer.lastToken() != termToken) {
             moves.add(movetextParser.parse());
+        }
+
+        GameFilter gameFilter = config.gameFilter();
+        if (gameFilter != null && !gameFilter.testMovetext(moves)) {
+            throw new FilterException("Skip this game.");
         }
 
         return moves;
