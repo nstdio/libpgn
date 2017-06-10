@@ -34,15 +34,15 @@ public class PgnParserFactory {
         return from(new File(path), configuration);
     }
 
-    public static Map<String, List<Game>> fromDir(final @Nonnull String dir, final @Nonnull Configuration config) {
+    public static Map<String, List<Game>> fromDir(@Nonnull final String dir, @Nonnull final Configuration config) {
         return fromDir(new File(dir), config);
     }
 
-    public static Map<String, List<Game>> fromDir(final @Nonnull File dir) {
+    public static Map<String, List<Game>> fromDir(@Nonnull final File dir) {
         return fromDir(dir, Configuration.defaultConfiguration());
     }
 
-    public static Map<String, List<Game>> fromDir(final @Nonnull File dir, final @Nonnull Configuration config) {
+    public static Map<String, List<Game>> fromDir(@Nonnull final File dir, @Nonnull final Configuration config) {
         final File[] list = dir.listFiles(pathname -> pathname.isFile() && pathname.getName().endsWith(".pgn"));
 
         if (list == null) {

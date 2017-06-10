@@ -25,7 +25,7 @@ public class TagPairTest {
         assertEquals(exp2, tp2.toString());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void tagNameCannotBeNull() throws Exception {
         //noinspection ConstantConditions
         new TagPair(null, "");

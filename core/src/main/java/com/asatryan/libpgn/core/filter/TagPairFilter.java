@@ -61,8 +61,10 @@ class TagPairFilter implements Predicate<List<TagPair>> {
         public boolean test(final List<TagPair> input) {
             final TagPair tagPair = named(input);
             if (tagPair != null) {
-                String[] parts = tagPair.getValue().split(",");
-                if (parts[0].equals(value)) {
+                final String tagPairValue = tagPair.getValue();
+                final int commaIdx = tagPairValue.indexOf(',');
+
+                if (value.equals(commaIdx == -1 ? tagPairValue : tagPairValue.substring(0, commaIdx))) {
                     return true;
                 }
             }
