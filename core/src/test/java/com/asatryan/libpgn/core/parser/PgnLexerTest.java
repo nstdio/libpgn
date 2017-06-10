@@ -331,13 +331,13 @@ public class PgnLexerTest {
     }
 
     @SuppressWarnings("ConstantConditions")
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void nullInputWithInit() throws Exception {
         lexer.init(null);
     }
 
     @SuppressWarnings("ConstantConditions")
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void nullInputWithConstructor() throws Exception {
         new PgnLexer(null);
     }

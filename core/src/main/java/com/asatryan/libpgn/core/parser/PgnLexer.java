@@ -282,75 +282,109 @@ public class PgnLexer {
             } else {
                 tokenLength = 7;
             }
-            positionAlign();
+            dataPosition += tokenLength;
         } else if (lastToken == COMMENT_BEGIN && ByteUtils.isDefined(current)) {
             lastToken = COMMENT;
             final int commentEnd = ByteUtils.unescapedChar(data, dataPosition + 1, '}');
             tokenLength = commentEnd - dataPosition;
-            positionAlign();
-        } else if (ByteUtils.isDigit(current)) {
-            lastToken = MOVE_NUMBER;
-            final int whiteSpace = ByteUtils.whitespaceOrChar(data, dataPosition, ' ', '.') + 1;
-            final int i = whiteSpace - dataPosition;
-            tokenLength = i == 1 ? 1 : i - 1;
-            positionAlign();
-        } else if (current == '.') {
-            if (data[dataPosition + 1] == '.' && data[dataPosition + 2] == '.') {
-                lastToken = SKIP_PREV_MOVE;
-                tokenLength = 3;
-                positionAlign();
-            } else {
-                lastToken = DOT;
-                dataPosition++;
-                tokenLength = 1;
-            }
-        } else if (current == ' ') {
-            skipWhiteSpace();
-            nextToken();
+            dataPosition += tokenLength;
         } else if (ByteUtils.isLetter(current)) {
-            if (lastToken == DOT || lastToken == UNDEFINED || lastToken == MOVE_BLACK) {
-                lastToken = MOVE_WHITE;
-                tokenLength = ByteUtils.moveEnd(data, dataPosition) - dataPosition;
-                positionAlign();
-            } else if (lastToken == MOVE_WHITE || lastToken == COMMENT_END || lastToken == VARIATION_END
-                    || lastToken == NAG || lastToken == SKIP_PREV_MOVE || lastToken == ROL_COMMENT) {
-                lastToken = MOVE_BLACK;
-                tokenLength = ByteUtils.moveEnd(data, dataPosition) - dataPosition;
-                positionAlign();
+            switch (lastToken) {
+                case DOT:
+                case UNDEFINED:
+                case MOVE_BLACK:
+                    lastToken = MOVE_WHITE;
+                    tokenLength = ByteUtils.moveEnd(data, dataPosition) - dataPosition;
+                    dataPosition += tokenLength;
+                    break;
+                case MOVE_WHITE:
+                case COMMENT_END:
+                case VARIATION_END:
+                case NAG:
+                case SKIP_PREV_MOVE:
+                case ROL_COMMENT:
+                    lastToken = MOVE_BLACK;
+                    tokenLength = ByteUtils.moveEnd(data, dataPosition) - dataPosition;
+                    dataPosition += tokenLength;
+                    break;
             }
-        } else if (current == '{') {
-            lastToken = COMMENT_BEGIN;
-            dataPosition++;
-            tokenLength = 1;
-        } else if (current == '}') {
-            lastToken = COMMENT_END;
-            dataPosition++;
-            tokenLength = 1;
-        } else if (current == ';') {
-            lastToken = ROL_COMMENT;
-            dataPosition++;
-            final int commentEnd = ByteUtils.newLine(data, dataPosition);
-            tokenLength = commentEnd - dataPosition;
-            positionAlign();
-        } else if (current == '(') {
-            lastToken = VARIATION_BEGIN;
-            dataPosition++;
-            tokenLength = 1;
-        } else if (current == ')') {
-            lastToken = VARIATION_END;
-            dataPosition++;
-            tokenLength = 1;
-        } else if (current == '$') {
-            lastToken = NAG;
-            final int endPos = ByteUtils.whitespaceOrChar(data, dataPosition + 1, '$', '{', '(', ')', '*');
-            tokenLength = endPos - dataPosition;
-            positionAlign();
-        } else if (current == '\n' || current == '\r') {
-            if (current == '\n') {
-                line++;
+
+        } else {
+            switch (current) {
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    lastToken = MOVE_NUMBER;
+                    final int whiteSpace = ByteUtils.whitespaceOrChar(data, dataPosition, ' ', '.') + 1;
+                    final int i = whiteSpace - dataPosition;
+                    tokenLength = i == 1 ? 1 : i - 1;
+                    dataPosition += tokenLength;
+                    break;
+                case '.':
+                    if (data[dataPosition + 1] == '.' && data[dataPosition + 2] == '.') {
+                        lastToken = SKIP_PREV_MOVE;
+                        tokenLength = 3;
+                    } else {
+                        lastToken = DOT;
+                        tokenLength = 1;
+                    }
+
+                    dataPosition += tokenLength;
+                    break;
+                case ' ':
+                    skipWhiteSpace();
+                    nextToken();
+                    break;
+                case '{':
+                    lastToken = COMMENT_BEGIN;
+                    dataPosition++;
+                    tokenLength = 1;
+                    break;
+                case '}':
+                    lastToken = COMMENT_END;
+                    dataPosition++;
+                    tokenLength = 1;
+                    break;
+                case ';':
+                    lastToken = ROL_COMMENT;
+                    dataPosition++;
+                    final int commentEnd = ByteUtils.newLine(data, dataPosition);
+                    tokenLength = commentEnd - dataPosition;
+                    dataPosition += tokenLength;
+                    break;
+                case '(':
+                    lastToken = VARIATION_BEGIN;
+                    dataPosition++;
+                    tokenLength = 1;
+                    break;
+                case ')':
+                    lastToken = VARIATION_END;
+                    dataPosition++;
+                    tokenLength = 1;
+                    break;
+                case '$':
+                    lastToken = NAG;
+                    final int endPos = ByteUtils.whitespaceOrChar(data, dataPosition + 1, '$', '{', '(', ')', '*');
+                    tokenLength = endPos - dataPosition;
+                    dataPosition += tokenLength;
+                    break;
+                case '\n':
+                    line++;
+                    dataPosition++;
+                    nextToken();
+                    break;
+                case '\r':
+                    dataPosition++;
+                    nextToken();
+                    break;
             }
-            dataPosition++;
-            nextToken();
         }
     }
 
@@ -426,13 +460,13 @@ public class PgnLexer {
                 lastToken = TP_NAME;
                 final int whiteSpace = untilChar(' ');
                 tokenLength = whiteSpace - dataPosition;
-                positionAlign();
+                dataPosition += tokenLength;
                 break;
             case TP_VALUE_BEGIN:
                 lastToken = TP_VALUE;
-                final int ch = untilChar('"');
-                tokenLength = ch - dataPosition;
-                positionAlign();
+                final int pos = untilChar('"');
+                tokenLength = pos - dataPosition;
+                dataPosition += tokenLength;
                 break;
             default:
                 lastToken = UNDEFINED;

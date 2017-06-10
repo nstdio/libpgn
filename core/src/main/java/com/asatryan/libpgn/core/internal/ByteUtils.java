@@ -82,24 +82,6 @@ public final class ByteUtils {
         return NOT_FOUND;
     }
 
-    public static boolean isDigit(final byte ch) {
-        switch (ch) {
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-                return true;
-            default:
-                return false;
-        }
-    }
-
     public static boolean isLetter(final byte ch) {
         return Character.isLetter(ch);
     }
