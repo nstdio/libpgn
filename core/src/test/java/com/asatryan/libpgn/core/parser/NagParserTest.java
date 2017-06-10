@@ -35,7 +35,7 @@ public class NagParserTest {
 
     private void initAndIterateUntilNag(String input) {
         lexer.init(input.getBytes());
-        lexer.stream(TokenTypes.NAG);
+        lexer.queue(TokenTypes.NAG);
     }
 
     @Test

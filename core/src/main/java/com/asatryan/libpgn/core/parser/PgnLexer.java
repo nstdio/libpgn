@@ -10,18 +10,26 @@ import java.util.Queue;
 
 import static com.asatryan.libpgn.core.TokenTypes.*;
 import static com.asatryan.libpgn.core.internal.EmptyArrays.EMPTY_BYTE_ARRAY;
+import static com.asatryan.libpgn.core.parser.LexicalScope.*;
 
 /**
  * Converts input data to specific tokens declared in {@link TokenTypes}.
+ * <p>
+ * Note: In this implementation lexer expects input as {@code byte[]}. Since PNG files are not binary, this may seem
+ * strange. There is some reasons for that. In a very general case, PGN data is read from files. Reading the contents of
+ * a file into an array of bytes is somewhat bit more practical than in an array of characters. To avoid unnecessary
+ * copies of data by the user, it was decided to use this type of data, although if the user does not want the lexer to
+ * work directly with the provided data, he will always be able to use {@link #init(byte[], boolean)} that will copy the
+ * input data.
  */
 @SuppressWarnings("WeakerAccess")
 public class PgnLexer {
     private int line = 1;
     private byte[] data;
-    private int dataPosition;
+    private int pointer;
     private byte lastToken;
     private int tokenLength;
-    private byte scope = LexicalScope.UNDEFINED;
+    private byte scope;
 
     /**
      * Constructs a new {@code PgnLexer} with {@code data}. No copies of {@code data} are made. Any changes on {@code
@@ -74,9 +82,8 @@ public class PgnLexer {
 
     /**
      * <p>
-     * Tries to find the next token. Returned {@code
-     * byte} value will be one of {@link TokenTypes} constants. If lexer cannot find any valid token it'll return {@link
-     * TokenTypes#UNDEFINED}.
+     * Tries to find the next token. Returned {@code byte} value will be one of {@link TokenTypes} constants. If lexer
+     * cannot find any valid token it'll return {@link TokenTypes#UNDEFINED}.
      * Preconditions: The caller must call {@link #init(byte[])} or create this object with {@link #PgnLexer(byte[])} or
      * {@link #PgnLexer(byte[], boolean)} to initialize the array.
      *
@@ -85,26 +92,27 @@ public class PgnLexer {
     public byte nextToken() {
         try {
             switch (scope) {
-                case LexicalScope.TAG_PAIR:
+                case SCOPE_TAG_PAIR:
                     tagPair();
                     break;
-                case LexicalScope.MOVE_TEXT:
+                case SCOPE_MOVE_TEXT:
                     moveText();
                     break;
-                case LexicalScope.GAMETERM:
+                case SCOPE_GAMETERM:
                     skipWhiteSpace();
                     determineScope();
                     nextToken();
                     break;
-                case LexicalScope.UNDEFINED:
+                case SCOPE_UNDEFINED:
                     lastToken = UNDEFINED;
                     break;
             }
-
         } catch (ArrayIndexOutOfBoundsException e) {
+            // If pointer exceeds array length that means that some thing unexpected happens.
+            // We need to set internal state of object "Done".
             lastToken = UNDEFINED;
             scope = UNDEFINED;
-            dataPosition = data.length - 1;
+            pointer = data.length - 1;
         }
 
         return lastToken;
@@ -120,11 +128,12 @@ public class PgnLexer {
      * @see #positionAlign()
      */
     public String extract() {
-        return new String(data, dataPosition - tokenLength, tokenLength);
+        return new String(data, pointer - tokenLength, tokenLength);
     }
 
     /**
-     * The last determined token.
+     * The last determined token. If lexer not initialized or in "Done" state {@link TokenTypes#UNDEFINED} will be
+     * returned.
      *
      * @return The last determined token.
      */
@@ -145,22 +154,23 @@ public class PgnLexer {
      * @return The position of the lexer in the input data.
      */
     public int position() {
-        return dataPosition;
+        return pointer;
     }
 
     /**
      * Changes the position by {@code offset} steps. If {@code offset} is negative, the position will shift back.
-     * There are no checks to go beyond the array.
+     * In this implementation there are no checks to go beyond the array.
      *
      * @param offset How much to move the position.
      */
     public void positionOffset(int offset) {
-        dataPosition += offset;
+        pointer += offset;
     }
 
     /**
      * Aligns the position with the length of the last token.
      */
+    @SuppressWarnings("unused")
     public void positionAlign() {
         positionOffset(tokenLength);
     }
@@ -185,10 +195,10 @@ public class PgnLexer {
      * Records all tokens between {@link #lastToken()} until {@link TokenTypes#UNDEFINED} first occurrence.
      *
      * @return The tokens {@code Queue} between last token and {@link TokenTypes#UNDEFINED}.
-     * @see #stream(byte)
+     * @see #queue(byte)
      */
-    public Queue<Byte> stream() {
-        return stream(UNDEFINED);
+    public Queue<Byte> queue() {
+        return queue(UNDEFINED);
     }
 
     /**
@@ -199,7 +209,7 @@ public class PgnLexer {
      *
      * @return The tokens {@code Queue} between current token and {@code terminationToken}
      */
-    public Queue<Byte> stream(final byte terminationToken) {
+    public Queue<Byte> queue(final byte terminationToken) {
         final ArrayDeque<Byte> stream = new ArrayDeque<>();
 
         do {
@@ -225,41 +235,6 @@ public class PgnLexer {
         }
     }
 
-    byte[] data() {
-        return data;
-    }
-
-    private void initInternal(@Nonnull final byte[] data) {
-        this.data = data;
-        dataPosition = 0;
-        tokenLength = 0;
-        line = 1;
-        lastToken = UNDEFINED;
-        scope = LexicalScope.UNDEFINED;
-
-        if (data.length > 0) {
-            skipWhiteSpace();
-            determineScope();
-        }
-    }
-
-    private void determineScope() {
-        if (dataPosition >= data.length) {
-            scope = LexicalScope.UNDEFINED;
-            return;
-        }
-
-        final byte current = data[dataPosition];
-
-        if (current == '[') {
-            scope = LexicalScope.TAG_PAIR;
-        } else if (Character.isLetterOrDigit(current)) {
-            scope = LexicalScope.MOVE_TEXT;
-        } else {
-            scope = LexicalScope.UNDEFINED;
-        }
-    }
-
     @Override
     public String toString() {
         return "PgnLexer{" +
@@ -267,35 +242,80 @@ public class PgnLexer {
                 '}';
     }
 
-    private void moveText() {
-        final byte current = data[dataPosition];
+    byte[] data() {
+        return data;
+    }
 
-        if (((current == '1' || current == '0') && (dataPosition < data.length - 1 && (data[dataPosition + 1] == '-' || data[dataPosition + 1] == '/')))
+    /**
+     * The main initialization method. This method defines object internal state.
+     *
+     * @param data The input data that need to be tokenized.
+     */
+    private void initInternal(@Nonnull final byte[] data) {
+        this.data = data;
+        pointer = 0;
+        tokenLength = 0;
+        line = 1;
+        lastToken = UNDEFINED;
+        scope = SCOPE_UNDEFINED;
+
+        if (data.length > 0) {
+            skipWhiteSpace();
+            determineScope();
+        }
+    }
+
+    /**
+     * Determines in witch part of PGN data lexer currently working.
+     *
+     * @see LexicalScope
+     */
+    private void determineScope() {
+        if (pointer >= data.length) {
+            scope = SCOPE_UNDEFINED;
+            return;
+        }
+
+        final byte current = data[pointer];
+
+        if (current == '[') {
+            scope = SCOPE_TAG_PAIR;
+        } else if (Character.isLetterOrDigit(current)) {
+            scope = SCOPE_MOVE_TEXT;
+        } else {
+            scope = SCOPE_UNDEFINED;
+        }
+    }
+
+    private void moveText() {
+        final byte current = data[pointer];
+
+        if (((current == '1' || current == '0') && (pointer < data.length - 1 && (data[pointer + 1] == '-' || data[pointer + 1] == '/')))
                 || current == '*') {
             lastToken = GAMETERM;
-            scope = LexicalScope.GAMETERM;
+            scope = SCOPE_GAMETERM;
 
             if (current == '*') {
                 tokenLength = 1;
-            } else if (data[dataPosition + 1] != '/') {
+            } else if (data[pointer + 1] != '/') {
                 tokenLength = 3;
             } else {
                 tokenLength = 7;
             }
-            dataPosition += tokenLength;
+            pointer += tokenLength;
         } else if (lastToken == COMMENT_BEGIN && ByteUtils.isDefined(current)) {
             lastToken = COMMENT;
-            final int commentEnd = ByteUtils.unescapedChar(data, dataPosition + 1, '}');
-            tokenLength = commentEnd - dataPosition;
-            dataPosition += tokenLength;
+            final int commentEnd = ByteUtils.unescapedChar(data, pointer + 1, '}');
+            tokenLength = commentEnd - pointer;
+            pointer += tokenLength;
         } else if (ByteUtils.isLetter(current)) {
             switch (lastToken) {
                 case DOT:
                 case UNDEFINED:
                 case MOVE_BLACK:
                     lastToken = MOVE_WHITE;
-                    tokenLength = ByteUtils.moveEnd(data, dataPosition) - dataPosition;
-                    dataPosition += tokenLength;
+                    tokenLength = ByteUtils.moveEnd(data, pointer) - pointer;
+                    pointer += tokenLength;
                     break;
                 case MOVE_WHITE:
                 case COMMENT_END:
@@ -304,8 +324,8 @@ public class PgnLexer {
                 case SKIP_PREV_MOVE:
                 case ROL_COMMENT:
                     lastToken = MOVE_BLACK;
-                    tokenLength = ByteUtils.moveEnd(data, dataPosition) - dataPosition;
-                    dataPosition += tokenLength;
+                    tokenLength = ByteUtils.moveEnd(data, pointer) - pointer;
+                    pointer += tokenLength;
                     break;
             }
 
@@ -322,13 +342,13 @@ public class PgnLexer {
                 case '8':
                 case '9':
                     lastToken = MOVE_NUMBER;
-                    final int whiteSpace = ByteUtils.whitespaceOrChar(data, dataPosition, ' ', '.') + 1;
-                    final int i = whiteSpace - dataPosition;
+                    final int whiteSpace = ByteUtils.whitespaceOrChar(data, pointer, ' ', '.') + 1;
+                    final int i = whiteSpace - pointer;
                     tokenLength = i == 1 ? 1 : i - 1;
-                    dataPosition += tokenLength;
+                    pointer += tokenLength;
                     break;
                 case '.':
-                    if (data[dataPosition + 1] == '.' && data[dataPosition + 2] == '.') {
+                    if (data[pointer + 1] == '.' && data[pointer + 2] == '.') {
                         lastToken = SKIP_PREV_MOVE;
                         tokenLength = 3;
                     } else {
@@ -336,7 +356,7 @@ public class PgnLexer {
                         tokenLength = 1;
                     }
 
-                    dataPosition += tokenLength;
+                    pointer += tokenLength;
                     break;
                 case ' ':
                     skipWhiteSpace();
@@ -344,44 +364,44 @@ public class PgnLexer {
                     break;
                 case '{':
                     lastToken = COMMENT_BEGIN;
-                    dataPosition++;
+                    pointer++;
                     tokenLength = 1;
                     break;
                 case '}':
                     lastToken = COMMENT_END;
-                    dataPosition++;
+                    pointer++;
                     tokenLength = 1;
                     break;
                 case ';':
                     lastToken = ROL_COMMENT;
-                    dataPosition++;
-                    final int commentEnd = ByteUtils.newLine(data, dataPosition);
-                    tokenLength = commentEnd - dataPosition;
-                    dataPosition += tokenLength;
+                    pointer++;
+                    final int commentEnd = ByteUtils.newLine(data, pointer);
+                    tokenLength = commentEnd - pointer;
+                    pointer += tokenLength;
                     break;
                 case '(':
                     lastToken = VARIATION_BEGIN;
-                    dataPosition++;
+                    pointer++;
                     tokenLength = 1;
                     break;
                 case ')':
                     lastToken = VARIATION_END;
-                    dataPosition++;
+                    pointer++;
                     tokenLength = 1;
                     break;
                 case '$':
                     lastToken = NAG;
-                    final int endPos = ByteUtils.whitespaceOrChar(data, dataPosition + 1, '$', '{', '(', ')', '*');
-                    tokenLength = endPos - dataPosition;
-                    dataPosition += tokenLength;
+                    final int endPos = ByteUtils.whitespaceOrChar(data, pointer + 1, '$', '{', '(', ')', '*');
+                    tokenLength = endPos - pointer;
+                    pointer += tokenLength;
                     break;
                 case '\n':
                     line++;
-                    dataPosition++;
+                    pointer++;
                     nextToken();
                     break;
                 case '\r':
-                    dataPosition++;
+                    pointer++;
                     nextToken();
                     break;
             }
@@ -389,93 +409,92 @@ public class PgnLexer {
     }
 
     private void tagPair() {
-        final byte current = data[dataPosition];
+        final byte current = data[pointer];
 
-        if (current == '[') {
-            lastToken = TP_BEGIN;
-            dataPosition++;
-            tokenLength = 1;
-        } else if (ByteUtils.isLetter(current)) {
-            lastTokenIfCurrentLetter();
-        } else if (current == '"') {
-            lastTokenIfCurrentQuote();
-        } else if (current == ']') {
-            lastToken = TP_END;
-            dataPosition++;
-            tokenLength = 1;
-        } else if (current == ' ' && lastToken == TP_NAME) {
-            lastToken = TP_NAME_VALUE_SEP;
-            dataPosition++;
-            tokenLength = 1;
-        } else if (Character.isDefined(current) && lastToken == TP_VALUE_BEGIN) {
-            lastTokenIfCurrentLetter();
-        } else if (current == '\r' || current == '\n') {
-            dataPosition++;
-            if (current == '\n') {
+        switch (current) {
+            case '[':
+                lastToken = TP_BEGIN;
+                pointer++;
+                tokenLength = 1;
+                break;
+            case '"':
+                switch (lastToken) {
+                    case TP_VALUE:
+                        lastToken = TP_VALUE_END;
+                        pointer++;
+                        tokenLength = 1;
+                        break;
+                    case TP_NAME:
+                        lastToken = TP_VALUE_BEGIN;
+                        pointer++;
+                        tokenLength = 1;
+                        break;
+                    case TP_NAME_VALUE_SEP:
+                        lastToken = TP_VALUE_BEGIN;
+                        pointer++;
+                        tokenLength = 1;
+                        break;
+                    case TP_VALUE_BEGIN:
+                        lastToken = TP_VALUE_END;
+                        pointer++;
+                        tokenLength = 1;
+                        break;
+                    default:
+                        lastToken = UNDEFINED;
+                        break;
+                }
+                break;
+            case ']':
+                lastToken = TP_END;
+                pointer++;
+                tokenLength = 1;
+                break;
+            case ' ':
+                if (lastToken == TP_NAME) {
+                    lastToken = TP_NAME_VALUE_SEP;
+                    pointer++;
+                    tokenLength = 1;
+                    break;
+                }
+            case '\n':
                 line++;
-            }
-            nextToken();
-        } else {
-            skipWhiteSpace();
-            determineScope();
-            nextToken();
-        }
-
-    }
-
-    /**
-     * Determine last token if current character is {@literal "}
-     */
-    private void lastTokenIfCurrentQuote() {
-        switch (lastToken) {
-            case TP_VALUE:
-                lastToken = TP_VALUE_END;
-                dataPosition++;
-                tokenLength = 1;
+                pointer++;
+                nextToken();
                 break;
-            case TP_NAME:
-                lastToken = TP_VALUE_BEGIN;
-                dataPosition++;
-                tokenLength = 1;
-                break;
-            case TP_NAME_VALUE_SEP:
-                lastToken = TP_VALUE_BEGIN;
-                dataPosition++;
-                tokenLength = 1;
-                break;
-            case TP_VALUE_BEGIN:
-                lastToken = TP_VALUE_END;
-                dataPosition++;
-                tokenLength = 1;
+            case '\r':
+                pointer++;
+                nextToken();
                 break;
             default:
-                lastToken = UNDEFINED;
-                break;
-        }
-    }
-
-    private void lastTokenIfCurrentLetter() {
-        switch (lastToken) {
-            case TP_BEGIN:
-                lastToken = TP_NAME;
-                final int whiteSpace = untilChar(' ');
-                tokenLength = whiteSpace - dataPosition;
-                dataPosition += tokenLength;
-                break;
-            case TP_VALUE_BEGIN:
-                lastToken = TP_VALUE;
-                final int pos = untilChar('"');
-                tokenLength = pos - dataPosition;
-                dataPosition += tokenLength;
-                break;
-            default:
-                lastToken = UNDEFINED;
+                if (ByteUtils.isLetter(current) || (Character.isDefined(current) && lastToken == TP_VALUE_BEGIN)) {
+                    switch (lastToken) {
+                        case TP_BEGIN:
+                            lastToken = TP_NAME;
+                            final int whiteSpace = untilChar(' ');
+                            tokenLength = whiteSpace - pointer;
+                            pointer += tokenLength;
+                            break;
+                        case TP_VALUE_BEGIN:
+                            lastToken = TP_VALUE;
+                            final int pos = untilChar('"');
+                            tokenLength = pos - pointer;
+                            pointer += tokenLength;
+                            break;
+                        default:
+                            lastToken = UNDEFINED;
+                            break;
+                    }
+                } else {
+                    skipWhiteSpace();
+                    determineScope();
+                    nextToken();
+                }
                 break;
         }
     }
 
     private int untilChar(char c) {
-        int pos = dataPosition;
+        int pos = pointer;
         final byte[] data = this.data;
         final int dataLength = data.length;
 
@@ -493,13 +512,13 @@ public class PgnLexer {
         final byte[] data = this.data;
         final int length = data.length;
 
-        while (isWhiteSpace && dataPosition < length) {
-            switch (data[dataPosition]) {
+        while (isWhiteSpace && pointer < length) {
+            switch (data[pointer]) {
                 case ' ':
                 case '\r':
                 case '\n':
                 case '\t':
-                    dataPosition++;
+                    pointer++;
                     break;
                 default:
                     isWhiteSpace = false;
