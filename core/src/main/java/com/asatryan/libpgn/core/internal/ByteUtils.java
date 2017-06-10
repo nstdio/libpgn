@@ -9,6 +9,9 @@ public final class ByteUtils {
     private static final byte ROL_COMMENT = ';';
     private static final byte GAMETERM = '*';
 
+    private ByteUtils() {
+    }
+
     public static int whitespaceOrChar(byte[] input, int from, char c1, char c2, char c3, char c4, char c5) {
         for (int i = from, n = input.length; i < n; i++) {
             final byte ch = input[i];

@@ -42,6 +42,10 @@ public class PgnParserFactory {
         return fromDir(dir, Configuration.defaultConfiguration());
     }
 
+    public static Map<String, List<Game>> fromDir(@Nonnull final String dir) {
+        return fromDir(dir, Configuration.defaultConfiguration());
+    }
+
     public static Map<String, List<Game>> fromDir(@Nonnull final File dir, @Nonnull final Configuration config) {
         final File[] list = dir.listFiles(pathname -> pathname.isFile() && pathname.getName().endsWith(".pgn"));
 

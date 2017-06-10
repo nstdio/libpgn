@@ -5,6 +5,7 @@ import com.asatryan.libpgn.core.TagPair;
 import com.asatryan.libpgn.core.filter.Filters;
 import com.asatryan.libpgn.core.internal.IntPair;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -25,7 +26,7 @@ public final class PgnCollectors {
      *
      * @return a {@code Collector} that collects game statistics for {@code lastName} player.
      */
-    public static Collector<Game, ?, ResultStatistic> playerStatistics(final String lastName) {
+    public static Collector<? extends Game, ?, ResultStatistic> statistics(final String lastName) {
         Objects.requireNonNull(lastName);
 
         final Predicate<List<TagPair>> whiteLastNamePredicate = Filters.whiteLastNameEquals(lastName);
@@ -38,6 +39,29 @@ public final class PgnCollectors {
                 mutableStatistics.accept(game, BLACK, mutableStatistics.black);
             }
         }, MutableStatistics::combine, MutableStatistics::toImmutable);
+    }
+
+    /**
+     * Returns a {@code Collector} that accumulates game result statistics from {@code Collection} according the last
+     * name of the player.
+     *
+     * @param lastName The last name of the player.
+     *
+     * @return a {@code Collector} that collects game statistics for {@code lastName} player.
+     */
+    public static Collector<Collection<? extends Game>, ?, ResultStatistic> statisticsFromCollection(final String lastName) {
+        Objects.requireNonNull(lastName);
+
+        final Predicate<List<TagPair>> whiteLastNamePredicate = Filters.whiteLastNameEquals(lastName);
+        final Predicate<List<TagPair>> blackLastNamePredicate = Filters.blackLastNameEquals(lastName);
+
+        return Collector.of(MutableStatistics::new, (mutableStatistics, games) -> games.forEach(game -> {
+            if (whiteLastNamePredicate.test(game.tagPairSection())) {
+                mutableStatistics.accept(game, WHITE, mutableStatistics.white);
+            } else if (blackLastNamePredicate.test(game.tagPairSection())) {
+                mutableStatistics.accept(game, BLACK, mutableStatistics.black);
+            }
+        }), MutableStatistics::combine, MutableStatistics::toImmutable);
     }
 
     /**
