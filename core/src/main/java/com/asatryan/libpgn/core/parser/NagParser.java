@@ -54,7 +54,9 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
             nags.add(safeParseShort());
         } while (lexer.nextToken() == NAG && nags.size() < estimatedSize);
 
-        pollExcluded();
+        if (lexer.lastToken() == NAG) {
+            pollExcluded();
+        }
 
         return toArray(nags);
     }

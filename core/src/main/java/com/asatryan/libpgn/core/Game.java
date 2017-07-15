@@ -34,6 +34,14 @@ public class Game implements StringConvertible {
         return tag("White");
     }
 
+    public String whiteLastName() {
+        return lastName(white());
+    }
+
+    public String blackLastName() {
+        return lastName(black());
+    }
+
     @Nonnull
     public String[] whiteMultiple() {
         return multiple(white());
@@ -85,18 +93,31 @@ public class Game implements StringConvertible {
             return null;
         }
 
-        for (TagPair tp : tagPairs) {
-            if (tp.getTag().equals(name)) {
-                return tp.getValue();
-            }
-        }
-
-        return null;
+        return tagPairs.stream()
+                .filter(tagPair -> tagPair.getTag().equals(name))
+                .map(TagPair::getValue)
+                .findFirst()
+                .orElse(null);
     }
 
     @Nonnull
     private String[] multiple(@Nullable final String wb) {
         return wb == null ? EMPTY_STRING_ARRAY : wb.split(":");
+    }
+
+    @Nullable
+    private String lastName(@Nullable final String fullName) {
+        if (fullName == null) {
+            return null;
+        }
+
+        final String[] parts = fullName.split(",", 2);
+
+        if (parts.length > 0) {
+            return parts[0];
+        }
+
+        return null;
     }
 
     @Override

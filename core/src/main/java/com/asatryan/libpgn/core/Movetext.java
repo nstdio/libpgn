@@ -139,8 +139,6 @@ public class Movetext implements StringConvertible {
         return whiteEq && black == movetext.black
                 || blackEq && white == movetext.white
                 || whiteEq && blackEq;
-
-
     }
 
     @Override

@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 /**
@@ -18,14 +19,15 @@ public class TagPairTest {
         final String exp1 = "[White \"Kasparov, Garry\"]";
         final TagPair tp1 = new TagPair("White", "Kasparov, Garry");
 
-        assertEquals(exp1, tp1.toString());
+        assertThat(exp1).isEqualTo(tp1.toString());
 
         final String exp2 = "[White \"\"]";
         final TagPair tp2 = new TagPair("White", null);
-        assertEquals(exp2, tp2.toString());
+
+        assertThat(exp2).isEqualTo(tp2.toString());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void tagNameCannotBeNull() throws Exception {
         //noinspection ConstantConditions
         new TagPair(null, "");

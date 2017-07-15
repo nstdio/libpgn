@@ -22,12 +22,8 @@ public class Move implements StringConvertible {
     public Move(@Nonnull String move, @Nullable String comment, short[] nag, List<Movetext> variations) {
         this.move = move;
         this.comment = comment;
-        this.variations = variations == null ? Collections.<Movetext>emptyList() : variations;
+        this.variations = variations == null ? Collections.emptyList() : variations;
         this.nag = nag == null ? EMPTY_SHORT_ARRAY : nag;
-    }
-
-    public static Builder builder() {
-        return Builder.builder();
     }
 
     public String move() {
@@ -81,7 +77,7 @@ public class Move implements StringConvertible {
         }
 
         if (comment != null && comment.length() > 1) {
-            sb.append(" {").append(comment).append("}");
+            sb.append(" {").append(comment).append('}');
         }
 
         if (variations.size() > 0) {
@@ -98,43 +94,5 @@ public class Move implements StringConvertible {
     @Override
     public String toString() {
         return toPgnString();
-    }
-
-    public static final class Builder {
-        private String move;
-        private String comment;
-        private short[] nag;
-        private List<Movetext> variations;
-
-        private Builder() {
-        }
-
-        public static Builder builder() {
-            return new Builder();
-        }
-
-        public Builder withMove(String move) {
-            this.move = move;
-            return this;
-        }
-
-        public Builder withComment(String comment) {
-            this.comment = comment;
-            return this;
-        }
-
-        public Builder withNag(short[] nag) {
-            this.nag = nag;
-            return this;
-        }
-
-        public Builder withVariations(List<Movetext> variations) {
-            this.variations = variations;
-            return this;
-        }
-
-        public Move build() {
-            return new Move(move, comment, nag, variations);
-        }
     }
 }

@@ -24,6 +24,10 @@ public class MoveFactory {
         return new Move(move, comment, nag, variation);
     }
 
+    public static Move of(String move, String comment, short[] nag) {
+        return new Move(move, comment, nag, null);
+    }
+
     public static Move of(String move, short[] nag) {
         return new Move(move, null, nag, null);
     }

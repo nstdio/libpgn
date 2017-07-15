@@ -23,6 +23,18 @@ public class TagPair implements StringConvertible {
         return new TagPair(tag, value);
     }
 
+    public static TagPair ofEvent(final String value) {
+        return of("Event", value);
+    }
+
+    public static TagPair ofSite(final String value) {
+        return of("Site", value);
+    }
+
+    public static TagPair ofDate(final String value) {
+        return of("Date", value);
+    }
+
     public static TagPair of(TagPair tagPair) {
         return new TagPair(tagPair.tag, tagPair.value);
     }

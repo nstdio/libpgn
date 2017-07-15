@@ -1,46 +1,29 @@
 package com.asatryan.libpgn.core;
 
+import com.asatryan.libpgn.core.internal.EmptyArrays;
 import com.asatryan.libpgn.core.parser.PgnParser;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.asatryan.libpgn.core.Configuration.defaultConfiguration;
 
 public class PgnParserFactory {
 
-    public static List<Game> from(PgnParser parser, File file, Charset charset) {
-        final char[] input = readFile(file.getPath(), charset);
-
-        return parser.parse(input);
-    }
-
-    public static List<Game> from(File file, Charset charset, Configuration config) {
-        return from(new PgnParser(config), file, charset);
+    public static List<Game> from(PgnParser parser, File file) {
+        return parser.parse(readFile(file.getPath()));
     }
 
     public static List<Game> from(File file, Configuration config) {
-        return from(file, Charset.forName("UTF-8"), config);
-    }
-
-    public static List<Game> from(File file, Charset charset) {
-        return from(file, charset, defaultConfiguration());
+        return from(new PgnParser(config), file);
     }
 
     public static List<Game> from(File file) {
         return from(file, defaultConfiguration());
-    }
-
-    public static List<Game> from(String path, Charset charset, Configuration config) {
-        return from(new File(path), charset, config);
     }
 
     public static List<Game> from(String path) {
@@ -51,50 +34,42 @@ public class PgnParserFactory {
         return from(new File(path), configuration);
     }
 
-    public static List<Game> from(String path, Charset charset) {
-        return from(path, charset, defaultConfiguration());
-    }
-
-    public static Map<String, List<Game>> fromDir(final @Nonnull String dir, final @Nonnull Configuration config) {
+    public static Map<String, List<Game>> fromDir(@Nonnull final String dir, @Nonnull final Configuration config) {
         return fromDir(new File(dir), config);
     }
 
-    public static Map<String, List<Game>> fromDir(final @Nonnull File dir) {
+    public static Map<String, List<Game>> fromDir(@Nonnull final File dir) {
         return fromDir(dir, Configuration.defaultConfiguration());
     }
 
-    public static Map<String, List<Game>> fromDir(final @Nonnull File dir, final @Nonnull Configuration config) {
-        final Map<String, List<Game>> map = new HashMap<>();
+    public static Map<String, List<Game>> fromDir(@Nonnull final String dir) {
+        return fromDir(dir, Configuration.defaultConfiguration());
+    }
 
-        final File[] list = dir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isFile() && pathname.getName().endsWith(".pgn");
-            }
-        });
+    public static Map<String, List<Game>> fromDir(@Nonnull final File dir, @Nonnull final Configuration config) {
+        final File[] list = dir.listFiles(pathname -> pathname.isFile() && pathname.getName().endsWith(".pgn"));
 
         if (list == null) {
-            return map;
+            return Collections.emptyMap();
         }
 
+        final Map<String, List<Game>> map = new HashMap<>(list.length);
+
         final PgnParser parser = new PgnParser(config);
-        final Charset charset = Charset.forName("UTF-8");
-        for (File file : list) {
-            map.put(file.getName(), from(parser, file, charset));
-        }
+
+        Arrays.asList(list)
+                .forEach(file -> map.put(file.getName(), from(parser, file)));
 
         return map;
     }
 
-    private static char[] readFile(String path, Charset charset) {
-        byte[] bytes = new byte[0];
-
+    private static byte[] readFile(String path) {
         try {
-            bytes = Files.readAllBytes(Paths.get(path));
+            return Files.readAllBytes(Paths.get(path));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return new String(bytes, charset).toCharArray();
+        return EmptyArrays.EMPTY_BYTE_ARRAY;
     }
 }

@@ -38,8 +38,8 @@ public class GameFilter {
             return true;
         }
 
-        for (Predicate<T> filter : filters) {
-            if (!filter.test(input)) {
+        for (Predicate<T> predicate : filters) {
+            if (!predicate.test(input)) {
                 return false;
             }
         }

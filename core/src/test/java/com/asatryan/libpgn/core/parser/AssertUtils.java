@@ -14,8 +14,8 @@ class AssertUtils {
     }
 
     static void assertTokensEqual(PgnLexer lexer, String pgnString, byte[] tokens) {
-        lexer.init(pgnString.toCharArray());
-        Queue<Byte> queue = lexer.stream();
+        lexer.init(pgnString.getBytes());
+        Queue<Byte> queue = lexer.queue();
 
         for (byte token : tokens) {
             final byte actual = queue.poll();

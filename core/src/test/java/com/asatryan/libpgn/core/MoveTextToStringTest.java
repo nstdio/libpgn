@@ -8,17 +8,9 @@ public class MoveTextToStringTest {
 
     @Test
     public void withNag() throws Exception {
-        Move whiteMove = Move.builder()
-                .withMove("e4")
-                .withComment("White Comment")
-                .withNag(new short[]{1})
-                .build();
+        Move whiteMove = MoveFactory.of("e4", "White Comment", new short[]{1});
 
-        Move blackMove = Move.builder()
-                .withMove("d4")
-                .withComment("Black Comment")
-                .withNag(new short[]{1})
-                .build();
+        Move blackMove = MoveFactory.of("d4", "Black Comment", new short[]{1});
 
         Movetext movetext = new Movetext(1, whiteMove, blackMove);
 

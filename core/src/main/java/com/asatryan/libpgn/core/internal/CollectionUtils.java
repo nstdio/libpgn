@@ -4,7 +4,10 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class CollectionUtils {
+public final class CollectionUtils {
+    private CollectionUtils() {
+    }
+
     /**
      * Note that after method return {@code src} will be empty.
      *
