@@ -7,9 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 import java.util.List;
 
@@ -51,18 +49,8 @@ public class MoveParserTest {
         when(lexer.extract()).thenReturn("Nf3");
         when(config.nagLimit()).thenReturn(8);
         when(config.threatNagAsComment()).thenReturn(nagDelim);
-        when(nag.parse((short[]) anyObject())).then(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return expectedNag;
-            }
-        });
-        when(comment.tryParse()).then(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return commentText;
-            }
-        });
+        when(nag.parse(anyObject())).then(invocationOnMock -> expectedNag);
+        when(comment.tryParse()).then(invocationOnMock -> commentText);
 
         final Move move = moveParser.parse(MOVE_WHITE);
 
