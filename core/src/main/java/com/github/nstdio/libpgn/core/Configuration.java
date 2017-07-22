@@ -408,7 +408,8 @@ public class Configuration {
 
         /**
          * This configuration allows to represent NAG's description in comment. Every NAG has its own textual
-         * representations. <p>Examples
+         * representations.
+         * <p>Examples
          * <blockquote><pre>
          * 1. e4 $1 will result in e4 {Very good move}
          * 1. e4! will result in e4 {Very good move}

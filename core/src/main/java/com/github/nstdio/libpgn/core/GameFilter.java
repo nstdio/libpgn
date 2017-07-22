@@ -4,17 +4,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-public class GameFilter {
+public final class GameFilter {
     private final Predicate<List<TagPair>> tagPairFilter;
     private final Predicate<List<Movetext>> movetextFilter;
 
     GameFilter(final Predicate<List<TagPair>> filters, final Predicate<List<Movetext>> movetextFilter) {
         tagPairFilter = filters;
         this.movetextFilter = movetextFilter;
-    }
-
-    GameFilter() {
-        this(null, null);
     }
 
     static GameFilterBuilder builder() {
