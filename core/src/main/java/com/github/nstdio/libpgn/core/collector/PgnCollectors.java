@@ -4,13 +4,15 @@ import com.github.nstdio.libpgn.core.Game;
 import com.github.nstdio.libpgn.core.TagPair;
 import com.github.nstdio.libpgn.core.filter.Filters;
 import com.github.nstdio.libpgn.core.internal.IntPair;
+import com.github.nstdio.libpgn.core.internal.Pair;
+import com.github.nstdio.libpgn.core.internal.StringUtils;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static com.github.nstdio.libpgn.core.Game.Result.BLACK;
 import static com.github.nstdio.libpgn.core.Game.Result.WHITE;
@@ -26,42 +28,86 @@ public final class PgnCollectors {
      *
      * @return a {@code Collector} that collects game statistics for {@code lastName} player.
      */
-    public static Collector<? extends Game, ?, ResultStatistic> statistics(final String lastName) {
-        Objects.requireNonNull(lastName);
+    public static Collector<? extends Game, ?, ResultStatistic> toResultStatistics(final String lastName) {
+        final Pair<Predicate<List<TagPair>>, Predicate<List<TagPair>>> pair = lastNamePredicate(lastName);
 
-        final Predicate<List<TagPair>> whiteLastNamePredicate = Filters.whiteLastNameEquals(lastName);
-        final Predicate<List<TagPair>> blackLastNamePredicate = Filters.blackLastNameEquals(lastName);
-
-        return Collector.of(MutableStatistics::new, (mutableStatistics, game) -> {
-            if (whiteLastNamePredicate.test(game.tagPairSection())) {
-                mutableStatistics.accept(game, WHITE, mutableStatistics.white);
-            } else if (blackLastNamePredicate.test(game.tagPairSection())) {
-                mutableStatistics.accept(game, BLACK, mutableStatistics.black);
-            }
-        }, MutableStatistics::combine, MutableStatistics::toImmutable);
+        return Collector.of(MutableStatistics::new, (mutableStatistics, game) -> accept(pair, mutableStatistics, game), MutableStatistics::combine, MutableStatistics::toImmutable);
     }
 
     /**
-     * Returns a {@code Collector} that accumulates game result statistics from {@code Collection} according the last
-     * name of the player.
+     * Returns a {@code Collector} that accumulates game result toResultStatistics from {@code Collection} according the
+     * last name of the player.
      *
      * @param lastName The last name of the player.
      *
-     * @return a {@code Collector} that collects game statistics for {@code lastName} player.
+     * @return a {@code Collector} that collects game toResultStatistics for {@code lastName} player.
      */
-    public static Collector<Collection<? extends Game>, ?, ResultStatistic> statisticsFromCollection(final String lastName) {
+    public static Collector<Collection<? extends Game>, ?, ResultStatistic> toResultStatisticsFromCollection(final String lastName) {
+        final Pair<Predicate<List<TagPair>>, Predicate<List<TagPair>>> predicatePair = lastNamePredicate(lastName);
+
+        return Collector.of(MutableStatistics::new, (mutableStatistics, games) -> games.forEach(game ->
+                accept(predicatePair, mutableStatistics, game)), MutableStatistics::combine, MutableStatistics::toImmutable);
+    }
+
+    public static Collector<Game, ?, Map<String, OpeningStatistics>> toOpeningResultStatisticsMap(final String lastName, final Supplier<Map<String, OpeningStatistics>> mapSupplier) {
+        final Pair<Predicate<List<TagPair>>, Predicate<List<TagPair>>> pair = lastNamePredicate(lastName);
+
+        return Collectors.toMap(Game::eco, game -> {
+            final MutableStatistics mutableStats = new MutableStatistics();
+            accept(pair, mutableStats, game);
+
+            return new OpeningStatistics(game.eco(), mutableStats.toImmutable());
+        }, OpeningStatistics::merge, mapSupplier);
+    }
+
+    public static Collector<Game, ?, Map<String, OpeningStatistics>> toOpeningResultStatisticsMap(final String lastName) {
+        return toOpeningResultStatisticsMap(lastName, TreeMap::new);
+    }
+
+    public static Collector<Game, ?, Map<String, List<Game>>> groupingByEco() {
+        return groupingByTag("ECO");
+    }
+
+    public static Collector<Game, ?, Map<String, List<Game>>> groupingBySite() {
+        return groupingByTag("Site");
+    }
+
+    public static Collector<Game, ?, Map<String, List<Game>>> groupingByEvent() {
+        return groupingByTag("Event");
+    }
+
+    public static Collector<Game, ?, Map<String, List<Game>>> groupingByDate() {
+        return groupingByTag("Date");
+    }
+
+    public static Collector<Game, ?, Map<String, List<Game>>> groupingByWhite() {
+        return groupingByTag("White");
+    }
+
+    public static Collector<Game, ?, Map<String, List<Game>>> groupingByBlack() {
+        return groupingByTag("Black");
+    }
+
+    public static Collector<Game, ?, Map<String, List<Game>>> groupingByResult() {
+        return groupingByTag("Result");
+    }
+
+    public static Collector<Game, ?, Map<String, List<Game>>> groupingByTag(final String tag) {
+        return Collectors.groupingBy(game -> StringUtils.nullTo(game.tag(tag), "EMPTY_IDENITY"));
+    }
+
+    private static void accept(final Pair<Predicate<List<TagPair>>, Predicate<List<TagPair>>> pair, final MutableStatistics mutableStats, final Game game) {
+        if (pair.first.test(game.tagPairSection())) {
+            mutableStats.accept(game, WHITE, mutableStats.white);
+        } else if (pair.second.test(game.tagPairSection())) {
+            mutableStats.accept(game, BLACK, mutableStats.black);
+        }
+    }
+
+    private static Pair<Predicate<List<TagPair>>, Predicate<List<TagPair>>> lastNamePredicate(final String lastName) {
         Objects.requireNonNull(lastName);
 
-        final Predicate<List<TagPair>> whiteLastNamePredicate = Filters.whiteLastNameEquals(lastName);
-        final Predicate<List<TagPair>> blackLastNamePredicate = Filters.blackLastNameEquals(lastName);
-
-        return Collector.of(MutableStatistics::new, (mutableStatistics, games) -> games.forEach(game -> {
-            if (whiteLastNamePredicate.test(game.tagPairSection())) {
-                mutableStatistics.accept(game, WHITE, mutableStatistics.white);
-            } else if (blackLastNamePredicate.test(game.tagPairSection())) {
-                mutableStatistics.accept(game, BLACK, mutableStatistics.black);
-            }
-        }), MutableStatistics::combine, MutableStatistics::toImmutable);
+        return Pair.of(Filters.whiteLastNameEquals(lastName), Filters.blackLastNameEquals(lastName));
     }
 
     /**

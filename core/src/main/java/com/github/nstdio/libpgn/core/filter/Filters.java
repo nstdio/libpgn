@@ -1,9 +1,7 @@
 package com.github.nstdio.libpgn.core.filter;
 
-import com.github.nstdio.libpgn.core.Move;
-import com.github.nstdio.libpgn.core.Movetext;
-import com.github.nstdio.libpgn.core.MovetextFactory;
-import com.github.nstdio.libpgn.core.TagPair;
+import com.github.nstdio.libpgn.core.*;
+import com.github.nstdio.libpgn.core.internal.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -12,8 +10,6 @@ import java.util.function.Predicate;
 
 import static com.github.nstdio.libpgn.core.filter.TagPairFilter.Elo.*;
 import static com.github.nstdio.libpgn.core.filter.TagPairFilter.LastNameEquals;
-import static com.github.nstdio.libpgn.core.filter.TagPairFilter.PlayerElo.greaterThen;
-import static com.github.nstdio.libpgn.core.filter.TagPairFilter.PlayerElo.lessThen;
 
 /**
  * This is entry point for all filters.
@@ -102,6 +98,14 @@ public final class Filters {
         return tagEquals("Site", site);
     }
 
+    public static Predicate<List<TagPair>> ecoEquals(final String eco) {
+        if (!StringUtils.isEco(eco.toUpperCase())) {
+            throw new IllegalArgumentException("eco not valid");
+        }
+
+        return tagEquals("ECO", eco);
+    }
+
     public static Predicate<List<TagPair>> whiteLastNameEquals(final String whiteLastName) {
         return LastNameEquals.whiteLastNameEquals(whiteLastName);
     }
@@ -111,7 +115,7 @@ public final class Filters {
     }
 
     public static Predicate<List<TagPair>> lastNameEquals(final String playerLastName) {
-        return LastNameEquals.lastNameEquals(playerLastName);
+        return whiteLastNameEquals(playerLastName).or(blackLastNameEquals(playerLastName));
     }
 
     public static Predicate<List<TagPair>> whiteEloGreaterThen(final int elo) {
@@ -131,11 +135,11 @@ public final class Filters {
     }
 
     public static Predicate<List<TagPair>> eloGreaterThen(final int elo) {
-        return greaterThen(elo);
+        return whiteEloGreaterThen(elo).or(blackEloGreaterThen(elo));
     }
 
     public static Predicate<List<TagPair>> eloLessThen(final int elo) {
-        return lessThen(elo);
+        return whiteEloLessThen(elo).or(blackEloLessThen(elo));
     }
 
     public static Predicate<List<TagPair>> yearEquals(final int year) {
@@ -147,7 +151,7 @@ public final class Filters {
     }
 
     public static Predicate<List<TagPair>> yearGreaterThenOrEquals(final int year) {
-        return YearFilter.yearGreaterThenOrEquals(year);
+        return yearGreaterThen(year).or(yearEquals(year));
     }
 
     public static Predicate<List<TagPair>> yearLessThen(final int year) {
@@ -155,11 +159,11 @@ public final class Filters {
     }
 
     public static Predicate<List<TagPair>> yearLessThenOrEquals(final int year) {
-        return YearFilter.yearLessThenOrEquals(year);
+        return yearLessThen(year).or(yearEquals(year));
     }
 
     public static Predicate<List<TagPair>> yearBetween(final int start, final int end) {
-        return YearFilter.yearBetween(start, end);
+        return yearGreaterThenOrEquals(start).and(yearLessThenOrEquals(end));
     }
 
     public static Predicate<List<Movetext>> opening(final List<Movetext> moves) {
@@ -202,5 +206,17 @@ public final class Filters {
 
     public static Predicate<List<Movetext>> moveCountLessThenOrEquals(final int moveCount) {
         return moves -> moves.size() <= moveCount;
+    }
+
+    public static Predicate<List<Movetext>> moveCountBetween(final int start, final int end) {
+        return moveCountGreaterThenOrEquals(start).and(moveCountLessThenOrEquals(end));
+    }
+
+    public static Predicate<Game> decorateMoves(final Predicate<List<Movetext>> predicate) {
+        return game -> predicate.test(game.moves());
+    }
+
+    public static Predicate<Game> decorateTagPair(final Predicate<List<TagPair>> predicate) {
+        return game -> predicate.test(game.tagPairSection());
     }
 }

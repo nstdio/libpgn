@@ -73,6 +73,8 @@ public class Configuration {
                 .allowDuplicationsInNags(false)
                 .useNullOnInvalidNag(true)
                 .extractLiteralNags(true)
+                .cacheTagPair(true)
+                .tagPairCacheSize(2048)
                 .nagLimit(DEFAULT_NAG_LIMIT);
     }
 

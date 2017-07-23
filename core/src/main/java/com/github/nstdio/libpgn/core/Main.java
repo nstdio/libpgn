@@ -1,11 +1,8 @@
 package com.github.nstdio.libpgn.core;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-
-import static com.github.nstdio.libpgn.core.filter.Filters.blackMates;
-import static com.github.nstdio.libpgn.core.filter.Filters.whiteMates;
 
 public class Main {
 
@@ -16,15 +13,10 @@ public class Main {
     private static void benchFactory() {
         String path = "C:\\Users\\Asatryan\\Desktop\\pgn";
 
-        Configuration config = Configuration.defaultBuilder()
-                .gameFilter()
-                .movetextFilter(whiteMates().or(blackMates()))
-                .build();
+        final Configuration config = Configuration.defaultBuilder()
+                .tagPairCacheSize(1024 * 16).build();
 
-        measure(() -> {
-            final Map<String, List<Game>> games = PgnParserFactory.fromDir(path, config);
-            System.out.println("a");
-        });
+        final List<Game> games = PgnParserFactory.flatFromDir(new File(path), config, true);
     }
 
     private static void measure(Runnable runnable) {

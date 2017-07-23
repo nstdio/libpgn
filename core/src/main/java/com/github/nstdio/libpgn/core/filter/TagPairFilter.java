@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import static com.github.nstdio.libpgn.core.filter.TagPairFilter.Elo.*;
-
 class TagPairFilter implements Predicate<List<TagPair>> {
     final String name;
     final String value;
@@ -54,10 +52,6 @@ class TagPairFilter implements Predicate<List<TagPair>> {
             return new LastNameEquals("Black", lastName);
         }
 
-        static Predicate<List<TagPair>> lastNameEquals(final String lastName) {
-            return new PlayerLastNameEquals(lastName);
-        }
-
         @Override
         public boolean test(final List<TagPair> input) {
             final TagPair tagPair = named(input);
@@ -71,24 +65,6 @@ class TagPairFilter implements Predicate<List<TagPair>> {
             }
 
             return false;
-        }
-    }
-
-    /**
-     *
-     */
-    private static class PlayerLastNameEquals implements Predicate<List<TagPair>> {
-        private final Predicate<List<TagPair>> whiteFilter;
-        private final Predicate<List<TagPair>> blackFilter;
-
-        PlayerLastNameEquals(final String lastName) {
-            whiteFilter = LastNameEquals.whiteLastNameEquals(lastName);
-            blackFilter = LastNameEquals.blackLastNameEquals(lastName);
-        }
-
-        @Override
-        public boolean test(final List<TagPair> input) {
-            return whiteFilter.test(input) || blackFilter.test(input);
         }
     }
 
@@ -161,42 +137,6 @@ class TagPairFilter implements Predicate<List<TagPair>> {
     /**
      *
      */
-    abstract static class PlayerElo implements Predicate<List<TagPair>> {
-        private final Predicate<List<TagPair>> white;
-        private final Predicate<List<TagPair>> black;
-
-        PlayerElo(Predicate<List<TagPair>> white, Predicate<List<TagPair>> black) {
-            this.white = white;
-            this.black = black;
-        }
-
-        static Predicate<List<TagPair>> greaterThen(final int elo) {
-            return new PlayerElo(whiteGreaterThen(elo), blackGreaterThen(elo)) {
-                @Override
-                public boolean test(final List<TagPair> input) {
-                    return super.test(input);
-                }
-            };
-        }
-
-        static Predicate<List<TagPair>> lessThen(final int elo) {
-            return new PlayerElo(whiteLessThen(elo), blackLessThen(elo)) {
-                @Override
-                public boolean test(final List<TagPair> input) {
-                    return super.test(input);
-                }
-            };
-        }
-
-        @Override
-        public boolean test(final List<TagPair> input) {
-            return white.test(input) || black.test(input);
-        }
-    }
-
-    /**
-     *
-     */
     abstract static class YearFilter implements Predicate<List<TagPair>> {
         final int year;
 
@@ -222,46 +162,11 @@ class TagPairFilter implements Predicate<List<TagPair>> {
             };
         }
 
-        static Predicate<List<TagPair>> yearGreaterThenOrEquals(final int year) {
-            return new YearFilter(year) {
-                @Override
-                boolean test(int year) {
-                    return year >= this.year;
-                }
-            };
-        }
-
         static Predicate<List<TagPair>> yearLessThen(final int year) {
             return new YearFilter(year) {
                 @Override
                 boolean test(int year) {
                     return year < this.year;
-                }
-            };
-        }
-
-        static Predicate<List<TagPair>> yearLessThenOrEquals(final int year) {
-            return new YearFilter(year) {
-                @Override
-                boolean test(int year) {
-                    return year <= this.year;
-                }
-            };
-        }
-
-        static Predicate<List<TagPair>> yearBetween(final int start, final int end) {
-            if (end < start) {
-                throw new IllegalArgumentException("end < start");
-            }
-
-            if (start == end) {
-                return yearEquals(start);
-            }
-
-            return new YearFilter(start) {
-                @Override
-                boolean test(final int year) {
-                    return year >= this.year && year <= end;
                 }
             };
         }

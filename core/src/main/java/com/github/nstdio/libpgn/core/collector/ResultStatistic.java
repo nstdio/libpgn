@@ -55,6 +55,14 @@ public class ResultStatistic {
         return draw.sum();
     }
 
+    ResultStatistic merge(final ResultStatistic resultStats) {
+        return new ResultStatistic(
+                IntPair.of(whiteGames() + resultStats.whiteGames(), blackGames() + resultStats.blackGames()),
+                IntPair.of(whiteWins() + resultStats.whiteWins(), blackWins() + resultStats.blackWins()),
+                IntPair.of(whiteDraws() + resultStats.whiteDraws(), blackDraws() + resultStats.blackDraws())
+        );
+    }
+
     @Override
     public String toString() {
         return "ResultStatistic{" +

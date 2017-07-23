@@ -3,6 +3,7 @@ package com.github.nstdio.libpgn.core;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 import static com.github.nstdio.libpgn.core.internal.EmptyArrays.EMPTY_STRING_ARRAY;
 
@@ -35,11 +36,11 @@ public class Game implements StringConvertible {
     }
 
     public String whiteLastName() {
-        return lastName(white());
+        return lastName(white()).orElse(null);
     }
 
     public String blackLastName() {
-        return lastName(black());
+        return lastName(black()).orElse(null);
     }
 
     @Nonnull
@@ -89,51 +90,37 @@ public class Game implements StringConvertible {
     }
 
     public String tag(String name) {
-        if (tagPairs == null) {
-            return null;
-        }
-
-        return tagPairs.stream()
-                .filter(tagPair -> tagPair.getTag().equals(name))
-                .map(TagPair::getValue)
-                .findFirst()
+        return Optional.ofNullable(tagPairs)
+                .flatMap(tp -> tp.stream()
+                        .filter(tagPair -> tagPair.getTag().equals(name))
+                        .map(TagPair::getValue)
+                        .findFirst())
                 .orElse(null);
     }
 
     @Nonnull
     private String[] multiple(@Nullable final String wb) {
-        return wb == null ? EMPTY_STRING_ARRAY : wb.split(":");
+        return Optional.ofNullable(wb).map(s -> s.split(":")).orElse(EMPTY_STRING_ARRAY);
     }
 
-    @Nullable
-    private String lastName(@Nullable final String fullName) {
-        if (fullName == null) {
-            return null;
-        }
-
-        final String[] parts = fullName.split(",", 2);
-
-        if (parts.length > 0) {
-            return parts[0];
-        }
-
-        return null;
+    private Optional<String> lastName(@Nullable final String fullName) {
+        return Optional.ofNullable(fullName)
+                .map(s -> s.split(",", 2))
+                .filter(parts -> parts.length > 0)
+                .map(parts -> parts[0]);
     }
 
     @Override
     public String toPgnString() {
         StringBuilder builder = new StringBuilder(512);
 
-        if (tagPairs != null) {
-            for (TagPair tp : tagPairs) {
-                builder.append(tp.toPgnString()).append('\n');
-            }
-            builder.append('\n');
-        }
+        Optional.ofNullable(tagPairs)
+                .ifPresent(input -> {
+                    input.forEach(tagPair -> builder.append(tagPair.toPgnString()).append('\n'));
+                    builder.append('\n');
+                });
 
-        for (Movetext tp : moves) {
-            builder.append(tp.toPgnString()).append(' ');
-        }
+        moves.forEach(movetext -> builder.append(movetext.toPgnString()).append(' '));
 
         builder.append('\n').append(result.term).append('\n');
 

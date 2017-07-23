@@ -19,7 +19,9 @@ public class Move implements StringConvertible {
     @Nonnull
     private final List<Movetext> variations;
 
-    public Move(@Nonnull String move, @Nullable String comment, short[] nag, List<Movetext> variations) {
+    private int hashCode;
+
+    public Move(final String move, final String comment, final short[] nag, final List<Movetext> variations) {
         this.move = move;
         this.comment = comment;
         this.variations = variations == null ? Collections.emptyList() : variations;
@@ -89,6 +91,19 @@ public class Move implements StringConvertible {
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        if (hashCode == 0) {
+            int result = move.hashCode();
+            result = 31 * result + (comment != null ? comment.hashCode() : 0);
+            result = 31 * result + Arrays.hashCode(nag);
+            result = 31 * result + variations.hashCode();
+            hashCode = result;
+        }
+
+        return hashCode;
     }
 
     @Override

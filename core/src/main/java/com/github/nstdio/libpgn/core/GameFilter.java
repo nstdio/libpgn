@@ -27,7 +27,6 @@ public final class GameFilter {
 
     private <T> boolean testImpl(final Predicate<T> filters, final T input) {
         return filters == null || filters.test(input);
-
     }
 
     static final class GameFilterBuilder {
