@@ -2,6 +2,7 @@ package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.*;
 import com.github.nstdio.libpgn.core.exception.FilterException;
+import com.github.nstdio.libpgn.core.exception.PgnException;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -15,7 +16,12 @@ public class PgnParser extends AbstractParser implements InputParser<List<Game>,
     private final Parser<Game.Result> resultParser;
     private final InputParser<List<Movetext>, Byte> movetextSequenceParser;
 
-    public PgnParser(@Nonnull final Configuration config) {
+    /**
+     * Exception bag.
+     */
+    private final List<PgnException> exceptions = new ArrayList<>();
+
+    public PgnParser(final Configuration config) {
         super(new PgnLexer(), config);
         tagPairParser = new TagPairParser(lexer, config);
         resultParser = new ResultParser(lexer, config);
@@ -31,6 +37,10 @@ public class PgnParser extends AbstractParser implements InputParser<List<Game>,
         variation.setMovetextSequenceParser(movetextSequenceParser);
     }
 
+    public PgnParser() {
+        this(Configuration.defaultConfiguration());
+    }
+
     /**
      * For testing propose only
      */
@@ -40,10 +50,6 @@ public class PgnParser extends AbstractParser implements InputParser<List<Game>,
         this.tagPairParser = tagPairParser;
         this.resultParser = resultParser;
         this.movetextSequenceParser = movetextSequenceParser;
-    }
-
-    public PgnParser() {
-        this(Configuration.defaultConfiguration());
     }
 
     public List<Game> parse(final String input) {
@@ -60,40 +66,62 @@ public class PgnParser extends AbstractParser implements InputParser<List<Game>,
         lexer.nextToken();
 
         final List<Game> db = new ArrayList<>();
-        final int gameLimit = config.gameLimit();
 
+        try {
+            parse0(db, config.gameLimit());
+        } catch (PgnException e) {
+            if (config.stopOnError()) {
+                throw e;
+            }
+            exceptions.add(e);
+        }
+
+        return db;
+    }
+
+    private void parse0(final List<Game> container, final int gameLimit) {
         while (lexer.lastToken() != UNDEFINED) {
             final byte token = lexer.lastToken();
 
-            if (db.size() >= gameLimit) {
+            if (container.size() >= gameLimit) {
                 lexer.terminate();
                 break;
             }
 
-            switch (token) {
-                case TP_BEGIN:
-                    try {
-                        final List<TagPair> section = tagPairParser.parse();
-                        final List<Movetext> moves = movetextSequenceParser.parse(GAMETERM);
-                        final Game.Result result = resultParser.parse();
+            try {
+                switch (token) {
+                    case TP_BEGIN:
+                        container.add(new Game(
+                                tagPairParser.parse(),
+                                movetextSequenceParser.parse(GAMETERM),
+                                resultParser.parse()
+                        ));
 
-                        db.add(new Game(section, moves, result));
-                    } catch (FilterException e) {
-                        lexer.poll(GAMETERM);
-                    }
-
-                    break;
-                case MOVE_NUMBER:
-                    final List<Movetext> parse = movetextSequenceParser.parse(GAMETERM);
-
-                    db.add(new Game(null, parse, resultParser.parse()));
-                    break;
-                default:
-                    throw syntaxException(lexer, TP_BEGIN, MOVE_NUMBER);
+                        break;
+                    case MOVE_NUMBER:
+                        container.add(new Game(
+                                null,
+                                movetextSequenceParser.parse(GAMETERM),
+                                resultParser.parse()
+                        ));
+                        break;
+                    default:
+                        throw syntaxException(lexer, TP_BEGIN, MOVE_NUMBER);
+                }
+            } catch (FilterException e) {
+                lexer.poll(GAMETERM);
             }
+
             lexer.nextToken();
         }
+    }
 
-        return db;
+    public boolean hasExceptions() {
+        return !exceptions.isEmpty();
+    }
+
+    @Nonnull
+    public List<PgnException> exceptions() {
+        return new ArrayList<>(exceptions);
     }
 }

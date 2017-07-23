@@ -4,7 +4,7 @@ import com.github.nstdio.libpgn.core.internal.IntPair;
 
 import java.util.Objects;
 
-public class ResultStatistic {
+public final class ResultStatistic {
     private final IntPair games;
     private final IntPair win;
     private final IntPair draw;

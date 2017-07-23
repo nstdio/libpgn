@@ -2,6 +2,7 @@ package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Game;
 import com.github.nstdio.libpgn.core.TokenTypes;
+import com.github.nstdio.libpgn.core.exception.PgnSyntaxException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,5 +45,20 @@ public class PgnParserConfigTest extends MockedEnvAware {
         verify(mockResultParser).parse();
 
         verifyNoMoreInteractions(mockLexer, mockConfiguration, mockTagPairParser, mockMoveSequenceParser, mockResultParser);
+    }
+
+    @Test
+    public void stopOnError() {
+        final String input = "a";
+
+        when(mockLexer.lastToken()).thenReturn(TokenTypes.TP_NAME);
+        when(mockLexer.data()).thenReturn(input.getBytes());
+        when(mockLexer.position()).thenReturn(0);
+        when(mockConfiguration.gameLimit()).thenReturn(Integer.MAX_VALUE);
+        when(mockConfiguration.stopOnError()).thenReturn(false);
+
+        assertThat(parser.parse(input)).isEmpty();
+        assertThat(parser.hasExceptions()).isTrue();
+        assertThat(parser.exceptions()).hasAtLeastOneElementOfType(PgnSyntaxException.class);
     }
 }

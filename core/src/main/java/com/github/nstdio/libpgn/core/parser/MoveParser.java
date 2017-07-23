@@ -1,9 +1,13 @@
 package com.github.nstdio.libpgn.core.parser;
 
-import com.github.nstdio.libpgn.core.*;
+import com.github.nstdio.libpgn.core.Configuration;
+import com.github.nstdio.libpgn.core.Move;
+import com.github.nstdio.libpgn.core.Movetext;
+import com.github.nstdio.libpgn.core.NAG;
 import com.github.nstdio.libpgn.core.internal.Pair;
 
 import java.util.List;
+import java.util.Objects;
 
 class MoveParser extends AbstractParser implements InputParser<Move, Byte> {
 
@@ -13,20 +17,20 @@ class MoveParser extends AbstractParser implements InputParser<Move, Byte> {
     private final Parser<List<Movetext>> variationParser;
     private final InlineNag inlineNag;
 
-    MoveParser(PgnLexer lexer, Configuration config,
-               InputParser<short[], short[]> nagParser, Parser<String> comment, Parser<List<Movetext>> variation) {
+    MoveParser(final PgnLexer lexer, final Configuration config, final InputParser<short[], short[]> nagParser,
+               final Parser<String> comment, final Parser<List<Movetext>> variation) {
         this(lexer, config, nagParser, comment, variation, new InlineNag());
     }
 
     // For testing propose only
     @SuppressWarnings("WeakerAccess")
-    MoveParser(PgnLexer lexer, Configuration config, InputParser<short[], short[]> nagParser, Parser<String> comment,
-               Parser<List<Movetext>> variation, InlineNag inlineNag) {
+    MoveParser(final PgnLexer lexer, Configuration config, final InputParser<short[], short[]> nagParser,
+               final Parser<String> comment, final Parser<List<Movetext>> variation, final InlineNag inlineNag) {
         super(lexer, config);
-        this.nagParser = nagParser;
-        this.commentParser = comment;
-        this.variationParser = variation;
-        this.inlineNag = inlineNag;
+        this.nagParser = Objects.requireNonNull(nagParser);
+        this.commentParser = Objects.requireNonNull(comment);
+        this.variationParser = Objects.requireNonNull(variation);
+        this.inlineNag = Objects.requireNonNull(inlineNag);
     }
 
     @Override
@@ -63,6 +67,6 @@ class MoveParser extends AbstractParser implements InputParser<Move, Byte> {
             }
         }
 
-        return MoveFactory.of(move, comment, nags, variation);
+        return new Move(move, comment, nags, variation);
     }
 }

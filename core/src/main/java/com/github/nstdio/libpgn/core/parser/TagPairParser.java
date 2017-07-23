@@ -7,17 +7,22 @@ import com.github.nstdio.libpgn.core.exception.FilterException;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
 import static com.github.nstdio.libpgn.core.parser.ExceptionBuilder.syntaxException;
 
 class TagPairParser extends AbstractParser implements Parser<List<TagPair>> {
     private final Map<Integer, TagPair> cache;
+    private final GameFilter gameFilter;
 
-    TagPairParser(final @Nonnull PgnLexer lexer, Configuration config) {
+    TagPairParser(final PgnLexer lexer, final Configuration config) {
         super(lexer, config);
         cache = cacheContainer();
+        gameFilter = config.gameFilter();
     }
 
     @Override
@@ -34,7 +39,6 @@ class TagPairParser extends AbstractParser implements Parser<List<TagPair>> {
             section.add(parseTagPair());
         }
 
-        GameFilter gameFilter = config.gameFilter();
         if (gameFilter != null && !gameFilter.test(section)) {
             throw new FilterException("Skip this game.");
         }
@@ -63,26 +67,16 @@ class TagPairParser extends AbstractParser implements Parser<List<TagPair>> {
 
         lexer.nextToken();
 
-        if (!config.cacheTagPair()) {
-            return TagPair.of(tag, value);
-        }
-
-        return cached(tag, value);
+        return config.cacheTagPair() ? cached(tag, value) : TagPair.of(tag, value);
     }
 
     @Nonnull
-    private TagPair cached(String tag, String value) {
+    private TagPair cached(final String tag, final String value) {
         final int hashCode = TagPair.hashCode(tag, value);
 
-        if (cache.containsKey(hashCode)) {
-            return cache.get(hashCode);
-        }
-
-        final TagPair tagPair = TagPair.of(tag, value);
-
-        cache.put(hashCode, tagPair);
-
-        return tagPair;
+        return cache.containsKey(hashCode) ?
+                cache.get(hashCode) :
+                cache.put(hashCode, TagPair.of(tag, value));
     }
 
     private Map<Integer, TagPair> cacheContainer() {
@@ -94,18 +88,15 @@ class TagPairParser extends AbstractParser implements Parser<List<TagPair>> {
                 .maximumWeightedCapacity(config.tagPairCacheSize())
                 .build();
 
-        final Set<TagPair> tagPairsCache = config.predefinedCache();
-        if (tagPairsCache != null) {
-            for (TagPair tagPair : tagPairsCache) {
-                cache.put(tagPair.hashCode(), tagPair);
-            }
-        }
+        Optional.ofNullable(config.predefinedCache())
+                .filter(preDefTagPairs -> preDefTagPairs.size() > 0)
+                .ifPresent(preDefTagPairs -> preDefTagPairs.forEach(tagPair -> cache.put(tagPair.hashCode(), tagPair)));
 
         return cache;
     }
 
     @Override
     public List<TagPair> tryParse() {
-        return Collections.emptyList();
+        throw new RuntimeException("Not implemented yet.");
     }
 }

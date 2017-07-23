@@ -2,7 +2,7 @@ package com.github.nstdio.libpgn.core.collector;
 
 import java.util.Objects;
 
-public class OpeningStatistics {
+public final class OpeningStatistics {
     private final String eco;
     private final ResultStatistic statistic;
 

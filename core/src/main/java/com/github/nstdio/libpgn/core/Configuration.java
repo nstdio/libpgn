@@ -73,8 +73,6 @@ public class Configuration {
                 .allowDuplicationsInNags(false)
                 .useNullOnInvalidNag(true)
                 .extractLiteralNags(true)
-                .cacheTagPair(true)
-                .tagPairCacheSize(2048)
                 .nagLimit(DEFAULT_NAG_LIMIT);
     }
 
@@ -222,6 +220,12 @@ public class Configuration {
         private ConfigurationBuilder() {
         }
 
+        private static void checkPositive(final int check, final String argName) {
+            if (check <= 0) {
+                throw new IllegalArgumentException(String.format("%s must be must be greater then zero", argName));
+            }
+        }
+
         /**
          * @param predefinedCache The item will be added to the tag pair cache. If {@link #cacheTagPair} is {@code
          *                        false} this values will be omitted.
@@ -283,7 +287,7 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder skipTagPairSection(boolean skipTagPairSection) {
+        public ConfigurationBuilder skipTagPairSection(final boolean skipTagPairSection) {
             this.skipTagPairSection = skipTagPairSection;
             return this;
         }
@@ -293,7 +297,7 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder skipMovetext(boolean skipMovetext) {
+        public ConfigurationBuilder skipMovetext(final boolean skipMovetext) {
             this.skipMovetext = skipMovetext;
             return this;
         }
@@ -303,7 +307,7 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder skipComment(boolean skipComment) {
+        public ConfigurationBuilder skipComment(final boolean skipComment) {
             this.skipComment = skipComment;
             return this;
         }
@@ -313,7 +317,7 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder skipVariations(boolean skipVariations) {
+        public ConfigurationBuilder skipVariations(final boolean skipVariations) {
             this.skipVariations = skipVariations;
             return this;
         }
@@ -323,7 +327,7 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder stopOnError(boolean stopOnError) {
+        public ConfigurationBuilder stopOnError(final boolean stopOnError) {
             this.stopOnError = stopOnError;
             return this;
         }
@@ -340,7 +344,7 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder allowDuplicationsInNags(boolean allowDuplicationsInNags) {
+        public ConfigurationBuilder allowDuplicationsInNags(final boolean allowDuplicationsInNags) {
             this.allowDuplicationsInNags = allowDuplicationsInNags;
             return this;
         }
@@ -358,7 +362,7 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder useNullOnInvalidNag(boolean useNullOnInvalidNag) {
+        public ConfigurationBuilder useNullOnInvalidNag(final boolean useNullOnInvalidNag) {
             this.useNullOnInvalidNag = useNullOnInvalidNag;
             return this;
         }
@@ -379,7 +383,7 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder sortNags(boolean sortNags) {
+        public ConfigurationBuilder sortNags(final boolean sortNags) {
             this.sortNags = sortNags;
             return this;
         }
@@ -391,7 +395,7 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder extractLiteralNags(boolean extractLiteralNags) {
+        public ConfigurationBuilder extractLiteralNags(final boolean extractLiteralNags) {
             this.extractLiteralNags = extractLiteralNags;
             return this;
         }
@@ -403,15 +407,14 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder strict(boolean strict) {
+        public ConfigurationBuilder strict(final boolean strict) {
             this.strict = strict;
             return this;
         }
 
         /**
          * This configuration allows to represent NAG's description in comment. Every NAG has its own textual
-         * representations.
-         * <p>Examples
+         * representations. <p>Examples
          * <blockquote><pre>
          * 1. e4 $1 will result in e4 {Very good move}
          * 1. e4! will result in e4 {Very good move}
@@ -427,8 +430,8 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder threatNagAsComment(String threatNagAsComment) {
-            this.threatNagAsComment = threatNagAsComment;
+        public ConfigurationBuilder threatNagAsComment(final String threatNagAsComment) {
+            this.threatNagAsComment = Objects.requireNonNull(threatNagAsComment);
             return this;
         }
 
@@ -443,7 +446,7 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder trimComment(boolean trimComment) {
+        public ConfigurationBuilder trimComment(final boolean trimComment) {
             this.trimComment = trimComment;
             return this;
         }
@@ -459,16 +462,17 @@ public class Configuration {
          * @param commentMaxLength Whether should trim comments at fixed length if exceeds. Default value is {@code -1}
          *
          * @return ConfigurationBuilder itself.
+         * @throws IllegalArgumentException When {@code commentMaxLength} is negative.
          */
-        public ConfigurationBuilder commentMaxLength(int commentMaxLength) {
+        public ConfigurationBuilder commentMaxLength(final int commentMaxLength) {
             if (commentMaxLength < -1) {
-                commentMaxLength = COMMENT_LENGTH_UNLIMITED;
+                throw new IllegalArgumentException("commentMaxLength must be greater or equal to 0");
             }
             this.commentMaxLength = commentMaxLength;
             return this;
         }
 
-        public ConfigurationBuilder nagLimit(int nagLimit) {
+        public ConfigurationBuilder nagLimit(final int nagLimit) {
             this.nagLimit = nagLimit;
             return this;
         }
@@ -481,8 +485,10 @@ public class Configuration {
          *
          * @return ConfigurationBuilder itself.
          */
-        public ConfigurationBuilder tagPairValueMaxLength(int maxLen) {
+        public ConfigurationBuilder tagPairValueMaxLength(final int maxLen) {
+            checkPositive(maxLen, "maxLen");
             tagPairValueMaxLength = maxLen;
+
             return this;
         }
 
@@ -494,28 +500,28 @@ public class Configuration {
          * @return ConfigurationBuilder itself.
          * @see #tagPairCacheSize(int)
          */
-        public ConfigurationBuilder cacheTagPair(boolean cacheTagPair) {
+        public ConfigurationBuilder cacheTagPair(final boolean cacheTagPair) {
             this.cacheTagPair = cacheTagPair;
             return this;
         }
 
         /**
          * The maximum capacity of cache. When parsing a large amount of data its recommended to set this value above
-         * default. As a result same tag pairs will be referenced to the same {@link TagPair}
+         * default. As a result same tag pairs will be referenced to the same {@link TagPair}.
          *
          * @param tagPairCacheSize The maximum size of tag pair cache container. This value will be ignored if {@link
          *                         #cacheTagPair} is {@code false}. Default value is {@link DEFAULT_TAG_PAIR_CACHE_SIZE}.
-         *                         Only positive numbers will be accepted otherwise cache size will be set to its
-         *                         default value.
+         *                         Only positive numbers will be accepted otherwise {@link IllegalArgumentException}
+         *                         will be thrown.
          *
          * @return ConfigurationBuilder itself.
+         * @throws IllegalArgumentException When {@code tagPairCacheSize} less then or equal to 0.
          * @see #cacheTagPair(boolean)
          */
-        public ConfigurationBuilder tagPairCacheSize(int tagPairCacheSize) {
-            if (tagPairCacheSize <= 0) {
-                tagPairCacheSize = DEFAULT_TAG_PAIR_CACHE_SIZE;
-            }
+        public ConfigurationBuilder tagPairCacheSize(final int tagPairCacheSize) {
+            checkPositive(tagPairCacheSize, "tagPairCacheSize");
             this.tagPairCacheSize = tagPairCacheSize;
+
             return this;
         }
 
@@ -528,12 +534,10 @@ public class Configuration {
          * @return ConfigurationBuilder itself.
          * @throws IllegalArgumentException When {@code gameLimit <= 0}
          */
-        public ConfigurationBuilder gameLimit(int gameLimit) {
-            if (gameLimit <= 0) {
-                throw new IllegalArgumentException("gameLimit must be positive integer");
-            }
-
+        public ConfigurationBuilder gameLimit(final int gameLimit) {
+            checkPositive(gameLimit, "gameLimit");
             this.gameLimit = gameLimit;
+
             return this;
         }
 
