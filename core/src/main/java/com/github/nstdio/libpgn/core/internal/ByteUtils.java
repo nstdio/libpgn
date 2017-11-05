@@ -40,6 +40,17 @@ public final class ByteUtils {
         return input.length - 1;
     }
 
+    public static int count(final byte[] input, final byte search, final int from, final int to) {
+        int occurrence = 0;
+        for (int i = from; i < to; i++) {
+            if (input[i] == search) {
+                occurrence++;
+            }
+        }
+
+        return occurrence;
+    }
+
     public static int lookBackForNewLine(byte[] input, int from) {
         for (int i = from; i > 1; --i) {
             if (input[i] == '\n') {

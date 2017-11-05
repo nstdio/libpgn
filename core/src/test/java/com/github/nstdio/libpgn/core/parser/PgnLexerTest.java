@@ -7,7 +7,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
 import static com.github.nstdio.libpgn.core.parser.AssertUtils.assertSameResult;
@@ -380,5 +382,23 @@ public class PgnLexerTest {
         assertEquals(UNDEFINED, lexer.nextToken());
 
         assertEquals(input.length(), lexer.position());
+    }
+
+    @Test
+    public void lineNumber() {
+        final Map<Integer, byte[]> inputs = new HashMap<>();
+
+        inputs.put(3, "1. e4 {This is\n multiline\n comment} d5".getBytes());
+        inputs.put(1, "1. e4 {This is comment} d5".getBytes());
+        inputs.put(5, "1.\n e4 {\nThis\n is multiline \ncomment} d5".getBytes());
+
+        inputs.forEach((key, value) -> {
+            lexer.init(value);
+            lexer.nextToken();
+            lexer.poll(UNDEFINED);
+
+            assertEquals((int) key, lexer.line());
+        });
+
     }
 }

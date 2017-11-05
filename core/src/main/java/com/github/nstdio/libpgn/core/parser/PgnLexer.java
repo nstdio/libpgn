@@ -83,9 +83,9 @@ public class PgnLexer {
     /**
      * <p>
      * Tries to find the next token. Returned {@code byte} value will be one of {@link TokenTypes} constants. If lexer
-     * cannot find any valid token it'll return {@link TokenTypes#UNDEFINED}.
-     * Preconditions: The caller must call {@link #init(byte[])} or create this object with {@link #PgnLexer(byte[])} or
-     * {@link #PgnLexer(byte[], boolean)} to initialize the array.
+     * cannot find any valid token it'll return {@link TokenTypes#UNDEFINED}. Preconditions: The caller must call {@link
+     * #init(byte[])} or create this object with {@link #PgnLexer(byte[])} or {@link #PgnLexer(byte[], boolean)} to
+     * initialize the array.
      *
      * @return The next occurred token.
      */
@@ -119,10 +119,11 @@ public class PgnLexer {
     /**
      * Extracts the string.
      * <p>
-     * Preconditions: The caller must call {@link #init(byte[])} first to initialize the array.
-     * This method creates new {@code String} object each time.
+     * Preconditions: The caller must call {@link #init(byte[])} first to initialize the array. This method creates new
+     * {@code String} object each time.
      *
      * @return The slice of input {@code data} from {@link #position()} to {@link #tokenLength()} + {@link #position()}
+     *
      * @see #positionAlign()
      */
     public String extract() {
@@ -156,8 +157,8 @@ public class PgnLexer {
     }
 
     /**
-     * Changes the position by {@code offset} steps. If {@code offset} is negative, the position will shift back.
-     * In this implementation there are no checks to go beyond the array.
+     * Changes the position by {@code offset} steps. If {@code offset} is negative, the position will shift back. In
+     * this implementation there are no checks to go beyond the array.
      *
      * @param offset How much to move the position.
      */
@@ -193,6 +194,7 @@ public class PgnLexer {
      * Records all tokens between {@link #lastToken()} until {@link TokenTypes#UNDEFINED} first occurrence.
      *
      * @return The tokens {@code Queue} between last token and {@link TokenTypes#UNDEFINED}.
+     *
      * @see #queue(byte)
      */
     public Queue<Byte> queue() {
@@ -311,6 +313,7 @@ public class PgnLexer {
         } else if (lastToken == COMMENT_BEGIN && ByteUtils.isDefined(current)) {
             lastToken = COMMENT;
             final int commentEnd = ByteUtils.unescapedChar(data, pointer + 1, '}');
+            line += ByteUtils.count(data, (byte) '\n', pointer, commentEnd);
             tokenLength = commentEnd - pointer;
             pointer += tokenLength;
         } else if (ByteUtils.isLetter(current)) {
