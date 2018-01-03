@@ -8,21 +8,19 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+@Ignore
 public class NagParserTest {
     private NagParser parser;
     private int limit;
-    private PgnLexer lexer;
     private Configuration config;
 
     @Before
     public void setUp() throws Exception {
-        lexer = new PgnLexer();
         config = Configuration.defaultConfiguration();
-        parser = new NagParser(lexer, config);
         limit = 5;
     }
 
-    private short[] parseWithLimit() {
+    private short[] parseWithLimit(final PgnLexer lexer) {
         buildNewConfig();
         parser = new NagParser(lexer, config);
 
@@ -33,16 +31,19 @@ public class NagParserTest {
         config = Configuration.defaultBuilder().nagLimit(limit).build();
     }
 
-    private void initAndIterateUntilNag(String input) {
-        lexer.init(input.getBytes());
-        lexer.queue(TokenTypes.NAG);
+    private PgnLexer initAndIterateUntilNag(String input) {
+        final InputStreamPgnLexer lexer = new InputStreamPgnLexer(input.getBytes());
+
+        lexer.poll(TokenTypes.NAG);
+
+        return lexer;
     }
 
     @Test
     public void limit() throws Exception {
-        initAndIterateUntilNag("1. e4 $6$2$3$4$5$1$7 *");
+        final PgnLexer pgnLexer = initAndIterateUntilNag("1. e4 $6$2$3$4$5$1$7 *");
 
-        final short[] nags = parseWithLimit();
+        final short[] nags = parseWithLimit(pgnLexer);
 
         assertNotNull(nags);
         assertEquals(limit, nags.length);
@@ -50,39 +51,20 @@ public class NagParserTest {
 
     @Test
     public void exactLimit() throws Exception {
-        initAndIterateUntilNag("1. e4 $6$2$3$4$5$1$7 *");
+        final PgnLexer pgnLexer = initAndIterateUntilNag("1. e4 $6$2$3$4$5$1$7 *");
 
         limit = 2;
         buildNewConfig();
 
-        final short[] nags = parseWithLimit();
+        final short[] nags = parseWithLimit(pgnLexer);
         assertEquals(limit, nags.length);
     }
 
     @Test
-    @Ignore("Not implemented.")
-    public void merge() throws Exception {
-        initAndIterateUntilNag("1. e4 $18$27 {Comment} $34$12 *");
-
-        final short[] mergeWith = parseWithLimit();
-
-        assertArrayEquals(new short[]{18, 27}, mergeWith);
-
-        do {
-            lexer.nextToken();
-        } while (lexer.lastToken() != TokenTypes.NAG);
-
-        final short[] nags = parser.parse(mergeWith);
-
-        assertArrayEquals(new short[]{12, 18, 27, 34}, nags);
-    }
-
-    @Test
     public void mergeWithInvalidTopElement() throws Exception {
-        lexer.init("1. e4 $2 *".getBytes());
-        lexer.nextToken();
+        final InputStreamPgnLexer inputStreamPgnLexer = new InputStreamPgnLexer("1. e4 $2 *".getBytes());
 
-        final short[] nags = parseWithLimit();
+        final short[] nags = parseWithLimit(inputStreamPgnLexer);
         final short[] merged = parser.parse(nags);
 
         assertArrayEquals(nags, merged);
@@ -91,8 +73,8 @@ public class NagParserTest {
 
     @Test
     public void mergeWithInvalidNag() throws Exception {
-        initAndIterateUntilNag("1. d4 $a $e *");
-        final short[] nags = parseWithLimit();
+        final PgnLexer pgnLexer = initAndIterateUntilNag("1. d4 $a $e *");
+        final short[] nags = parseWithLimit(pgnLexer);
 
         assertArrayEquals(new short[]{0}, nags);
     }

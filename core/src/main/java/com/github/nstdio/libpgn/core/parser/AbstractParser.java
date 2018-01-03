@@ -17,7 +17,7 @@ abstract class AbstractParser {
 
 
     void lastNotEqThrow(byte token) {
-        if (lexer.lastToken() != token) {
+        if (lexer.last() != token) {
             throw syntaxException(lexer, token);
         }
     }
@@ -25,11 +25,15 @@ abstract class AbstractParser {
     String extractNextIfNotEqThrow(byte expectedToken) {
         nextNotEqThrow(expectedToken);
 
-        return lexer.extract();
+        return read();
+    }
+
+    String read() {
+        return new String(lexer.read());
     }
 
     void nextNotEqThrow(byte expectedToken) {
-        final byte nextToken = lexer.nextToken();
+        final byte nextToken = lexer.next();
         if (nextToken != expectedToken) {
             throw syntaxException(lexer, expectedToken);
         }

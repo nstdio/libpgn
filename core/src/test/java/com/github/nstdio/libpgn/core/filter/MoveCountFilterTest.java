@@ -2,8 +2,8 @@ package com.github.nstdio.libpgn.core.filter;
 
 import com.github.nstdio.libpgn.core.Game;
 import com.github.nstdio.libpgn.core.Movetext;
+import com.github.nstdio.libpgn.core.parser.InputStreamPgnLexer;
 import com.github.nstdio.libpgn.core.parser.PgnParser;
-import org.apache.commons.io.IOUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -24,7 +24,7 @@ public class MoveCountFilterTest {
     public static void setUp() throws Exception {
         final InputStream file = MoveCountFilterTest.class.getClassLoader().getResourceAsStream("Aronian.pgn");
 
-        games = new PgnParser().parse(IOUtils.toByteArray(file));
+        games = new PgnParser(new InputStreamPgnLexer(file)).parse();
     }
 
     @Test

@@ -37,7 +37,7 @@ class MoveParser extends AbstractParser implements InputParser<Move, Byte> {
     public Move parse(Byte input) {
         lastNotEqThrow(input);
         short[] nags = null;
-        String move = lexer.extract();
+        String move = read();
 
         if (config.extractLiteralNags()) {
             final Pair<String, short[]> pair = inlineNag.split(move);
@@ -45,7 +45,7 @@ class MoveParser extends AbstractParser implements InputParser<Move, Byte> {
             nags = pair.second;
         }
 
-        lexer.nextToken();
+        lexer.next();
 
         nags = nagParser.parse(nags);
         List<Movetext> variation = variationParser.tryParse();

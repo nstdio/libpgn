@@ -14,7 +14,7 @@ import static com.github.nstdio.libpgn.core.internal.CollectionUtils.toArray;
 
 class NagParser extends AbstractParser implements InputParser<short[], short[]> {
 
-    NagParser(@Nonnull final PgnLexer lexer, Configuration config) {
+    NagParser(final PgnLexer lexer, Configuration config) {
         super(lexer, config);
     }
 
@@ -32,7 +32,7 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
      * @return The parsed NAGs.
      */
     private short[] tryParseNag(final int limit, final short[] mergeWithNag) {
-        if (lexer.lastToken() != NAG) {
+        if (lexer.last() != NAG) {
             return mergeWithNag;
         }
 
@@ -52,9 +52,9 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
         final int estimatedSize = limit - mergeWithLen;
         do {
             nags.add(safeParseShort());
-        } while (lexer.nextToken() == NAG && nags.size() < estimatedSize);
+        } while (lexer.next() == NAG && nags.size() < estimatedSize);
 
-        if (lexer.lastToken() == NAG) {
+        if (lexer.last() == NAG) {
             pollExcluded();
         }
 
@@ -81,15 +81,15 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
     }
 
     /**
-     * Parse short from {@code tokenStream} top element value.
-     * In case if exception occurred {@code 0} will be returned.
+     * Parse short from {@code tokenStream} top element value. In case if exception occurred {@code 0} will be
+     * returned.
      *
      * @return The short value of the string.
      */
     private Short safeParseShort() {
         try {
 
-            return Short.valueOf(lexer.extract().substring(1));
+            return Short.valueOf(read().substring(1));
         } catch (NumberFormatException e) {
             if (config.useNullOnInvalidNag()) {
                 return (short) 0;

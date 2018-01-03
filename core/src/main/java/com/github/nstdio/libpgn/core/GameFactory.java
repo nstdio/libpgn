@@ -1,38 +1,43 @@
 package com.github.nstdio.libpgn.core;
 
-import com.github.nstdio.libpgn.core.internal.EmptyArrays;
+import com.github.nstdio.libpgn.core.parser.InputStreamPgnLexer;
 import com.github.nstdio.libpgn.core.parser.PgnParser;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static com.github.nstdio.libpgn.core.Configuration.defaultConfiguration;
 
-public class PgnParserFactory {
+public class GameFactory {
 
-    public static List<Game> from(PgnParser parser, File file) {
-        return parser.parse(readFile(file.getPath()));
+    public static Stream<Game> stream(InputStream in, Configuration config) throws IOException {
+        return StreamSupport.stream(new PgnParser(new InputStreamPgnLexer(in), config).spliterator(), false);
     }
 
-    public static List<Game> from(File file, Configuration config) {
-        return from(new PgnParser(config), file);
+    public static Stream<Game> stream(File file, Configuration config) throws IOException {
+        return StreamSupport.stream(new PgnParser(new InputStreamPgnLexer(file), config).spliterator(), false);
     }
 
-    public static List<Game> from(File file) {
+    public static List<Game> from(File file, Configuration config) throws IOException {
+        return new PgnParser(new InputStreamPgnLexer(file), config).parse();
+    }
+
+    public static List<Game> from(File file) throws IOException {
         return from(file, defaultConfiguration());
     }
 
-    public static List<Game> from(String path) {
+    public static List<Game> from(String path) throws IOException {
         return from(new File(path));
     }
 
-    public static List<Game> from(String path, Configuration configuration) {
+    public static List<Game> from(String path, Configuration configuration) throws IOException {
         return from(new File(path), configuration);
     }
 
@@ -139,6 +144,7 @@ public class PgnParserFactory {
      *                  provide thread safe map implementation.
      *
      * @return Combined data of all parsed files.
+     *
      * @see #fromDir(File, Configuration, boolean, Map)
      */
     public static List<Game> flatFromDir(final File dir, final Configuration config, final boolean parallel, final List<Game> container) {
@@ -162,14 +168,19 @@ public class PgnParserFactory {
         Objects.requireNonNull(config);
 
         final File[] list = dir.listFiles(pathname -> pathname.isFile() && pathname.getName().endsWith(".pgn"));
-        final PgnParser parser = parallel ? null : new PgnParser(config);
 
         Optional.ofNullable(list)
                 .map(Arrays::asList)
                 .filter(files -> files.size() > 0)
                 .ifPresent(files -> {
                     final Stream<File> fileStream = parallel ? files.parallelStream() : files.stream();
-                    fileStream.forEach(file -> containerConsumer.accept(file, parallel ? from(file, config) : from(parser, file)));
+                    fileStream.forEach(file -> {
+                        try {
+                            containerConsumer.accept(file, from(file, config));
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    });
                 });
     }
 
@@ -196,15 +207,5 @@ public class PgnParserFactory {
      */
     private static <T> List<T> listImpl(final boolean parallel) {
         return parallel ? Collections.synchronizedList(new ArrayList<>()) : new ArrayList<>();
-    }
-
-    private static byte[] readFile(String path) {
-        try {
-            return Files.readAllBytes(Paths.get(path));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return EmptyArrays.EMPTY_BYTE_ARRAY;
     }
 }

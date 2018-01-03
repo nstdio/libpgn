@@ -31,17 +31,17 @@ public class CommentParserTest extends MockedEnvAware {
                 .doReturn(COMMENT_BEGIN)
                 .doReturn(COMMENT)
                 .doReturn(COMMENT)
-                .when(mockLexer).lastToken();
+                .when(mockLexer).last();
 
         doReturn(COMMENT)
                 .doReturn(COMMENT_END)
                 .doReturn(COMMENT_BEGIN)
                 .doReturn(COMMENT)
                 .doReturn(COMMENT_END)
-                .when(mockLexer).nextToken();
+                .when(mockLexer).next();
 
-        doReturn(firstComment).doReturn(secondComment)
-                .when(mockLexer).extract();
+        doReturn(firstComment.getBytes()).doReturn(secondComment.getBytes())
+                .when(mockLexer).read();
 
         when(mockConfiguration.trimComment()).thenReturn(false);
         when(mockConfiguration.commentMaxLength()).thenReturn(Integer.MAX_VALUE);
@@ -92,13 +92,13 @@ public class CommentParserTest extends MockedEnvAware {
     private void mockLexerMethodResults(String comment) {
         doReturn(COMMENT_BEGIN)
                 .doReturn(COMMENT)
-                .when(mockLexer).lastToken();
+                .when(mockLexer).last();
 
         doReturn(COMMENT)
                 .doReturn(COMMENT_END)
-                .when(mockLexer).nextToken();
+                .when(mockLexer).next();
 
-        doReturn(comment)
-                .when(mockLexer).extract();
+        doReturn(comment.getBytes())
+                .when(mockLexer).read();
     }
 }

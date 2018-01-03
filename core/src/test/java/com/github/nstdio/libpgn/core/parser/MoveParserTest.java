@@ -45,8 +45,8 @@ public class MoveParserTest {
         final String commentText = "Comment";
         final String nagDelim = ". ";
 
-        when(lexer.lastToken()).thenReturn(MOVE_WHITE);
-        when(lexer.extract()).thenReturn("Nf3");
+        when(lexer.last()).thenReturn(MOVE_WHITE);
+        when(lexer.read()).thenReturn("Nf3".getBytes());
         when(config.nagLimit()).thenReturn(8);
         when(config.threatNagAsComment()).thenReturn(nagDelim);
         when(nag.parse(anyObject())).then(invocationOnMock -> expectedNag);
