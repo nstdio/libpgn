@@ -5,13 +5,14 @@ import com.github.nstdio.libpgn.core.exception.FilterException;
 import com.github.nstdio.libpgn.core.exception.PgnException;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.StreamSupport;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
 import static com.github.nstdio.libpgn.core.parser.ExceptionBuilder.syntaxException;
+import static java.util.stream.Collectors.toList;
 
-public class PgnParser extends AbstractParser implements InputParser<List<Game>, byte[]> {
+public class PgnParser extends AbstractParser implements Iterable<Game> {
     private final Parser<List<TagPair>> tagPairParser;
     private final Parser<Game.Result> resultParser;
     private final InputParser<List<Movetext>, Byte> movetextSequenceParser;
@@ -21,8 +22,12 @@ public class PgnParser extends AbstractParser implements InputParser<List<Game>,
      */
     private final List<PgnException> exceptions = new ArrayList<>();
 
-    public PgnParser(final Configuration config) {
-        super(new PgnLexer(), config);
+    public PgnParser(final PgnLexer lexer) {
+        this(lexer, Configuration.defaultConfiguration());
+    }
+
+    public PgnParser(final PgnLexer lexer, final Configuration config) {
+        super(lexer, config);
         tagPairParser = new TagPairParser(lexer, config);
         resultParser = new ResultParser(lexer, config);
 
@@ -37,10 +42,6 @@ public class PgnParser extends AbstractParser implements InputParser<List<Game>,
         variation.setMovetextSequenceParser(movetextSequenceParser);
     }
 
-    public PgnParser() {
-        this(Configuration.defaultConfiguration());
-    }
-
     /**
      * For testing propose only
      */
@@ -52,68 +53,41 @@ public class PgnParser extends AbstractParser implements InputParser<List<Game>,
         this.movetextSequenceParser = movetextSequenceParser;
     }
 
-    public List<Game> parse(final String input) {
-        return parse0(input.getBytes());
+    @Deprecated
+    public List<Game> parse() {
+        return StreamSupport.stream(spliterator(), false).collect(toList());
     }
 
-    @Override
-    public List<Game> parse(final byte[] input) {
-        return parse0(input);
-    }
+    public Game next() {
+        if (lexer.next() == UNDEFINED) {
+            return null;
+        }
 
-    private List<Game> parse0(final byte[] input) {
-        lexer.init(input);
-        lexer.nextToken();
-
-        final List<Game> db = new ArrayList<>();
+        final byte token = lexer.last();
 
         try {
-            parse0(db, config.gameLimit());
-        } catch (PgnException e) {
-            if (config.stopOnError()) {
-                throw e;
+            switch (token) {
+                case TP_BEGIN:
+                    return new Game(
+                            tagPairParser.parse(),
+                            movetextSequenceParser.parse(GAMETERM),
+                            resultParser.parse()
+                    );
+
+                case MOVE_NUMBER:
+                    return new Game(
+                            null,
+                            movetextSequenceParser.parse(GAMETERM),
+                            resultParser.parse()
+                    );
+                default:
+                    throw syntaxException(lexer, TP_BEGIN, MOVE_NUMBER);
             }
-            exceptions.add(e);
+        } catch (FilterException e) {
+            lexer.poll(GAMETERM);
         }
 
-        return db;
-    }
-
-    private void parse0(final List<Game> container, final int gameLimit) {
-        while (lexer.lastToken() != UNDEFINED) {
-            final byte token = lexer.lastToken();
-
-            if (container.size() >= gameLimit) {
-                lexer.terminate();
-                break;
-            }
-
-            try {
-                switch (token) {
-                    case TP_BEGIN:
-                        container.add(new Game(
-                                tagPairParser.parse(),
-                                movetextSequenceParser.parse(GAMETERM),
-                                resultParser.parse()
-                        ));
-
-                        break;
-                    case MOVE_NUMBER:
-                        container.add(new Game(
-                                null,
-                                movetextSequenceParser.parse(GAMETERM),
-                                resultParser.parse()
-                        ));
-                        break;
-                    default:
-                        throw syntaxException(lexer, TP_BEGIN, MOVE_NUMBER);
-                }
-            } catch (FilterException e) {
-                lexer.poll(GAMETERM);
-            }
-
-            lexer.nextToken();
-        }
+        return null;
     }
 
     public boolean hasExceptions() {
@@ -123,5 +97,15 @@ public class PgnParser extends AbstractParser implements InputParser<List<Game>,
     @Nonnull
     public List<PgnException> exceptions() {
         return new ArrayList<>(exceptions);
+    }
+
+    @Override
+    public Iterator<Game> iterator() {
+        return new GameIterator(this);
+    }
+
+    @Override
+    public Spliterator<Game> spliterator() {
+        return Spliterators.spliteratorUnknownSize(iterator(), Spliterator.IMMUTABLE & Spliterator.NONNULL);
     }
 }

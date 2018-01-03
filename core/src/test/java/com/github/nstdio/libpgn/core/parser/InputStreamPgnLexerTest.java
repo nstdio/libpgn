@@ -1,61 +1,16 @@
 package com.github.nstdio.libpgn.core.parser;
 
-import com.github.nstdio.libpgn.core.Game;
-import com.github.nstdio.libpgn.core.MovetextFactory;
-import com.github.nstdio.libpgn.core.TagPair;
-import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
-import static com.github.nstdio.libpgn.core.parser.AssertUtils.assertSameResult;
-import static org.junit.Assert.*;
+import static com.github.nstdio.libpgn.core.assertj.Assertions.assertThatLexer;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class PgnLexerTest {
-    private PgnLexer lexer;
-
-    @Before
-    public void setUp() throws Exception {
-        lexer = new PgnLexer();
-    }
-
-    @Test
-    public void initialState() throws Exception {
-        lexer = new PgnLexer();
-
-        assertEquals(1, lexer.line());
-
-        assertNotNull(lexer.data());
-        assertEquals(0, lexer.length());
-
-        assertEquals(UNDEFINED, lexer.lastToken());
-        assertEquals(0, lexer.position());
-        assertEquals(0, lexer.tokenLength());
-    }
-
-    @Test
-    public void noCopyInput() throws Exception {
-        final byte[] input = "1. e4 *".getBytes();
-
-        lexer.init(input);
-
-        assertSame(input, lexer.data());
-    }
-
-    @Test
-    public void copyInput() throws Exception {
-        final byte[] input = "1. e4 *".getBytes();
-
-        lexer.init(input, true);
-
-        assertNotSame(input, lexer.data());
-        assertArrayEquals(input, lexer.data());
-    }
-
+public class InputStreamPgnLexerTest {
     @Test
     public void tagPair() throws Exception {
         final String input = "[Event \"Rapid 15m+4s\"]\n" +
@@ -86,8 +41,38 @@ public class PgnLexerTest {
                 TP_BEGIN, TP_NAME, TP_NAME_VALUE_SEP, TP_VALUE_BEGIN, TP_VALUE_END, TP_END,
         };
 
+        assertThatLexer(input)
+                .outputContainsExactly(tokens);
+    }
 
-        AssertUtils.assertTokensEqual(lexer, input, tokens);
+    @Test
+    public void comments() throws Exception {
+        final byte tokens[] = {
+                MOVE_NUMBER, DOT, MOVE_WHITE, NAG, NAG,
+                COMMENT_BEGIN, COMMENT, COMMENT_END,
+                MOVE_BLACK, COMMENT_BEGIN, COMMENT, COMMENT_END,
+                GAMETERM,
+        };
+
+        final String[] games = {
+                "1.d4 $1$2 {1e789} e5 {`% #1`  } *",
+                "1.d4 $1$2 {  } e5 {  } *",
+                //"1.d4 $1$2 {Com\\}ment} e5 {Co\\}mmen\\}t} *",
+                "1.d4 $1$2 {c} e5 { } *",
+                "1.d4 $1$2 {@$#@!a} e5 {!a} *",
+                "1. d4$1$2{Comment} e5{Comment} *",
+                "1 . d4$1$2 {Comment} e5 {Comment} *",
+                "1 . d4$1 $2 {Comment} e5 {Comment} *",
+                "1. d4 $1 $2   {Comment} e5    {Comment} *",
+                "1. d4$1 $2   {Comment} e5{Comment} *",
+                "1.d4$1$2   {Comment}e5{Comment} *",
+                "1.d4$1$2{Comment}e5{Comment}*",
+                "   1.d4$1$2{Comment}e5{Comment}*",
+                "   1\n.d4$1$2{Comment}e5{Comment}*",
+                "\n\n   1.\r\nd4$1$2{Comment}\n\ne5\n\n{Comment}\n*",
+        };
+
+        assertSameOutput(games, tokens);
     }
 
     @Test
@@ -107,7 +92,7 @@ public class PgnLexerTest {
                 "[Event \"Rapid 15m+4s\"]\n\n1  .  d4   {White Comment}  Nf6  {Black Comment}  2  .c4 e6 3 . Nc3 d5 4 .    Bg5 Nbd7 0-1",
         };
 
-        assertSameResult(lexer, inputs, tokens);
+        assertSameOutput(inputs, tokens);
     }
 
     @Test
@@ -127,7 +112,7 @@ public class PgnLexerTest {
                 GAMETERM
         };
 
-        AssertUtils.assertTokensEqual(lexer, input, tokens);
+        assertThatLexer(input).outputContainsExactly(tokens);
     }
 
     @Test
@@ -145,7 +130,7 @@ public class PgnLexerTest {
                 "[Event \"Rapid 15m+4s\"]\n\n1. d4$1 $2 $3 e5$11 *",
         };
 
-        assertSameResult(lexer, inputs, tokens);
+        assertSameOutput(inputs, tokens);
     }
 
     @Test
@@ -165,37 +150,7 @@ public class PgnLexerTest {
                 "[Event \"Rapid 15m+4s\"]\n\n   1  .  d4   e5 (   1   ...   Nf6     {C})   *   ",
         };
 
-        assertSameResult(lexer, inputs, tokens);
-    }
-
-    @Test
-    public void comments() throws Exception {
-        final byte tokens[] = {
-                MOVE_NUMBER, DOT, MOVE_WHITE, NAG, NAG,
-                COMMENT_BEGIN, COMMENT, COMMENT_END,
-                MOVE_BLACK, COMMENT_BEGIN, COMMENT, COMMENT_END,
-                GAMETERM,
-        };
-        final String[] games = {
-                "1.d4 $1$2 {1e789} e5 {`% #1`  } *",
-                "1.d4 $1$2 {  } e5 {  } *",
-                "1.d4 $1$2 {Com\\}ment} e5 {Co\\}mmen\\}t} *",
-                "1.d4 $1$2 {c} e5 { } *",
-                "1.d4 $1$2 {@$#@!a} e5 {!a} *",
-                "1. d4$1$2{Comment} e5{Comment} *",
-                "1 . d4$1$2 {Comment} e5 {Comment} *",
-                "1 . d4$1 $2 {Comment} e5 {Comment} *",
-                "1. d4 $1 $2   {Comment} e5    {Comment} *",
-                "1. d4$1 $2   {Comment} e5{Comment} *",
-                "1.d4$1$2   {Comment}e5{Comment} *",
-                "1.d4$1$2{Comment}e5{Comment}*",
-                "   1.d4$1$2{Comment}e5{Comment}*",
-                "   1.d4$1$2{Comment}e5{Comment}*",
-                "   1\n.d4$1$2{Comment}e5{Comment}*",
-                "\n\n   1.\r\nd4$1$2{Comment}\n\ne5\n\n{Comment}\n*",
-        };
-
-        assertSameResult(lexer, games, tokens);
+        assertSameOutput(inputs, tokens);
     }
 
     @Test
@@ -213,7 +168,7 @@ public class PgnLexerTest {
                 "1. d4;d3\n\n\nd5\n*",
         };
 
-        assertSameResult(lexer, games, tokens);
+        assertSameOutput(games, tokens);
     }
 
     @Test
@@ -233,7 +188,7 @@ public class PgnLexerTest {
                 "\n\n\n  d4     {Comment}a5    Nf3     Bc6     *     ",
         };
 
-        assertSameResult(lexer, games, tokens);
+        assertSameOutput(games, tokens);
     }
 
     @Test
@@ -252,7 +207,7 @@ public class PgnLexerTest {
                 TP_BEGIN, TP_NAME, TP_NAME_VALUE_SEP, TP_VALUE_BEGIN, TP_VALUE_END, TP_END,
         };
 
-        assertSameResult(lexer, games, tokens);
+        assertSameOutput(games, tokens);
     }
 
     @Test
@@ -273,7 +228,7 @@ public class PgnLexerTest {
                 GAMETERM
         };
 
-        assertSameResult(lexer, games, tokens);
+        assertSameOutput(games, tokens);
     }
 
     @Test
@@ -294,7 +249,11 @@ public class PgnLexerTest {
                 GAMETERM
         };
 
-        assertSameResult(lexer, games, tokens);
+        assertSameOutput(games, tokens);
+    }
+
+    private void assertSameOutput(final String[] games, final byte[] tokens) {
+        assertThat(games).allSatisfy(s -> assertThatLexer(s).outputContainsExactly(tokens));
     }
 
     @Test
@@ -320,85 +279,37 @@ public class PgnLexerTest {
                 GAMETERM
         };
 
-        assertSameResult(lexer, games, tokens);
+        assertSameOutput(games, tokens);
     }
 
     @Test
     public void emptyInput() throws Exception {
-        final byte[] data = "".getBytes();
-
-        lexer.init(data);
-
-        assertEquals(UNDEFINED, lexer.nextToken());
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    @Test(expected = NullPointerException.class)
-    public void nullInputWithInit() throws Exception {
-        lexer.init(null);
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    @Test(expected = NullPointerException.class)
-    public void nullInputWithConstructor() throws Exception {
-        new PgnLexer(null);
+        assertThatLexer("")
+                .nextTokenIsEqualTo(UNDEFINED)
+                .readIsNull();
     }
 
     @Test
     public void illegalInput() throws Exception {
         final String[] inputs = {
                 "\n", "", "\n\r", "  \t", ";", ".", "\0",
-                "\r\n",
+                "\r\n", "abc",
         };
 
-        for (String input : inputs) {
-            lexer.init(input.getBytes());
-            assertEquals(UNDEFINED, lexer.nextToken());
-        }
+        assertThat(inputs).allSatisfy(strings -> assertThatLexer(strings).nextTokenIsEqualTo(UNDEFINED)
+                .readIsNull());
     }
 
     @Test
-    public void poll() throws Exception {
-        List<TagPair> tagPairs = new ArrayList<>();
-        tagPairs.add(TagPair.of("Event", "Leipzig8990 m"));
-        tagPairs.add(TagPair.of("Site", "Leipzig"));
-
-        final String input = new Game(tagPairs, MovetextFactory.moves("d4"), Game.Result.UNKNOWN).toPgnString();
-
-        lexer.init(input.getBytes());
-        lexer.nextToken();
-
-        lexer.poll(TP_NAME_VALUE_SEP);
-        assertEquals(TP_NAME_VALUE_SEP, lexer.lastToken());
-
-        lexer.poll(TP_VALUE);
-        assertEquals(TP_VALUE, lexer.lastToken());
-
-        lexer.poll(MOVE_WHITE);
-        assertEquals(MOVE_WHITE, lexer.lastToken());
-
-        lexer.poll(UNDEFINED);
-        assertEquals(UNDEFINED, lexer.lastToken());
-        assertEquals(UNDEFINED, lexer.nextToken());
-
-        assertEquals(input.length(), lexer.position());
-    }
-
-    @Test
+    @Ignore("todo")
     public void lineNumber() {
-        final Map<Integer, byte[]> inputs = new HashMap<>();
+        final Map<Integer, String> inputs = new HashMap<>();
 
-        inputs.put(3, "1. e4 {This is\n multiline\n comment} d5".getBytes());
-        inputs.put(1, "1. e4 {This is comment} d5".getBytes());
-        inputs.put(5, "1.\n e4 {\nThis\n is multiline \ncomment} d5".getBytes());
+        inputs.put(3, "1. e4 {This is\n multiline\n comment} d5");
+        inputs.put(1, "1. e4 {This is comment} d5");
+        inputs.put(5, "1.\n e4 {\nThis\n is multiline \ncomment} d5");
 
-        inputs.forEach((key, value) -> {
-            lexer.init(value);
-            lexer.nextToken();
-            lexer.poll(UNDEFINED);
-
-            assertEquals((int) key, lexer.line());
-        });
+        inputs.forEach((key, value) -> assertThatLexer(value).linesCountIsEqualTo(key));
 
     }
 }

@@ -16,7 +16,6 @@ public class Configuration {
     public static final int DEFAULT_GAME_LIMIT = Integer.MAX_VALUE;
 
     private final Set<TagPair> predefinedCache;
-    private final GameFilter gameFilter;
     private final boolean skipTagPairSection;
     private final boolean skipMovetext;
     private final boolean skipComment;
@@ -41,7 +40,6 @@ public class Configuration {
                           boolean useNullOnInvalidNag, boolean sortNags,
                           boolean trimComment, boolean extractLiteralNags, boolean cacheTagPair, int nagLimit, int tagPairValueMaxLength, int commentMaxLength, int tagPairCacheSize, final int gameLimit) {
         this.predefinedCache = predefinedCache;
-        this.gameFilter = gameFilter;
         this.skipTagPairSection = skipTagPairSection;
         this.skipMovetext = skipMovetext;
         this.skipComment = skipComment;
@@ -83,11 +81,6 @@ public class Configuration {
     @Nullable
     public Set<TagPair> predefinedCache() {
         return predefinedCache;
-    }
-
-    @Nullable
-    public GameFilter gameFilter() {
-        return gameFilter;
     }
 
     /**
@@ -231,6 +224,7 @@ public class Configuration {
          *                        false} this values will be omitted.
          *
          * @return ConfigurationBuilder itself.
+         *
          * @see #predefinedCache(TagPair...)
          */
         public ConfigurationBuilder predefinedCache(final Set<TagPair> predefinedCache) {
@@ -275,6 +269,7 @@ public class Configuration {
          * @param predefinedCache The predefined cache.
          *
          * @return ConfigurationBuilder itself.
+         *
          * @see #predefinedCache(Set)
          */
         public ConfigurationBuilder predefinedCache(@Nonnull TagPair... predefinedCache) {
@@ -462,6 +457,7 @@ public class Configuration {
          * @param commentMaxLength Whether should trim comments at fixed length if exceeds. Default value is {@code -1}
          *
          * @return ConfigurationBuilder itself.
+         *
          * @throws IllegalArgumentException When {@code commentMaxLength} is negative.
          */
         public ConfigurationBuilder commentMaxLength(final int commentMaxLength) {
@@ -498,6 +494,7 @@ public class Configuration {
          * @param cacheTagPair Whether use cache for {@link TagPair} instances or not.
          *
          * @return ConfigurationBuilder itself.
+         *
          * @see #tagPairCacheSize(int)
          */
         public ConfigurationBuilder cacheTagPair(final boolean cacheTagPair) {
@@ -515,6 +512,7 @@ public class Configuration {
          *                         will be thrown.
          *
          * @return ConfigurationBuilder itself.
+         *
          * @throws IllegalArgumentException When {@code tagPairCacheSize} less then or equal to 0.
          * @see #cacheTagPair(boolean)
          */
@@ -532,6 +530,7 @@ public class Configuration {
          * @param gameLimit The maximum number of games that should be parsed.
          *
          * @return ConfigurationBuilder itself.
+         *
          * @throws IllegalArgumentException When {@code gameLimit <= 0}
          */
         public ConfigurationBuilder gameLimit(final int gameLimit) {

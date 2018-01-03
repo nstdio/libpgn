@@ -14,12 +14,10 @@ import java.util.Objects;
 class MovetextSequenceParser extends AbstractParser implements InputParser<List<Movetext>, Byte> {
 
     private final Parser<Movetext> movetextParser;
-    private final GameFilter gameFilter;
 
     MovetextSequenceParser(final PgnLexer lexer, final Configuration config, final Parser<Movetext> movetextParser) {
         super(lexer, config);
         this.movetextParser = Objects.requireNonNull(movetextParser);
-        this.gameFilter = config.gameFilter();
     }
 
     @Override
@@ -32,12 +30,8 @@ class MovetextSequenceParser extends AbstractParser implements InputParser<List<
 
         final List<Movetext> moves = new ArrayList<>();
 
-        while (lexer.lastToken() != termToken) {
+        while (lexer.last() != termToken) {
             moves.add(movetextParser.parse());
-        }
-
-        if (gameFilter != null && !gameFilter.testMovetext(moves)) {
-            throw new FilterException("Skip this game.");
         }
 
         return moves;

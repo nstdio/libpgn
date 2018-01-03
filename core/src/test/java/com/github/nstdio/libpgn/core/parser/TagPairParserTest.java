@@ -38,7 +38,7 @@ public class TagPairParserTest extends MockedEnvAware {
 
         doReturn(TP_BEGIN)
                 .doReturn(MOVE_NUMBER)
-                .when(mockLexer).lastToken();
+                .when(mockLexer).last();
 
         doReturn(TP_NAME)
                 .doReturn(TP_NAME_VALUE_SEP)
@@ -46,12 +46,12 @@ public class TagPairParserTest extends MockedEnvAware {
                 .doReturn(TP_VALUE)
                 .doReturn(TP_VALUE_END)
                 .doReturn(TP_END)
-                .when(mockLexer).nextToken();
+                .when(mockLexer).next();
 
 
-        doReturn(white)
-                .doReturn(value)
-                .when(mockLexer).extract();
+        doReturn(white.getBytes())
+                .doReturn(value.getBytes())
+                .when(mockLexer).read();
 
         parser = new TagPairParser(mockLexer, mockConfiguration);
 

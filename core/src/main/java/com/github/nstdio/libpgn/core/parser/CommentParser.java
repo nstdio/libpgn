@@ -2,26 +2,24 @@ package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
 
-import javax.annotation.Nonnull;
-
 import static com.github.nstdio.libpgn.core.Configuration.COMMENT_LENGTH_UNLIMITED;
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
 
 class CommentParser extends AbstractParser implements Parser<String> {
 
-    CommentParser(@Nonnull PgnLexer lexer, @Nonnull Configuration config) {
+    CommentParser(PgnLexer lexer, Configuration config) {
         super(lexer, config);
     }
 
     @Override
     public String parse() {
-        if (lexer.nextToken() == COMMENT_END) { // {} empty comment
+        if (lexer.next() == COMMENT_END) { // {} empty comment
             return "";
         }
 
         lastNotEqThrow(COMMENT);
 
-        final String comment = config.trimComment() ? lexer.extract().trim() : lexer.extract();
+        final String comment = config.trimComment() ? read().trim() : read();
 
         nextNotEqThrow(COMMENT_END);
 
@@ -31,9 +29,9 @@ class CommentParser extends AbstractParser implements Parser<String> {
     @Override
     public String tryParse() {
         String comment = null;
-        if (lexer.lastToken() == COMMENT_BEGIN) {
+        if (lexer.last() == COMMENT_BEGIN) {
             comment = parse();
-            if (lexer.nextToken() == COMMENT_BEGIN) {
+            if (lexer.next() == COMMENT_BEGIN) {
                 final String nextComment = tryParse();
                 if (nextComment != null) {
                     comment += nextComment;

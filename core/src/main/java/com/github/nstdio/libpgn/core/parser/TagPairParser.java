@@ -1,9 +1,7 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.GameFilter;
 import com.github.nstdio.libpgn.core.TagPair;
-import com.github.nstdio.libpgn.core.exception.FilterException;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import javax.annotation.Nonnull;
@@ -17,12 +15,10 @@ import static com.github.nstdio.libpgn.core.parser.ExceptionBuilder.syntaxExcept
 
 class TagPairParser extends AbstractParser implements Parser<List<TagPair>> {
     private final Map<Integer, TagPair> cache;
-    private final GameFilter gameFilter;
 
     TagPairParser(final PgnLexer lexer, final Configuration config) {
         super(lexer, config);
         cache = cacheContainer();
-        gameFilter = config.gameFilter();
     }
 
     @Override
@@ -35,12 +31,8 @@ class TagPairParser extends AbstractParser implements Parser<List<TagPair>> {
 
         final List<TagPair> section = new ArrayList<>();
 
-        while (lexer.lastToken() == TP_BEGIN) {
+        while (lexer.last() == TP_BEGIN) {
             section.add(parseTagPair());
-        }
-
-        if (gameFilter != null && !gameFilter.test(section)) {
-            throw new FilterException("Skip this game.");
         }
 
         return section;
@@ -53,19 +45,19 @@ class TagPairParser extends AbstractParser implements Parser<List<TagPair>> {
         nextNotEqThrow(TP_NAME_VALUE_SEP);
         nextNotEqThrow(TP_VALUE_BEGIN);
 
-        if (lexer.nextToken() == TP_VALUE) {
-            value = lexer.extract();
+        if (lexer.next() == TP_VALUE) {
+            value = read();
 
             nextNotEqThrow(TP_VALUE_END);
             nextNotEqThrow(TP_END);
-        } else if (lexer.lastToken() == TP_VALUE_END) {
+        } else if (lexer.last() == TP_VALUE_END) {
             value = "";
             nextNotEqThrow(TP_END);
         } else {
             throw syntaxException(lexer, TP_VALUE, TP_VALUE_END);
         }
 
-        lexer.nextToken();
+        lexer.next();
 
         return config.cacheTagPair() ? cached(tag, value) : TagPair.of(tag, value);
     }

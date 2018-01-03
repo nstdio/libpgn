@@ -1,5 +1,8 @@
 package com.github.nstdio.libpgn.core.internal;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 public final class ByteUtils {
     public static final int NOT_FOUND = -1;
     private static final byte COMMENT_BEGIN = '{';
@@ -12,7 +15,7 @@ public final class ByteUtils {
     private ByteUtils() {
     }
 
-    public static int whitespaceOrChar(byte[] input, int from, char c1, char c2, char c3, char c4, char c5) {
+    public static int whitespaceOrChar(byte[] input, int from, byte c1, byte c2, byte c3, byte c4, byte c5) {
         for (int i = from, n = input.length; i < n; i++) {
             final byte ch = input[i];
             if (Character.isWhitespace(ch) || ch == c1 || ch == c2 || ch == c3 || ch == c4 || ch == c5)
@@ -22,12 +25,12 @@ public final class ByteUtils {
         return NOT_FOUND;
     }
 
-    public static int whitespaceOrChar(byte[] input, int from, char c1, char c2) {
-        return whitespaceOrChar(input, from, c1, c2, '\0');
+    public static int whitespaceOrChar(byte[] input, int from, byte c1, byte c2) {
+        return whitespaceOrChar(input, from, c1, c2, (byte) 0);
     }
 
-    public static int whitespaceOrChar(byte[] input, int from, char c1, char c2, char c3) {
-        return whitespaceOrChar(input, from, c1, c2, c3, '\0');
+    public static int whitespaceOrChar(byte[] input, int from, byte c1, byte c2, byte c3) {
+        return whitespaceOrChar(input, from, c1, c2, c3, (byte) 0);
     }
 
     public static int newLine(final byte[] input, int from) {
@@ -100,8 +103,8 @@ public final class ByteUtils {
         return Character.isLetter(ch);
     }
 
-    public static int whitespaceOrChar(byte[] data, int from, char c1, char c2, char c3, char c4) {
-        return whitespaceOrChar(data, from, c1, c2, c3, c4, '\0');
+    public static int whitespaceOrChar(byte[] data, int from, byte c1, byte c2, byte c3, byte c4) {
+        return whitespaceOrChar(data, from, c1, c2, c3, c4, (byte) 0);
     }
 
     public static boolean isDefined(final byte b) {
