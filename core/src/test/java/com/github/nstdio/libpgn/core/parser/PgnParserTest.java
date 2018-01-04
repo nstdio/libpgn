@@ -3,7 +3,6 @@ package com.github.nstdio.libpgn.core.parser;
 import com.github.nstdio.libpgn.core.*;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.util.*;
 
 import static java.util.Collections.singletonList;
@@ -62,7 +61,7 @@ public class PgnParserTest {
     }
 
     private InputStreamPgnLexer createLexer(final String input) {
-        return new InputStreamPgnLexer(new ByteArrayInputStream(input.getBytes()));
+        return InputStreamPgnLexer.of(input.getBytes());
     }
 
     @Test

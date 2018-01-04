@@ -1,15 +1,15 @@
 package com.github.nstdio.libpgn.core;
 
 import com.github.nstdio.libpgn.core.parser.InputStreamPgnLexer;
+import com.github.nstdio.libpgn.core.parser.PageablePgnParser;
 import com.github.nstdio.libpgn.core.parser.PgnParser;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -17,27 +17,57 @@ import static com.github.nstdio.libpgn.core.Configuration.defaultConfiguration;
 
 public class GameFactory {
 
-    public static Stream<Game> stream(InputStream in, Configuration config) throws IOException {
-        return StreamSupport.stream(new PgnParser(new InputStreamPgnLexer(in), config).spliterator(), false);
+    public static Stream<List<Game>> pageableStream(File file) {
+        return pageableStream(file, defaultConfiguration());
     }
 
-    public static Stream<Game> stream(File file, Configuration config) throws IOException {
-        return StreamSupport.stream(new PgnParser(new InputStreamPgnLexer(file), config).spliterator(), false);
+    public static Stream<List<Game>> pageableStream(File file, Configuration config) {
+        return pageableStream(file, config, 8192);
     }
 
-    public static List<Game> from(File file, Configuration config) throws IOException {
-        return new PgnParser(new InputStreamPgnLexer(file), config).parse();
+    public static Stream<List<Game>> pageableStream(File file, final int size) {
+        return pageableStream(file, defaultConfiguration(), size);
     }
 
-    public static List<Game> from(File file) throws IOException {
+    public static Stream<List<Game>> pageableStream(File file, Configuration config, final int size) {
+        return pageableStream(file, config, () -> listImpl(false), size);
+    }
+
+    public static Stream<List<Game>> pageableStream(File file, Configuration config, final Supplier<List<Game>> listSupplier,
+                                                    final int size) {
+        return StreamSupport.stream(new PageablePgnParser(InputStreamPgnLexer.of(file), config, listSupplier, size).spliterator(), false);
+    }
+
+    public static Stream<List<Game>> pageableStream(final InputStream in, Configuration config, final Supplier<List<Game>> listSupplier,
+                                                    final int size) {
+        return StreamSupport.stream(new PageablePgnParser(InputStreamPgnLexer.of(in), config, listSupplier, size).spliterator(), false);
+    }
+
+    public static Stream<Game> stream(InputStream in, Configuration config) {
+        return StreamSupport.stream(new PgnParser(InputStreamPgnLexer.of(in), config).spliterator(), false);
+    }
+
+    public static Stream<Game> stream(File file, Configuration config) {
+        return StreamSupport.stream(new PgnParser(InputStreamPgnLexer.of(file), config).spliterator(), false);
+    }
+
+    public static Stream<Game> stream(File file) {
+        return stream(file, defaultConfiguration());
+    }
+
+    public static List<Game> from(File file, Configuration config) {
+        return new PgnParser(InputStreamPgnLexer.of(file), config).parse();
+    }
+
+    public static List<Game> from(File file) {
         return from(file, defaultConfiguration());
     }
 
-    public static List<Game> from(String path) throws IOException {
+    public static List<Game> from(String path) {
         return from(new File(path));
     }
 
-    public static List<Game> from(String path, Configuration configuration) throws IOException {
+    public static List<Game> from(String path, Configuration configuration) {
         return from(new File(path), configuration);
     }
 
@@ -174,13 +204,7 @@ public class GameFactory {
                 .filter(files -> files.size() > 0)
                 .ifPresent(files -> {
                     final Stream<File> fileStream = parallel ? files.parallelStream() : files.stream();
-                    fileStream.forEach(file -> {
-                        try {
-                            containerConsumer.accept(file, from(file, config));
-                        } catch (IOException e) {
-                            throw new UncheckedIOException(e);
-                        }
-                    });
+                    fileStream.forEach(file -> containerConsumer.accept(file, from(file, config)));
                 });
     }
 

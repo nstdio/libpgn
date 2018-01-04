@@ -1,13 +1,9 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.TokenTypes;
-import com.github.nstdio.libpgn.core.internal.ByteUtils;
 import com.github.nstdio.libpgn.core.io.PgnInputStream;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Objects;
@@ -18,24 +14,6 @@ import static com.github.nstdio.libpgn.core.parser.LexicalScope.*;
 
 public class InputStreamPgnLexer implements PgnLexer {
     private final PgnInputStream in;
-    private final IntPredicate moveEndPredicate = value -> {
-        switch (value) {
-            case '\r':
-            case '\n':
-            case '\t':
-            case ' ':
-            case '{':
-            case '(':
-            case ')':
-            case '$':
-            case ';':
-            case '*':
-                return true;
-            default:
-                return false;
-        }
-    };
-
     private final IntPredicate nagEndPredicate = value -> {
         switch (value) {
             case ' ':
@@ -47,18 +25,6 @@ public class InputStreamPgnLexer implements PgnLexer {
             case '(':
             case ')':
             case '*':
-                return true;
-            default:
-                return false;
-        }
-    };
-    private final IntPredicate moveNumberEndPredicate = value -> {
-        switch (value) {
-            case ' ':
-            case '\r':
-            case '\n':
-            case '\t':
-            case '.':
                 return true;
             default:
                 return false;
@@ -80,21 +46,53 @@ public class InputStreamPgnLexer implements PgnLexer {
         line = 1;
     }
 
-    public InputStreamPgnLexer(final byte[] in) {
-        this(new PgnInputStream(new ByteArrayInputStream(in)));
-    }
+    /**
+     * Constructs the new lexer instance with provided file as data source.
+     *
+     * @param file The data source.
+     *
+     * @return The newly created lexer instance.
+     *
+     * @throws NullPointerException if {@code file} is null.
+     * @throws UncheckedIOException if an I/O error occurs.
+     */
+    public static InputStreamPgnLexer of(final File file) {
+        Objects.requireNonNull(file);
 
-    public InputStreamPgnLexer(final InputStream in) {
-        this(new PgnInputStream(in));
+        try {
+            return of(Files.newInputStream(file.toPath(), StandardOpenOption.READ));
+
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
-     * Constructs the new lexer instance with provided file.
+     * Constructs new lexer with input stream as data source.
      *
-     * @param file The data source.
+     * @param in The input stream.
+     *
+     * @return The newly created lexer instance.
+     *
+     * @throws NullPointerException if {@code in} is null.
      */
-    public InputStreamPgnLexer(final File file) throws IOException {
-        this(new PgnInputStream(Files.newInputStream(file.toPath(), StandardOpenOption.READ)));
+    public static InputStreamPgnLexer of(final InputStream in) {
+        Objects.requireNonNull(in);
+        return new InputStreamPgnLexer(new PgnInputStream(in));
+    }
+
+    /**
+     * Constructs new lexer with byte array as data source.
+     *
+     * @param bytes The input bytes.
+     *
+     * @return The newly created lexer instance.
+     *
+     * @throws NullPointerException if {@code bytes} is null.
+     */
+    public static InputStreamPgnLexer of(final byte[] bytes) {
+        Objects.requireNonNull(bytes);
+        return of(new ByteArrayInputStream(bytes));
     }
 
     /**
@@ -215,10 +213,10 @@ public class InputStreamPgnLexer implements PgnLexer {
             } else {
                 tokenLength = 7;
             }
-        } else if (lastToken == COMMENT_BEGIN && ByteUtils.isDefined((byte) current)) {
+        } else if (lastToken == COMMENT_BEGIN && Character.isDefined((int) (byte) current)) {
             lastToken = COMMENT;
             tokenLength = in.until('}');
-        } else if (ByteUtils.isLetter((byte) current)) {
+        } else if (Character.isLetter((byte) current)) {
             switch (lastToken) {
                 case DOT:
                 case UNDEFINED:
@@ -377,7 +375,7 @@ public class InputStreamPgnLexer implements PgnLexer {
                 next();
                 break;
             default:
-                if (ByteUtils.isLetter((byte) lastRead) || (Character.isDefined(lastRead) && lastToken == TP_VALUE_BEGIN)) {
+                if (Character.isLetter((byte) lastRead) || (Character.isDefined(lastRead) && lastToken == TP_VALUE_BEGIN)) {
                     switch (lastToken) {
                         case TP_BEGIN:
                             lastToken = TP_NAME;

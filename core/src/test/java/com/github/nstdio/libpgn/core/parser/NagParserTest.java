@@ -32,7 +32,7 @@ public class NagParserTest {
     }
 
     private PgnLexer initAndIterateUntilNag(String input) {
-        final InputStreamPgnLexer lexer = new InputStreamPgnLexer(input.getBytes());
+        final InputStreamPgnLexer lexer = InputStreamPgnLexer.of(input.getBytes());
 
         lexer.poll(TokenTypes.NAG);
 
@@ -62,7 +62,7 @@ public class NagParserTest {
 
     @Test
     public void mergeWithInvalidTopElement() throws Exception {
-        final InputStreamPgnLexer inputStreamPgnLexer = new InputStreamPgnLexer("1. e4 $2 *".getBytes());
+        final InputStreamPgnLexer inputStreamPgnLexer = InputStreamPgnLexer.of("1. e4 $2 *".getBytes());
 
         final short[] nags = parseWithLimit(inputStreamPgnLexer);
         final short[] merged = parser.parse(nags);

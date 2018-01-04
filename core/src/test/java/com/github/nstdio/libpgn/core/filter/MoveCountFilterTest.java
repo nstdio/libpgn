@@ -24,7 +24,7 @@ public class MoveCountFilterTest {
     public static void setUp() throws Exception {
         final InputStream file = MoveCountFilterTest.class.getClassLoader().getResourceAsStream("Aronian.pgn");
 
-        games = new PgnParser(new InputStreamPgnLexer(file)).parse();
+        games = new PgnParser(InputStreamPgnLexer.of(file)).parse();
     }
 
     @Test

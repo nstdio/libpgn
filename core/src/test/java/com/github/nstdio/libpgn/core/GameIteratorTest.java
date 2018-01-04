@@ -51,6 +51,6 @@ public class GameIteratorTest {
     }
 
     private GameIterator create(final String pgn) {
-        return new GameIterator(new PgnParser(new InputStreamPgnLexer(new ByteArrayInputStream(pgn.getBytes()))));
+        return new GameIterator(new PgnParser(InputStreamPgnLexer.of(pgn.getBytes())));
     }
 }

@@ -1,10 +1,8 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.GameFilter;
 import com.github.nstdio.libpgn.core.Movetext;
 import com.github.nstdio.libpgn.core.TokenTypes;
-import com.github.nstdio.libpgn.core.exception.FilterException;
 
 import java.util.ArrayList;
 import java.util.Collections;
