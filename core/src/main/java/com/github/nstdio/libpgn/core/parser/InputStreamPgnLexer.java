@@ -406,8 +406,7 @@ public class InputStreamPgnLexer implements PgnLexer {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void skip() {
         try {
-            final int n = tokenLength - 1;
-            in.skip(n);
+            in.skip(tokenLength - 1);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -418,7 +417,7 @@ public class InputStreamPgnLexer implements PgnLexer {
         try {
             terminate();
         } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new UncheckedIOException(e);
         }
     }
 

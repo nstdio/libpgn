@@ -35,20 +35,28 @@ public class GameFactory {
 
     public static Stream<List<Game>> pageableStream(File file, Configuration config, final Supplier<List<Game>> listSupplier,
                                                     final int size) {
-        return StreamSupport.stream(new PageablePgnParser(InputStreamPgnLexer.of(file), config, listSupplier, size).spliterator(), false);
+        final InputStreamPgnLexer lexer = InputStreamPgnLexer.of(file);
+        return StreamSupport.stream(new PageablePgnParser(lexer, config, listSupplier, size).spliterator(), false)
+                .onClose(lexer::close);
     }
 
     public static Stream<List<Game>> pageableStream(final InputStream in, Configuration config, final Supplier<List<Game>> listSupplier,
                                                     final int size) {
-        return StreamSupport.stream(new PageablePgnParser(InputStreamPgnLexer.of(in), config, listSupplier, size).spliterator(), false);
+        final InputStreamPgnLexer lexer = InputStreamPgnLexer.of(in);
+        return StreamSupport.stream(new PageablePgnParser(lexer, config, listSupplier, size).spliterator(), false)
+                .onClose(lexer::close);
     }
 
     public static Stream<Game> stream(InputStream in, Configuration config) {
-        return StreamSupport.stream(new PgnParser(InputStreamPgnLexer.of(in), config).spliterator(), false);
+        final InputStreamPgnLexer lexer = InputStreamPgnLexer.of(in);
+        return StreamSupport.stream(new PgnParser(lexer, config).spliterator(), false)
+                .onClose(lexer::close);
     }
 
     public static Stream<Game> stream(File file, Configuration config) {
-        return StreamSupport.stream(new PgnParser(InputStreamPgnLexer.of(file), config).spliterator(), false);
+        final InputStreamPgnLexer lexer = InputStreamPgnLexer.of(file);
+        return StreamSupport.stream(new PgnParser(lexer, config).spliterator(), false)
+                .onClose(lexer::close);
     }
 
     public static Stream<Game> stream(File file) {
@@ -56,7 +64,9 @@ public class GameFactory {
     }
 
     public static List<Game> from(File file, Configuration config) {
-        return new PgnParser(InputStreamPgnLexer.of(file), config).parse();
+        try (final InputStreamPgnLexer lexer = InputStreamPgnLexer.of(file)) {
+            return new PgnParser(lexer, config).parse();
+        }
     }
 
     public static List<Game> from(File file) {
