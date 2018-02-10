@@ -12,7 +12,7 @@ import com.github.nstdio.libpgn.core.TokenTypes;
  * work directly with the provided data, he will always be able to use {@link #init(byte[], boolean)} that will copy the
  * input data.
  */
-public interface PgnLexer {
+public interface PgnLexer extends AutoCloseable {
     /**
      * <p>
      * Tries to find the next token. Returned {@code byte} value will be one of {@link TokenTypes} constants. If lexer

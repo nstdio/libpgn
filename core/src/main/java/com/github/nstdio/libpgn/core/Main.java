@@ -9,10 +9,11 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         final File file = new File("/home/edgar/Desktop/pgn/lichess_db_standard_rated_2014-07.pgn");
-        final Stream<List<Game>> listStream = GameFactory.pageableStream(file, 2048);
+        try (final Stream<List<Game>> listStream = GameFactory.pageableStream(file, 2048)) {
 
-        listStream.forEach(games -> {
+            listStream.forEach(games -> {
 
-        });
+            });
+        }
     }
 }
