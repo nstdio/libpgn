@@ -1,0 +1,11 @@
+--PGN--
+1. Nc3 Nc6 2. Rb1 Rb8 3. Nf3 Nf6 4. Rg1 Rg8
+--FEN--
+rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1
+r1bqkbnr/pppppppp/2n5/8/8/2N5/PPPPPPPP/R1BQKBNR w KQkq - 2 2
+r1bqkbnr/pppppppp/2n5/8/8/2N5/PPPPPPPP/1RBQKBNR b Kkq - 3 2
+1rbqkbnr/pppppppp/2n5/8/8/2N5/PPPPPPPP/1RBQKBNR w Kk - 4 3
+1rbqkbnr/pppppppp/2n5/8/8/2N2N2/PPPPPPPP/1RBQKB1R b Kk - 5 3
+1rbqkb1r/pppppppp/2n2n2/8/8/2N2N2/PPPPPPPP/1RBQKB1R w Kk - 6 4
+1rbqkb1r/pppppppp/2n2n2/8/8/2N2N2/PPPPPPPP/1RBQKBR1 b k - 7 4
+1rbqkbr1/pppppppp/2n2n2/8/8/2N2N2/PPPPPPPP/1RBQKBR1 w - - 8 5
