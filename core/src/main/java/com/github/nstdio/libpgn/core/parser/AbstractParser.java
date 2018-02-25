@@ -22,14 +22,12 @@ abstract class AbstractParser {
         }
     }
 
-    String extractNextIfNotEqThrow(byte expectedToken) {
-        nextNotEqThrow(expectedToken);
-
-        return read();
+    String read() {
+        return new String(readBytes());
     }
 
-    String read() {
-        return new String(lexer.read());
+    byte[] readBytes() {
+        return lexer.read();
     }
 
     void nextNotEqThrow(byte expectedToken) {

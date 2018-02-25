@@ -1,19 +1,22 @@
 package com.github.nstdio.libpgn.core.filter;
 
-import com.github.nstdio.libpgn.core.Movetext;
+import com.github.nstdio.libpgn.core.pgn.Move;
+import com.github.nstdio.libpgn.core.pgn.MoveText;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Tests that input list is exactly matching with
  */
 class StartsWithMovesFilter extends MoveSequenceFilter {
-    StartsWithMovesFilter(final List<Movetext> sequence) {
+    StartsWithMovesFilter(final List<MoveText> sequence) {
         super(sequence);
     }
 
     @Override
-    public boolean test(final List<Movetext> input) {
+    public boolean test(final List<MoveText> input) {
         final int inputSize = input.size();
         final int expectedSize = sequence.size();
 
@@ -24,22 +27,28 @@ class StartsWithMovesFilter extends MoveSequenceFilter {
         final int size = Math.min(expectedSize, inputSize);
 
         for (int i = 0; i < size; i++) {
-            final Movetext movetext = sequence.get(i);
-            final Movetext obj = input.get(i);
+            final MoveText movetext = sequence.get(i);
+            final MoveText obj = input.get(i);
 
             if (movetext.moveNo() != obj.moveNo()) {
                 return false;
             }
 
-            if (!movetext.whiteMove().equals(obj.whiteMove())) {
+            if (!movesEqual(movetext.white(), obj.white())) {
                 return false;
             }
 
-            if (movetext.blackMove() != null && obj.blackMove() != null && !movetext.blackMove().equals(obj.blackMove())) {
+            if (!movesEqual(movetext.black(), obj.black())) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private boolean movesEqual(final Optional<Move> first, final Optional<Move> second) {
+        return first.map(Move::move)
+                .filter(bytes -> Arrays.equals(bytes, second.map(Move::move).orElse(null)))
+                .isPresent();
     }
 }

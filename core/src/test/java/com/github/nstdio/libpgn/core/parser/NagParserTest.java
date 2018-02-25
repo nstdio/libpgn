@@ -3,12 +3,11 @@ package com.github.nstdio.libpgn.core.parser;
 import com.github.nstdio.libpgn.core.Configuration;
 import com.github.nstdio.libpgn.core.TokenTypes;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
-@Ignore
 public class NagParserTest {
     private NagParser parser;
     private int limit;
@@ -33,7 +32,7 @@ public class NagParserTest {
 
     private PgnLexer initAndIterateUntilNag(String input) {
         final InputStreamPgnLexer lexer = InputStreamPgnLexer.of(input.getBytes());
-
+        lexer.next();
         lexer.poll(TokenTypes.NAG);
 
         return lexer;
@@ -45,7 +44,7 @@ public class NagParserTest {
 
         final short[] nags = parseWithLimit(pgnLexer);
 
-        assertNotNull(nags);
+        assertThat(nags).isNotNull();
         assertEquals(limit, nags.length);
     }
 
@@ -77,12 +76,5 @@ public class NagParserTest {
         final short[] nags = parseWithLimit(pgnLexer);
 
         assertArrayEquals(new short[]{0}, nags);
-    }
-
-    @Test
-    public void nullInput() throws Exception {
-        final short[] nags = parser.parse(null);
-
-        assertNull(nags);
     }
 }

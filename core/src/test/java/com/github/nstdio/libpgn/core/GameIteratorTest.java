@@ -4,7 +4,6 @@ import com.github.nstdio.libpgn.core.parser.InputStreamPgnLexer;
 import com.github.nstdio.libpgn.core.parser.PgnParser;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.util.NoSuchElementException;
 import java.util.stream.IntStream;
 

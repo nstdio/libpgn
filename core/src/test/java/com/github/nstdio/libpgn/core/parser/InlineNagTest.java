@@ -7,8 +7,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InlineNagTest {
     private InlineNag inlineNag;
@@ -22,7 +21,7 @@ public class InlineNagTest {
     public void simple() throws Exception {
         Map<String, Pair<String, short[]>> map = new HashMap<>();
 
-        map.put("e4", Pair.of("e4", null));
+        map.put("e4", Pair.of("e4", new short[0]));
         map.put("e4!", Pair.of("e4", new short[]{1}));
         map.put("e4?", Pair.of("e4", new short[]{2}));
         map.put("e4‼", Pair.of("e4", new short[]{3}));
@@ -50,12 +49,13 @@ public class InlineNagTest {
         map.put("Nf3!", Pair.of("Nf3", new short[]{1}));
 
         for (Map.Entry<String, Pair<String, short[]>> entry : map.entrySet()) {
-            final Pair<String, short[]> split = inlineNag.split(entry.getKey());
+            final Pair<byte[], short[]> actual = inlineNag.split(entry.getKey().getBytes());
 
-            final Pair<String, short[]> expected = entry.getValue();
+            final Pair<String, short[]> value = entry.getValue();
+            final Pair<byte[], short[]> expected = Pair.of(value.first.getBytes(), value.second);
 
-            assertEquals(expected.first, split.first);
-            assertArrayEquals(entry.getKey(), expected.second, split.second);
+            assertThat(actual.first).containsExactly(expected.first);
+            assertThat(actual.second).containsExactly(expected.second);
         }
     }
 }

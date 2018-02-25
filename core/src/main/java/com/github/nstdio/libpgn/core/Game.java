@@ -1,25 +1,31 @@
 package com.github.nstdio.libpgn.core;
 
+import com.github.nstdio.libpgn.core.pgn.MoveText;
+import com.github.nstdio.libpgn.core.pgn.TagPair;
+import lombok.ToString;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static com.github.nstdio.libpgn.core.internal.EmptyArrays.EMPTY_STRING_ARRAY;
+import static com.github.nstdio.libpgn.core.internal.ArrayUtils.EMPTY_STRING_ARRAY;
 
 @SuppressWarnings("WeakerAccess")
-public class Game implements StringConvertible {
+@ToString
+public class Game {
     private final List<TagPair> tagPairs;
-    private final List<Movetext> moves;
+    private final List<MoveText> moves;
     private final Result result;
 
-    public Game(final List<TagPair> tagPairs, final List<Movetext> moves, final Result result) {
+    public Game(final List<TagPair> tagPairs, final List<MoveText> moves, final Result result) {
         this.tagPairs = tagPairs;
         this.moves = moves;
         this.result = result;
     }
 
-    public List<Movetext> moves() {
+    public List<MoveText> moves() {
         return moves;
     }
 
@@ -90,10 +96,12 @@ public class Game implements StringConvertible {
     }
 
     public String tag(String name) {
+        final byte[] nameBytes = name.getBytes();
         return Optional.ofNullable(tagPairs)
                 .flatMap(tp -> tp.stream()
-                        .filter(tagPair -> tagPair.getTag().equals(name))
+                        .filter(tagPair -> Arrays.equals(tagPair.getTag(), nameBytes))
                         .map(TagPair::getValue)
+                        .map(String::new)
                         .findFirst())
                 .orElse(null);
     }
@@ -108,28 +116,6 @@ public class Game implements StringConvertible {
                 .map(s -> s.split(",", 2))
                 .filter(parts -> parts.length > 0)
                 .map(parts -> parts[0]);
-    }
-
-    @Override
-    public String toPgnString() {
-        StringBuilder builder = new StringBuilder(512);
-
-        Optional.ofNullable(tagPairs)
-                .ifPresent(input -> {
-                    input.forEach(tagPair -> builder.append(tagPair.toPgnString()).append('\n'));
-                    builder.append('\n');
-                });
-
-        moves.forEach(movetext -> builder.append(movetext.toPgnString()).append(' '));
-
-        builder.append('\n').append(result.term).append('\n');
-
-        return builder.toString();
-    }
-
-    @Override
-    public String toString() {
-        return toPgnString();
     }
 
     public enum Result {

@@ -1,6 +1,10 @@
 package com.github.nstdio.libpgn.core.parser;
 
-import com.github.nstdio.libpgn.core.*;
+import com.github.nstdio.libpgn.core.Configuration;
+import com.github.nstdio.libpgn.core.Game;
+import com.github.nstdio.libpgn.core.GameIterator;
+import com.github.nstdio.libpgn.core.pgn.MoveText;
+import com.github.nstdio.libpgn.core.pgn.TagPair;
 
 import java.util.Iterator;
 import java.util.List;
@@ -24,7 +28,7 @@ public class PgnParser extends AbstractPgnParser implements Iterable<Game> {
      * For testing propose only
      */
     PgnParser(final PgnLexer lexer, final Configuration config, final Parser<List<TagPair>> tagPairParser,
-              final Parser<Game.Result> resultParser, final InputParser<List<Movetext>, Byte> movetextSequenceParser) {
+              final Parser<Game.Result> resultParser, final InputParser<List<MoveText>, Byte> movetextSequenceParser) {
         super(lexer, config, tagPairParser, resultParser, movetextSequenceParser);
     }
 

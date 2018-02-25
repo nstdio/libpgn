@@ -1,25 +1,26 @@
 package com.github.nstdio.libpgn.core.filter;
 
-import com.github.nstdio.libpgn.core.TagPair;
+import com.github.nstdio.libpgn.core.pgn.TagPair;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
 class TagPairFilter implements Predicate<List<TagPair>> {
-    final String name;
-    final String value;
+    final byte[] name;
+    final byte[] value;
 
     TagPairFilter(final String name, final String value) {
-        this.name = Objects.requireNonNull(name);
-        this.value = Objects.requireNonNull(value);
+        this.name = Objects.requireNonNull(name).getBytes();
+        this.value = Objects.requireNonNull(value).getBytes();
     }
 
-    private static TagPair find(final List<TagPair> input, final String name) {
+    private static TagPair find(final List<TagPair> input, final byte[] name) {
         return input
                 .stream()
-                .filter(tagPair -> tagPair.getTag().equals(name))
+                .filter(tagPair -> Arrays.equals(tagPair.getTag(), name))
                 .findFirst()
                 .orElse(null);
     }
@@ -33,7 +34,7 @@ class TagPairFilter implements Predicate<List<TagPair>> {
     public boolean test(final List<TagPair> input) {
         final TagPair named = named(input);
 
-        return named != null && named.getValue().equals(value);
+        return named != null && Arrays.equals(named.getValue(), value);
     }
 
     /**
@@ -56,7 +57,7 @@ class TagPairFilter implements Predicate<List<TagPair>> {
         public boolean test(final List<TagPair> input) {
             final TagPair tagPair = named(input);
             if (tagPair != null) {
-                final String tagPairValue = tagPair.getValue();
+                final String tagPairValue = tagPair.getValueAsString();
                 final int commaIdx = tagPairValue.indexOf(',');
 
                 if (value.equals(commaIdx == -1 ? tagPairValue : tagPairValue.substring(0, commaIdx))) {
@@ -121,7 +122,7 @@ class TagPairFilter implements Predicate<List<TagPair>> {
 
             if (tagPair != null) {
                 try {
-                    final int playerElo = Integer.parseInt(tagPair.getValue());
+                    final int playerElo = Integer.parseInt(tagPair.getValueAsString());
                     return test(playerElo);
                 } catch (NumberFormatException e) {
                     return false;
@@ -173,9 +174,9 @@ class TagPairFilter implements Predicate<List<TagPair>> {
 
         @Override
         public final boolean test(final List<TagPair> input) {
-            final TagPair tagPair = TagPairFilter.find(input, "Date");
+            final TagPair tagPair = TagPairFilter.find(input, "Date".getBytes());
             if (tagPair != null) {
-                final String value = tagPair.getValue();
+                final String value = tagPair.getValueAsString();
 
                 try {
                     return test(Integer.parseInt(value.substring(0, 4)));

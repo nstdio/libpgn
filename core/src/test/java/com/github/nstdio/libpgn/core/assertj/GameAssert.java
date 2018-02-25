@@ -1,9 +1,11 @@
 package com.github.nstdio.libpgn.core.assertj;
 
 import com.github.nstdio.libpgn.core.Game;
-import com.github.nstdio.libpgn.core.Movetext;
+import com.github.nstdio.libpgn.core.pgn.Move;
+import com.github.nstdio.libpgn.core.pgn.MoveText;
 import org.assertj.core.api.AbstractAssert;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 import static com.github.nstdio.libpgn.core.assertj.Assertions.assertThat;
@@ -20,22 +22,25 @@ public class GameAssert extends AbstractAssert<GameAssert, Game> {
                 .element(moveNo - 1)
                 .satisfies(movetext -> {
                     assertThat(movetext.moveNo()).isEqualTo(moveNo);
-                    assertThat(movetext.whiteMove()).isEqualTo(expectedMove);
+                    assertThat(movetext.white())
+                            .isPresent()
+                            .map(Move::move)
+                            .hasValue(expectedMove.getBytes());
                 });
 
-        return isMoveEqualTo(moveNo, expectedMove, Movetext::whiteMove);
+        return isMoveEqualTo(moveNo, expectedMove, MoveText::white);
     }
 
     public GameAssert isBlackMoveEqualTo(final int moveNo, final String expectedMove) {
-        return isMoveEqualTo(moveNo, expectedMove, Movetext::blackMove);
+        return isMoveEqualTo(moveNo, expectedMove, MoveText::black);
     }
 
-    private GameAssert isMoveEqualTo(final int moveNo, final String expectedMove, final Function<Movetext, String> moveExtractor) {
+    private GameAssert isMoveEqualTo(final int moveNo, final String expectedMove, final Function<MoveText, Optional<Move>> moveExtractor) {
         assertThat(actual.moves())
                 .element(moveNo - 1)
                 .satisfies(movetext -> {
                     assertThat(movetext.moveNo()).isEqualTo(moveNo);
-                    assertThat(moveExtractor.apply(movetext)).isEqualTo(expectedMove);
+                    assertThat(moveExtractor.apply(movetext).map(Move::move).orElse(null)).isEqualTo(expectedMove.getBytes());
                 });
 
         return this;

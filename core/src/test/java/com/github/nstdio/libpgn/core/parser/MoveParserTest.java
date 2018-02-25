@@ -1,8 +1,8 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.Move;
-import com.github.nstdio.libpgn.core.Movetext;
+import com.github.nstdio.libpgn.core.pgn.Move;
+import com.github.nstdio.libpgn.core.pgn.MoveText;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,8 +12,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.List;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.MOVE_WHITE;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.when;
 
@@ -26,9 +25,9 @@ public class MoveParserTest {
     @Mock
     private Configuration config;
     @Mock
-    private Parser<String> comment;
+    private Parser<byte[]> comment;
     @Mock
-    private Parser<List<Movetext>> variation;
+    private Parser<List<MoveText>> variation;
     @Mock
     private InlineNag inlineNag;
 
@@ -50,15 +49,14 @@ public class MoveParserTest {
         when(config.nagLimit()).thenReturn(8);
         when(config.threatNagAsComment()).thenReturn(nagDelim);
         when(nag.parse(anyObject())).then(invocationOnMock -> expectedNag);
-        when(comment.tryParse()).then(invocationOnMock -> commentText);
+        when(comment.tryParse()).then(invocationOnMock -> commentText.getBytes());
 
         final Move move = moveParser.parse(MOVE_WHITE);
 
-
-        assertEquals("Nf3", move.move());
-        assertArrayEquals(expectedNag, move.nag());
-
-        assertEquals(commentText + nagDelim + "Very good move" + nagDelim
-                + "Forced move (all others lose quickly)", move.comment());
+        assertThat(move.move()).containsExactly("Nf3".getBytes());
+        assertThat(move.nag()).containsExactly(expectedNag);
+        assertThat(move.comment())
+                .containsExactly((commentText + nagDelim + "Very good move" + nagDelim
+                        + "Forced move (all others lose quickly)").getBytes());
     }
 }

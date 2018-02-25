@@ -1,7 +1,7 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.Movetext;
+import com.github.nstdio.libpgn.core.pgn.MoveText;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -10,19 +10,19 @@ import java.util.List;
 import static com.github.nstdio.libpgn.core.TokenTypes.VARIATION_BEGIN;
 import static com.github.nstdio.libpgn.core.TokenTypes.VARIATION_END;
 
-class VariationParser extends AbstractParser implements Parser<List<Movetext>> {
-    private InputParser<List<Movetext>, Byte> movetextSequenceParser;
+class VariationParser extends AbstractParser implements Parser<List<MoveText>> {
+    private InputParser<List<MoveText>, Byte> movetextSequenceParser;
 
     VariationParser(PgnLexer lexer, Configuration config) {
         super(lexer, config);
     }
 
-    void setMovetextSequenceParser(InputParser<List<Movetext>, Byte> movetextSequenceParser) {
+    void setMovetextSequenceParser(InputParser<List<MoveText>, Byte> movetextSequenceParser) {
         this.movetextSequenceParser = movetextSequenceParser;
     }
 
     @Override
-    public List<Movetext> parse() {
+    public List<MoveText> parse() {
         lastNotEqThrow(VARIATION_BEGIN);
 
         do {
@@ -36,8 +36,8 @@ class VariationParser extends AbstractParser implements Parser<List<Movetext>> {
 
     @Nullable
     @Override
-    public List<Movetext> tryParse() {
-        List<Movetext> variation = null;
+    public List<MoveText> tryParse() {
+        List<MoveText> variation = null;
         if (lexer.last() == VARIATION_BEGIN) {
             variation = parse();
             lexer.next();

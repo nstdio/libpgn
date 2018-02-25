@@ -1,14 +1,17 @@
 package com.github.nstdio.libpgn.core;
 
+import com.github.nstdio.libpgn.core.pgn.MoveText;
+import com.github.nstdio.libpgn.core.pgn.TagPair;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
 public final class GameFilter {
     private final Predicate<List<TagPair>> tagPairFilter;
-    private final Predicate<List<Movetext>> movetextFilter;
+    private final Predicate<List<MoveText>> movetextFilter;
 
-    GameFilter(final Predicate<List<TagPair>> filters, final Predicate<List<Movetext>> movetextFilter) {
+    GameFilter(final Predicate<List<TagPair>> filters, final Predicate<List<MoveText>> movetextFilter) {
         tagPairFilter = filters;
         this.movetextFilter = movetextFilter;
     }
@@ -21,8 +24,8 @@ public final class GameFilter {
         return testImpl(tagPairFilter, Objects.requireNonNull(tagPairs));
     }
 
-    public boolean testMovetext(final List<Movetext> movetextList) {
-        return testImpl(movetextFilter, Objects.requireNonNull(movetextList));
+    public boolean testMoveText(final List<MoveText> moveTextList) {
+        return testImpl(movetextFilter, Objects.requireNonNull(moveTextList));
     }
 
     private <T> boolean testImpl(final Predicate<T> filters, final T input) {
@@ -31,7 +34,7 @@ public final class GameFilter {
 
     static final class GameFilterBuilder {
         private Predicate<List<TagPair>> tagPairFilter;
-        private Predicate<List<Movetext>> movetextFilter;
+        private Predicate<List<MoveText>> moveTextFilter;
 
         GameFilterBuilder() {
         }
@@ -45,17 +48,17 @@ public final class GameFilter {
             }
         }
 
-        void movetextFilter(final Predicate<List<Movetext>> movetextFilter) {
-            Objects.requireNonNull(movetextFilter);
-            if (this.movetextFilter == null) {
-                this.movetextFilter = movetextFilter;
+        void movetextFilter(final Predicate<List<MoveText>> moveTextFilter) {
+            Objects.requireNonNull(moveTextFilter);
+            if (this.moveTextFilter == null) {
+                this.moveTextFilter = moveTextFilter;
             } else {
-                this.movetextFilter = this.movetextFilter.and(movetextFilter);
+                this.moveTextFilter = this.moveTextFilter.and(moveTextFilter);
             }
         }
 
         GameFilter build() {
-            return new GameFilter(tagPairFilter, movetextFilter);
+            return new GameFilter(tagPairFilter, moveTextFilter);
         }
     }
 }

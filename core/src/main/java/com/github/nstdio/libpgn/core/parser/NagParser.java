@@ -19,13 +19,6 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
     }
 
     /**
-     * Poll all {@code NAG} tokens until non {@code NAG} token occurrence.
-     */
-    private void pollExcluded() {
-        lexer.poll(NAG);
-    }
-
-    /**
      * @param limit        Limit for return array size.
      * @param mergeWithNag In case if not null and not empty this array will be prepended to returned array.
      *
@@ -55,7 +48,7 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
         } while (lexer.next() == NAG && nags.size() < estimatedSize);
 
         if (lexer.last() == NAG) {
-            pollExcluded();
+            lexer.poll(NAG);
         }
 
         return toArray(nags);
@@ -77,7 +70,7 @@ class NagParser extends AbstractParser implements InputParser<short[], short[]> 
 
     @Nonnull
     private Collection<Short> collectionImpl() {
-        return config.allowDuplicationsInNags() ? new ArrayList<Short>() : new TreeSet<Short>();
+        return config.allowDuplicationsInNags() ? new ArrayList<>() : new TreeSet<>();
     }
 
     /**

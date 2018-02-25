@@ -1,16 +1,15 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.Move;
-import com.github.nstdio.libpgn.core.Movetext;
-import com.github.nstdio.libpgn.core.MovetextFactory;
+import com.github.nstdio.libpgn.core.pgn.Move;
+import com.github.nstdio.libpgn.core.pgn.MoveText;
 
 import javax.annotation.Nullable;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
 import static com.github.nstdio.libpgn.core.parser.ExceptionBuilder.syntaxException;
 
-class MovetextParser extends AbstractParser implements Parser<Movetext> {
+class MovetextParser extends AbstractParser implements Parser<MoveText> {
     private final InputParser<Move, Byte> moveInputParser;
 
     MovetextParser(PgnLexer lexer, Configuration config, InputParser<Move, Byte> moveInputParser) {
@@ -19,7 +18,7 @@ class MovetextParser extends AbstractParser implements Parser<Movetext> {
     }
 
     @Override
-    public Movetext parse() {
+    public MoveText parse() {
         lastNotEqThrow(MOVE_NUMBER);
         final String moveNumber = read();
         Move black = null, white = null;
@@ -53,12 +52,12 @@ class MovetextParser extends AbstractParser implements Parser<Movetext> {
             black = moveInputParser.parse(MOVE_BLACK);
         }
 
-        return MovetextFactory.of(moveNumber, white, black);
+        return MoveText.of(Integer.parseInt(moveNumber), white, black);
     }
 
     @Nullable
     @Override
-    public Movetext tryParse() {
-        return null;
+    public MoveText tryParse() {
+        throw new UnsupportedOperationException();
     }
 }

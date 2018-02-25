@@ -1,6 +1,8 @@
 package com.github.nstdio.libpgn.core;
 
 import com.github.nstdio.libpgn.core.GameFilter.GameFilterBuilder;
+import com.github.nstdio.libpgn.core.pgn.MoveText;
+import com.github.nstdio.libpgn.core.pgn.TagPair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -70,7 +72,7 @@ public class Configuration {
                 .strict(false)
                 .allowDuplicationsInNags(false)
                 .useNullOnInvalidNag(true)
-                .extractLiteralNags(true)
+                .extractLiteralNags(false)
                 .nagLimit(DEFAULT_NAG_LIMIT);
     }
 
@@ -215,7 +217,7 @@ public class Configuration {
 
         private static void checkPositive(final int check, final String argName) {
             if (check <= 0) {
-                throw new IllegalArgumentException(String.format("%s must be must be greater then zero", argName));
+                throw new IllegalArgumentException(String.format("%s must be greater then zero", argName));
             }
         }
 
@@ -258,7 +260,7 @@ public class Configuration {
             return this;
         }
 
-        public ConfigurationBuilder movetextFilter(final Predicate<List<Movetext>> movetextFilter) {
+        public ConfigurationBuilder moveTextFilter(final Predicate<List<MoveText>> movetextFilter) {
             Objects.requireNonNull(gameFilterBuilder, "First call gameFilter() method.");
             gameFilterBuilder.movetextFilter(movetextFilter);
 

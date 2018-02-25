@@ -1,32 +1,32 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.Movetext;
 import com.github.nstdio.libpgn.core.TokenTypes;
+import com.github.nstdio.libpgn.core.pgn.MoveText;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-class MovetextSequenceParser extends AbstractParser implements InputParser<List<Movetext>, Byte> {
+class MoveTextSequenceParser extends AbstractParser implements InputParser<List<MoveText>, Byte> {
 
-    private final Parser<Movetext> movetextParser;
+    private final Parser<MoveText> movetextParser;
 
-    MovetextSequenceParser(final PgnLexer lexer, final Configuration config, final Parser<Movetext> movetextParser) {
+    MoveTextSequenceParser(final PgnLexer lexer, final Configuration config, final Parser<MoveText> moveTextParser) {
         super(lexer, config);
-        this.movetextParser = Objects.requireNonNull(movetextParser);
+        this.movetextParser = Objects.requireNonNull(moveTextParser);
     }
 
     @Override
-    public List<Movetext> parse(Byte termToken) {
+    public List<MoveText> parse(Byte termToken) {
         if (config.skipMovetext()) {
             lexer.poll(TokenTypes.GAMETERM);
 
             return Collections.emptyList();
         }
 
-        final List<Movetext> moves = new ArrayList<>();
+        final List<MoveText> moves = new ArrayList<>();
 
         while (lexer.last() != termToken) {
             moves.add(movetextParser.parse());

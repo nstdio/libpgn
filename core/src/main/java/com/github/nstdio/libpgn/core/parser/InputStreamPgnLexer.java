@@ -7,29 +7,16 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Objects;
-import java.util.function.IntPredicate;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
 import static com.github.nstdio.libpgn.core.parser.LexicalScope.*;
 
 public class InputStreamPgnLexer implements PgnLexer {
+    private static final int[] MOVE_TERMS = {'\r', '\n', '\t', ' ', '{', '(', ')', '$', ';', '*'};
+    private static final int[] NAG_TERMS = {' ', '\r', '\n', '\t', '$', '{', '(', ')', '*'};
+    private static final int[] MOVE_NUMBER_TERMS = {' ', '\r', '\n', '\t', '.'};
+
     private final PgnInputStream in;
-    private final IntPredicate nagEndPredicate = value -> {
-        switch (value) {
-            case ' ':
-            case '\r':
-            case '\n':
-            case '\t':
-            case '$':
-            case '{':
-            case '(':
-            case ')':
-            case '*':
-                return true;
-            default:
-                return false;
-        }
-    };
     private byte scope = SCOPE_UNDEFINED;
     private byte lastToken = UNDEFINED;
     private int tokenLength;
@@ -61,7 +48,6 @@ public class InputStreamPgnLexer implements PgnLexer {
 
         try {
             return of(Files.newInputStream(file.toPath(), StandardOpenOption.READ));
-
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -222,18 +208,7 @@ public class InputStreamPgnLexer implements PgnLexer {
                 case UNDEFINED:
                 case MOVE_BLACK:
                     lastToken = MOVE_WHITE;
-                    tokenLength = in.until(
-                            '\r',
-                            '\n',
-                            '\t',
-                            ' ',
-                            '{',
-                            '(',
-                            ')',
-                            '$',
-                            ';',
-                            '*'
-                    );
+                    tokenLength = in.until(MOVE_TERMS);
                     break;
                 case MOVE_WHITE:
                 case COMMENT_END:
@@ -242,18 +217,7 @@ public class InputStreamPgnLexer implements PgnLexer {
                 case SKIP_PREV_MOVE:
                 case ROL_COMMENT:
                     lastToken = MOVE_BLACK;
-                    tokenLength = in.until(
-                            '\r',
-                            '\n',
-                            '\t',
-                            ' ',
-                            '{',
-                            '(',
-                            ')',
-                            '$',
-                            ';',
-                            '*'
-                    );
+                    tokenLength = in.until(MOVE_TERMS);
                     break;
             }
         } else {
@@ -269,13 +233,7 @@ public class InputStreamPgnLexer implements PgnLexer {
                 case '8':
                 case '9':
                     lastToken = MOVE_NUMBER;
-                    final int whiteSpace = in.until(
-                            ' ',
-                            '\r',
-                            '\n',
-                            '\t',
-                            '.'
-                    ) + 1;
+                    final int whiteSpace = in.until(MOVE_NUMBER_TERMS) + 1;
 
                     tokenLength = whiteSpace == 1 ? 1 : whiteSpace - 1;
                     break;
@@ -314,7 +272,7 @@ public class InputStreamPgnLexer implements PgnLexer {
                     break;
                 case '$':
                     lastToken = NAG;
-                    tokenLength = in.until(nagEndPredicate);
+                    tokenLength = in.until(NAG_TERMS);
                     break;
                 case '\n':
                     next();
@@ -408,7 +366,7 @@ public class InputStreamPgnLexer implements PgnLexer {
         try {
             in.skip(tokenLength - 1);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -424,8 +382,8 @@ public class InputStreamPgnLexer implements PgnLexer {
     @Override
     public void poll(final byte terminationToken) {
         while (lastToken != terminationToken && lastToken != UNDEFINED) {
-            next();
             skip();
+            next();
         }
     }
 

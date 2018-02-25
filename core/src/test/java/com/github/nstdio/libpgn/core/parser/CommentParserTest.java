@@ -7,14 +7,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.github.nstdio.libpgn.core.Configuration.COMMENT_LENGTH_UNLIMITED;
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CommentParserTest extends MockedEnvAware {
-    private Parser<String> commentParser;
+    private Parser<byte[]> commentParser;
 
     @Before
     public void setUp() throws Exception {
@@ -46,9 +46,9 @@ public class CommentParserTest extends MockedEnvAware {
         when(mockConfiguration.trimComment()).thenReturn(false);
         when(mockConfiguration.commentMaxLength()).thenReturn(Integer.MAX_VALUE);
 
-        final String comment = commentParser.tryParse();
-
-        assertEquals(firstComment + secondComment, comment);
+        final byte[] comment = commentParser.tryParse();
+        assertThat(comment)
+                .containsExactly((firstComment + secondComment).getBytes());
     }
 
     @Test
@@ -61,9 +61,10 @@ public class CommentParserTest extends MockedEnvAware {
 
         mockLexerMethodResults(comment);
 
-        final String actual = commentParser.tryParse();
+        final byte[] actual = commentParser.tryParse();
 
-        assertEquals(expected, actual);
+        assertThat(actual)
+                .containsExactly(expected.getBytes());
     }
 
 
@@ -77,9 +78,9 @@ public class CommentParserTest extends MockedEnvAware {
 
         mockLexerMethodResults(comment);
 
-        final String actual = commentParser.tryParse();
+        final byte[] actual = commentParser.tryParse();
 
-        assertEquals(expected, actual);
+        assertThat(actual).containsExactly(expected.getBytes());
     }
 
     @Test

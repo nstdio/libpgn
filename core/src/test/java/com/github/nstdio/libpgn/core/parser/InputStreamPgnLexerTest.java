@@ -1,5 +1,6 @@
 package com.github.nstdio.libpgn.core.parser;
 
+import com.github.nstdio.libpgn.core.TokenTypes;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -311,5 +312,25 @@ public class InputStreamPgnLexerTest {
 
         inputs.forEach((key, value) -> assertThatLexer(value).linesCountIsEqualTo(key));
 
+    }
+
+    @Test
+    public void poll() {
+        final String input = "1. e4 $6$2$3$4$5$1$7 *";
+
+        final InputStreamPgnLexer lexer = InputStreamPgnLexer.of(input.getBytes());
+        lexer.next();
+        lexer.poll(NAG);
+
+        assertThatLexer(lexer)
+                .lastTokenIsEqualTo(NAG).readIsEqualTo("$6")
+                .nextTokenIsEqualTo(NAG).readIsEqualTo("$2")
+                .nextTokenIsEqualTo(NAG).readIsEqualTo("$3")
+                .nextTokenIsEqualTo(NAG).readIsEqualTo("$4")
+                .nextTokenIsEqualTo(NAG).readIsEqualTo("$5")
+                .nextTokenIsEqualTo(NAG).readIsEqualTo("$1")
+                .nextTokenIsEqualTo(NAG).readIsEqualTo("$7")
+                .nextTokenIsEqualTo(TokenTypes.GAMETERM).readIsEqualTo("*")
+                .nextTokenIsEqualTo(TokenTypes.UNDEFINED).readIsNull();
     }
 }

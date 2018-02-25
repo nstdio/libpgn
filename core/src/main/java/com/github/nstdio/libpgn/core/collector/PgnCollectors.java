@@ -1,11 +1,11 @@
 package com.github.nstdio.libpgn.core.collector;
 
 import com.github.nstdio.libpgn.core.Game;
-import com.github.nstdio.libpgn.core.TagPair;
 import com.github.nstdio.libpgn.core.filter.Filters;
 import com.github.nstdio.libpgn.core.internal.IntPair;
 import com.github.nstdio.libpgn.core.internal.Pair;
 import com.github.nstdio.libpgn.core.internal.StringUtils;
+import com.github.nstdio.libpgn.core.pgn.TagPair;
 
 import java.util.*;
 import java.util.function.Consumer;

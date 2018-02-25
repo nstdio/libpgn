@@ -4,6 +4,7 @@ import com.github.nstdio.libpgn.core.Game;
 import com.github.nstdio.libpgn.core.fen.FENs;
 import com.github.nstdio.libpgn.core.io.PgnInputStream;
 import com.github.nstdio.libpgn.core.parser.InputStreamPgnLexer;
+import com.github.nstdio.libpgn.core.pgn.Move;
 import org.assertj.core.api.ThrowableAssertAlternative;
 import org.assertj.core.api.ThrowableTypeAssert;
 
@@ -19,7 +20,11 @@ public class Assertions {
     }
 
     public static PgnLexerAssert assertThatLexer(final String input) {
-        return new PgnLexerAssert(new InputStreamPgnLexer(new PgnInputStream(new ByteArrayInputStream(input.getBytes()))));
+        return assertThatLexer(new InputStreamPgnLexer(new PgnInputStream(new ByteArrayInputStream(input.getBytes()))));
+    }
+
+    public static PgnLexerAssert assertThatLexer(final InputStreamPgnLexer lexer) {
+        return new PgnLexerAssert(lexer);
     }
 
     public static GameAssert assertThat(final Game game) {
@@ -28,6 +33,10 @@ public class Assertions {
 
     public static ResultAssert assertThat(final Game.Result result) {
         return new ResultAssert(result);
+    }
+
+    public static MoveAssert assertThat(final Move move) {
+        return new MoveAssert(move);
     }
 
     public static ThrowableAssertAlternative<IllegalArgumentException> assertThatUnexpectedCharacter(final String fen, final char c, final int index) {

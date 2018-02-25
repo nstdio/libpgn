@@ -115,6 +115,11 @@ public class TokenTypes {
      */
     public static final byte ROL_COMMENT = 20;
 
+    /**
+     * The literal Numeric Annotation Glyphs. Example: "e4!", "d5?!", "Nd7!!"
+     */
+    public static final byte NAG_LITERAL = 21;
+
     private static final String[] LITERALS = {
             "UNDEFINED",
             "TP_BEGIN",
@@ -140,8 +145,8 @@ public class TokenTypes {
     };
 
     /**
-     *
      * @param token One of {@link TokenTypes} constants.
+     *
      * @return The string description of token.
      */
     public static String descOf(byte token) {

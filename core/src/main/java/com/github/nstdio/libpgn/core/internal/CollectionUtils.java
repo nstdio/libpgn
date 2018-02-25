@@ -2,7 +2,9 @@ package com.github.nstdio.libpgn.core.internal;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 public final class CollectionUtils {
     private CollectionUtils() {
@@ -26,5 +28,13 @@ public final class CollectionUtils {
         }
 
         return ret;
+    }
+
+    public static <T> boolean isEmpty(final Collection<T> collection) {
+        return collection == null || collection.isEmpty();
+    }
+
+    public static <T> List<T> nullToEmpty(final List<T> collection) {
+        return collection == null ? Collections.emptyList() : collection;
     }
 }

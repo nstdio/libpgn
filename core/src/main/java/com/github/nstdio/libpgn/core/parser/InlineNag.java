@@ -1,6 +1,7 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.NAG;
+import com.github.nstdio.libpgn.core.internal.ArrayUtils;
 import com.github.nstdio.libpgn.core.internal.CollectionUtils;
 import com.github.nstdio.libpgn.core.internal.Pair;
 
@@ -9,7 +10,8 @@ import java.util.TreeSet;
 
 class InlineNag {
 
-    Pair<String, short[]> split(String move) {
+    Pair<byte[], short[]> split(byte[] moveBytes) {
+        final String move = new String(moveBytes);
         Set<Short> nags = new TreeSet<>();
 
         int firstOccurrence = -1;
@@ -103,11 +105,11 @@ class InlineNag {
         }
 
         if (firstOccurrence == -1) {
-            return Pair.of(move, null);
+            return Pair.of(move.getBytes(), ArrayUtils.EMPTY_SHORT_ARRAY);
         }
 
         return Pair.of(
-                move.substring(0, firstOccurrence),
+                move.substring(0, firstOccurrence).getBytes(),
                 CollectionUtils.toArray(nags)
         );
     }

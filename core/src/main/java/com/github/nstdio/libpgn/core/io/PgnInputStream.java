@@ -7,7 +7,7 @@ public class PgnInputStream extends FilterInputStream {
     private static final int EOF = -1;
 
     public PgnInputStream(final InputStream in) {
-        super(in.markSupported() ? in : new BufferedInputStream(in));
+        super(in.markSupported() ? in : new BufferedInputStream(in, 8192));
     }
 
     @Override
@@ -32,7 +32,7 @@ public class PgnInputStream extends FilterInputStream {
      *
      * @throws IOException if an I/O error occurs.
      */
-    public int until(final IntPredicate predicate) throws IOException {
+    int until(final IntPredicate predicate) throws IOException {
         int current;
         int rc = 0;
 
@@ -74,8 +74,7 @@ public class PgnInputStream extends FilterInputStream {
         return EOF;
     }
 
-    public int until(final int i1, final int i2, final int i3, final int i4, final int i5, final int i6,
-                     final int i7, final int i8, final int i9, final int i10) throws IOException {
+    public int until(final int[] stops) throws IOException {
         int cur;
         int rc = 0;
 
@@ -84,31 +83,12 @@ public class PgnInputStream extends FilterInputStream {
             cur = read();
             rc++;
 
-            if (cur == i1 || cur == i2 || cur == i3 || cur == i4 || cur == i5 || cur == i6 || cur == i7
-                    || cur == i8 || cur == i9 || cur == i10) {
-                reset();
-                return rc;
-            }
-
-        } while (cur != EOF);
-
-        reset();
-
-        return EOF;
-    }
-
-    public int until(final int i1, final int i2, final int i3, final int i4, final int i5) throws IOException {
-        int cur;
-        int rc = 0;
-
-        mark(0);
-        do {
-            cur = read();
-            rc++;
-
-            if (cur == i1 || cur == i2 || cur == i3 || cur == i4 || cur == i5) {
-                reset();
-                return rc;
+            //noinspection ForLoopReplaceableByForEach
+            for (int i = 0, sz = stops.length; i < sz; i++) {
+                if (cur == stops[i]) {
+                    reset();
+                    return rc;
+                }
             }
 
         } while (cur != EOF);
@@ -189,6 +169,7 @@ public class PgnInputStream extends FilterInputStream {
                 default:
                     isWhiteSpace = false;
                     reset();
+                    break;
             }
         } while (isWhiteSpace);
     }

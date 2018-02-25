@@ -1,10 +1,11 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.Move;
-import com.github.nstdio.libpgn.core.Movetext;
 import com.github.nstdio.libpgn.core.NAG;
+import com.github.nstdio.libpgn.core.internal.ArrayUtils;
 import com.github.nstdio.libpgn.core.internal.Pair;
+import com.github.nstdio.libpgn.core.pgn.Move;
+import com.github.nstdio.libpgn.core.pgn.MoveText;
 
 import java.util.List;
 import java.util.Objects;
@@ -13,19 +14,19 @@ class MoveParser extends AbstractParser implements InputParser<Move, Byte> {
 
     private static final String DELIM = ". ";
     private final InputParser<short[], short[]> nagParser;
-    private final Parser<String> commentParser;
-    private final Parser<List<Movetext>> variationParser;
+    private final Parser<byte[]> commentParser;
+    private final Parser<List<MoveText>> variationParser;
     private final InlineNag inlineNag;
 
     MoveParser(final PgnLexer lexer, final Configuration config, final InputParser<short[], short[]> nagParser,
-               final Parser<String> comment, final Parser<List<Movetext>> variation) {
+               final Parser<byte[]> comment, final Parser<List<MoveText>> variation) {
         this(lexer, config, nagParser, comment, variation, new InlineNag());
     }
 
     // For testing propose only
     @SuppressWarnings("WeakerAccess")
     MoveParser(final PgnLexer lexer, Configuration config, final InputParser<short[], short[]> nagParser,
-               final Parser<String> comment, final Parser<List<Movetext>> variation, final InlineNag inlineNag) {
+               final Parser<byte[]> comment, final Parser<List<MoveText>> variation, final InlineNag inlineNag) {
         super(lexer, config);
         this.nagParser = Objects.requireNonNull(nagParser);
         this.commentParser = Objects.requireNonNull(comment);
@@ -37,10 +38,10 @@ class MoveParser extends AbstractParser implements InputParser<Move, Byte> {
     public Move parse(Byte input) {
         lastNotEqThrow(input);
         short[] nags = null;
-        String move = read();
+        byte[] move = readBytes();
 
         if (config.extractLiteralNags()) {
-            final Pair<String, short[]> pair = inlineNag.split(move);
+            final Pair<byte[], short[]> pair = inlineNag.split(move);
             move = pair.first;
             nags = pair.second;
         }
@@ -48,9 +49,9 @@ class MoveParser extends AbstractParser implements InputParser<Move, Byte> {
         lexer.next();
 
         nags = nagParser.parse(nags);
-        List<Movetext> variation = variationParser.tryParse();
+        List<MoveText> variation = variationParser.tryParse();
         nags = nagParser.parse(nags);
-        String comment = commentParser.tryParse();
+        byte[] comment = commentParser.tryParse();
         nags = nagParser.parse(nags);
 
         if (variation == null) {
@@ -59,14 +60,13 @@ class MoveParser extends AbstractParser implements InputParser<Move, Byte> {
         }
 
         if (config.threatNagAsComment() != null) {
-
-            if (comment == null) {
-                comment = NAG.descriptionOf(nags, DELIM);
+            if (ArrayUtils.isEmptyOrNull(comment)) {
+                comment = NAG.descriptionOf(nags, DELIM).getBytes();
             } else {
-                comment += DELIM + NAG.descriptionOf(nags, DELIM);
+                comment = ArrayUtils.concat(comment, (DELIM + NAG.descriptionOf(nags, DELIM)).getBytes());
             }
         }
 
-        return new Move(move, comment, nags, variation);
+        return Move.of(move, comment, nags, variation);
     }
 }

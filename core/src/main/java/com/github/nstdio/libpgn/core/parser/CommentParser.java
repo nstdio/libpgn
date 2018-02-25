@@ -1,25 +1,28 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
+import com.github.nstdio.libpgn.core.internal.ArrayUtils;
+
+import java.util.Arrays;
 
 import static com.github.nstdio.libpgn.core.Configuration.COMMENT_LENGTH_UNLIMITED;
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
 
-class CommentParser extends AbstractParser implements Parser<String> {
+class CommentParser extends AbstractParser implements Parser<byte[]> {
 
     CommentParser(PgnLexer lexer, Configuration config) {
         super(lexer, config);
     }
 
     @Override
-    public String parse() {
+    public byte[] parse() {
         if (lexer.next() == COMMENT_END) { // {} empty comment
-            return "";
+            return ArrayUtils.EMPTY_BYTE_ARRAY;
         }
 
         lastNotEqThrow(COMMENT);
 
-        final String comment = config.trimComment() ? read().trim() : read();
+        final byte[] comment = config.trimComment() ? read().trim().getBytes() : readBytes();
 
         nextNotEqThrow(COMMENT_END);
 
@@ -27,22 +30,19 @@ class CommentParser extends AbstractParser implements Parser<String> {
     }
 
     @Override
-    public String tryParse() {
-        String comment = null;
+    public byte[] tryParse() {
+        byte[] comment = null;
         if (lexer.last() == COMMENT_BEGIN) {
             comment = parse();
             if (lexer.next() == COMMENT_BEGIN) {
-                final String nextComment = tryParse();
-                if (nextComment != null) {
-                    comment += nextComment;
-                }
+                comment = ArrayUtils.concat(comment, tryParse());
             }
         }
 
         if (comment != null && config.commentMaxLength() != COMMENT_LENGTH_UNLIMITED &&
-                comment.length() > config.commentMaxLength()) {
+                comment.length > config.commentMaxLength()) {
 
-            return comment.substring(0, config.commentMaxLength());
+            return Arrays.copyOf(comment, config.commentMaxLength());
         }
 
         return config.skipComment() ? null : comment;

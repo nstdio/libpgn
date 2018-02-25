@@ -1,11 +1,12 @@
 package com.github.nstdio.libpgn.core.filter;
 
-import com.github.nstdio.libpgn.core.*;
+import com.github.nstdio.libpgn.core.Game;
 import com.github.nstdio.libpgn.core.internal.StringUtils;
+import com.github.nstdio.libpgn.core.pgn.MoveText;
+import com.github.nstdio.libpgn.core.pgn.TagPair;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import static com.github.nstdio.libpgn.core.filter.TagPairFilter.Elo.*;
@@ -83,6 +84,7 @@ public final class Filters {
      * @param blackName The Black player full name.
      *
      * @return The filter object.
+     *
      * @see Filters#whiteEquals(String)
      * @see Filters#tagEquals(String, String)
      */
@@ -166,53 +168,53 @@ public final class Filters {
         return yearGreaterThenOrEquals(start).and(yearLessThenOrEquals(end));
     }
 
-    public static Predicate<List<Movetext>> opening(final List<Movetext> moves) {
+    public static Predicate<List<MoveText>> opening(final List<MoveText> moves) {
         Objects.requireNonNull(moves);
         return new StartsWithMovesFilter(moves);
     }
 
-    public static Predicate<List<Movetext>> opening(final String... moves) {
-        return new StartsWithMovesFilter(MovetextFactory.moves(moves));
+    public static Predicate<List<MoveText>> opening(final String... moves) {
+        return new StartsWithMovesFilter(MoveText.moves(moves));
     }
 
-    public static Predicate<List<Movetext>> containsMoves(final List<Movetext> moves) {
+    public static Predicate<List<MoveText>> containsMoves(final List<MoveText> moves) {
         Objects.requireNonNull(moves);
         return movetexts -> movetexts.containsAll(moves);
     }
 
-    public static Predicate<List<Movetext>> whiteMates() {
-        return moves -> Optional.ofNullable(moves.get(moves.size() - 1).white()).filter(Move::isMate).isPresent();
+    public static Predicate<List<MoveText>> whiteMates() {
+        throw new RuntimeException("not implemented yet");
     }
 
-    public static Predicate<List<Movetext>> blackMates() {
-        return moves -> Optional.ofNullable(moves.get(moves.size() - 1).black()).filter(Move::isMate).isPresent();
+    public static Predicate<List<MoveText>> blackMates() {
+        throw new RuntimeException("not implemented yet");
     }
 
-    public static Predicate<List<Movetext>> moveCountEquals(final int moveCount) {
+    public static Predicate<List<MoveText>> moveCountEquals(final int moveCount) {
         return moves -> moves.size() == moveCount;
     }
 
-    public static Predicate<List<Movetext>> moveCountGreaterThen(final int moveCount) {
+    public static Predicate<List<MoveText>> moveCountGreaterThen(final int moveCount) {
         return moves -> moves.size() > moveCount;
     }
 
-    public static Predicate<List<Movetext>> moveCountGreaterThenOrEquals(final int moveCount) {
+    public static Predicate<List<MoveText>> moveCountGreaterThenOrEquals(final int moveCount) {
         return moves -> moves.size() >= moveCount;
     }
 
-    public static Predicate<List<Movetext>> moveCountLessThen(final int moveCount) {
+    public static Predicate<List<MoveText>> moveCountLessThen(final int moveCount) {
         return moves -> moves.size() < moveCount;
     }
 
-    public static Predicate<List<Movetext>> moveCountLessThenOrEquals(final int moveCount) {
+    public static Predicate<List<MoveText>> moveCountLessThenOrEquals(final int moveCount) {
         return moves -> moves.size() <= moveCount;
     }
 
-    public static Predicate<List<Movetext>> moveCountBetween(final int start, final int end) {
+    public static Predicate<List<MoveText>> moveCountBetween(final int start, final int end) {
         return moveCountGreaterThenOrEquals(start).and(moveCountLessThenOrEquals(end));
     }
 
-    public static Predicate<Game> decorateMoves(final Predicate<List<Movetext>> predicate) {
+    public static Predicate<Game> decorateMoves(final Predicate<List<MoveText>> predicate) {
         return game -> predicate.test(game.moves());
     }
 

@@ -14,6 +14,11 @@ public class PgnLexerAssert extends AbstractAssert<PgnLexerAssert, InputStreamPg
         super(lexer, PgnLexerAssert.class);
     }
 
+    public PgnLexerAssert lastTokenIsEqualTo(final byte lastToken) {
+        assertThat(actual.last()).isEqualTo(lastToken);
+        return this;
+    }
+
     public PgnLexerAssert nextTokenIsEqualTo(final byte expectedToken) {
         assertThat(actual.next()).isEqualTo(expectedToken);
         return this;
