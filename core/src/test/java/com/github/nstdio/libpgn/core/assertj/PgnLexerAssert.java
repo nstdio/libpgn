@@ -91,4 +91,19 @@ public class PgnLexerAssert extends AbstractAssert<PgnLexerAssert, InputStreamPg
 
         return this;
     }
+
+    public PgnLexerAssert producesSameTokensAs(final InputStreamPgnLexer expected) {
+        while (true) {
+            assertThat(actual.next()).isEqualTo(expected.next());
+
+            if (expected.last() == TokenTypes.UNDEFINED && actual.last() == TokenTypes.UNDEFINED) {
+                break;
+            }
+
+            actual.skip();
+            expected.skip();
+        }
+
+        return this;
+    }
 }

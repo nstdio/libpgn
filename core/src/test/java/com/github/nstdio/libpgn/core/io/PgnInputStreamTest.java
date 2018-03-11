@@ -14,7 +14,7 @@ public class PgnInputStreamTest {
     private PgnInputStream stream;
 
     private static PgnInputStream ofString(final String input) {
-        return new PgnInputStream(new ByteArrayInputStream(input.getBytes()));
+        return PgnInputStreamFactory.of(new ByteArrayInputStream(input.getBytes()));
     }
 
     @After

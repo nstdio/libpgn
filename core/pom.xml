@@ -23,6 +23,8 @@
         <concurrentlinkedhashmap-lru.version>1.4.2</concurrentlinkedhashmap-lru.version>
         <assertj-core.version>3.8.0</assertj-core.version>
         <lombok.version>1.16.20</lombok.version>
+        <slf4j-api.version>1.7.25</slf4j-api.version>
+        <commons-compress.version>1.8</commons-compress.version>
     </properties>
 
     <dependencies>
@@ -59,6 +61,16 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>${commons-compress.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -2,13 +2,13 @@ package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.TokenTypes;
 import com.github.nstdio.libpgn.core.io.PgnInputStream;
+import com.github.nstdio.libpgn.core.io.PgnInputStreamFactory;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
+import static com.github.nstdio.libpgn.core.internal.ExceptionUtils.wrapChecked;
 import static com.github.nstdio.libpgn.core.parser.LexicalScope.*;
 
 public class InputStreamPgnLexer implements PgnLexer {
@@ -44,13 +44,7 @@ public class InputStreamPgnLexer implements PgnLexer {
      * @throws UncheckedIOException if an I/O error occurs.
      */
     public static InputStreamPgnLexer of(final File file) {
-        Objects.requireNonNull(file);
-
-        try {
-            return of(Files.newInputStream(file.toPath(), StandardOpenOption.READ));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        return of(PgnInputStreamFactory.of(file));
     }
 
     /**
@@ -64,7 +58,7 @@ public class InputStreamPgnLexer implements PgnLexer {
      */
     public static InputStreamPgnLexer of(final InputStream in) {
         Objects.requireNonNull(in);
-        return new InputStreamPgnLexer(new PgnInputStream(in));
+        return new InputStreamPgnLexer(PgnInputStreamFactory.of(in));
     }
 
     /**
@@ -363,20 +357,15 @@ public class InputStreamPgnLexer implements PgnLexer {
     @Override
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void skip() {
-        try {
+        wrapChecked(() -> {
+            // to avoid boxing
             in.skip(tokenLength - 1);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        });
     }
 
     @Override
     public void close() {
-        try {
-            terminate();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        wrapChecked(this::terminate);
     }
 
     @Override

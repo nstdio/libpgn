@@ -30,7 +30,6 @@ public abstract class AbstractPgnParser extends AbstractParser {
         tagPairParser = new TagPairParser(lexer, config);
         resultParser = new ResultParser(lexer, config);
 
-
         NagParser nagParser = new NagParser(lexer, config);
         CommentParser commentParser = new CommentParser(lexer, config);
 

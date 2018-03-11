@@ -1,13 +1,17 @@
 package com.github.nstdio.libpgn.core.io;
 
-import java.io.*;
+import java.io.EOFException;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Objects;
 import java.util.function.IntPredicate;
 
-public class PgnInputStream extends FilterInputStream {
+public abstract class PgnInputStream extends FilterInputStream {
     private static final int EOF = -1;
 
-    public PgnInputStream(final InputStream in) {
-        super(in.markSupported() ? in : new BufferedInputStream(in, 8192));
+    PgnInputStream(final InputStream in) {
+        super(Objects.requireNonNull(in));
     }
 
     @Override
