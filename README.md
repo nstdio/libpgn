@@ -1,4 +1,4 @@
-# libpgn
+# libpgn [![Build Status](https://travis-ci.org/nstdio/libpgn.svg?branch=master)](https://travis-ci.org/nstdio/libpgn)
 The PGN (Portable Game Notation) parser.
 
 This project is an attempt to learn something new. Since I was always interested in working with the text, I tried to write a parser for PGN files. I was wondering what difficulties might arise during the design and implementation of the parser.
