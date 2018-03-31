@@ -1,8 +1,8 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.internal.Pair;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,13 +12,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class InlineNagTest {
     private InlineNag inlineNag;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         inlineNag = new InlineNag();
     }
 
     @Test
-    public void simple() throws Exception {
+    public void simple() {
         Map<String, Pair<String, short[]>> map = new HashMap<>();
 
         map.put("e4", Pair.of("e4", new short[0]));

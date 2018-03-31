@@ -1,7 +1,7 @@
 package com.github.nstdio.libpgn.core.pgn;
 
 import com.github.nstdio.libpgn.core.internal.ArrayUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.github.nstdio.libpgn.core.assertj.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;

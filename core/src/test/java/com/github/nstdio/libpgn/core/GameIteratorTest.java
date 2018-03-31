@@ -2,7 +2,7 @@ package com.github.nstdio.libpgn.core;
 
 import com.github.nstdio.libpgn.core.parser.InputStreamPgnLexer;
 import com.github.nstdio.libpgn.core.parser.PgnParser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.NoSuchElementException;
 import java.util.stream.IntStream;

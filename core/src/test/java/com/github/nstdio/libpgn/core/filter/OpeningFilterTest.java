@@ -1,8 +1,8 @@
 package com.github.nstdio.libpgn.core.filter;
 
 import com.github.nstdio.libpgn.core.pgn.MoveText;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +51,7 @@ public class OpeningFilterTest {
     }
 
     @Test
-    @Ignore("FIX")
+    @Disabled("FIX")
     public void takingMinimalSize() {
         final List<MoveText> movesExpected = moves("e4", "e5", "Nf3");
         final List<MoveText> movesInput = moves("e4", "e5", "Nf3", "d6", "Nc3", "g6");

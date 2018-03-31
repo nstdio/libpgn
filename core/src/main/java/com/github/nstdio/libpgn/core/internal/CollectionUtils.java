@@ -34,6 +34,10 @@ public final class CollectionUtils {
         return collection == null || collection.isEmpty();
     }
 
+    public static <T> boolean isNotEmptyOrNull(final Collection<T> collection) {
+        return collection == null || collection.isEmpty();
+    }
+
     public static <T> List<T> nullToEmpty(final List<T> collection) {
         return collection == null ? Collections.emptyList() : collection;
     }

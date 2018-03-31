@@ -1,8 +1,8 @@
 package com.github.nstdio.libpgn.core.io;
 
 import com.github.nstdio.libpgn.core.parser.InputStreamPgnLexer;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -13,6 +13,7 @@ import java.util.zip.ZipException;
 import static com.github.nstdio.libpgn.core.assertj.Assertions.assertThatLexer;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+// TODO rewrite in @ParameterizedTest way.
 public class PgnInputStreamFactoryTest {
     @Nonnull
     private static File resourceFile(final String resourceName) {
@@ -41,7 +42,7 @@ public class PgnInputStreamFactoryTest {
     }
 
     @Test
-    @Ignore("Not Supported by Commons Compress.")
+    @Disabled("Not Supported by Commons Compress.")
     public void twoGames_7ZIP() {
         assertSameTokenStream("/compress/two_games.7z", "/compress/uncompressed_2.pgn");
     }

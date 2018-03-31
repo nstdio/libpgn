@@ -2,9 +2,9 @@ package com.github.nstdio.libpgn.core;
 
 import com.github.nstdio.libpgn.core.pgn.Move;
 import com.github.nstdio.libpgn.core.pgn.MoveText;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,7 +20,7 @@ public class MovetextTest {
     private String blackMove;
     private String blackComment;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         moveNumber = "1";
         whiteMove = "e4";
@@ -30,7 +30,7 @@ public class MovetextTest {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         movetext = null;
     }
@@ -54,7 +54,7 @@ public class MovetextTest {
     }
 
     @Test
-    public void equalsSimple() throws Exception {
+    public void equalsSimple() {
         MoveText m1 = MoveText.ofWhite(1, Move.of("d4"));
         MoveText m2 = MoveText.ofWhite(1, Move.of("d4"));
 
@@ -93,7 +93,7 @@ public class MovetextTest {
     }
 
     @Test
-    public void factory() throws Exception {
+    public void factory() {
         MoveText m = MoveText.ofWhite(1, "d4");
         MoveText m2 = MoveText.ofWhite(1, "d4");
         MoveText m3 = MoveText.ofWhite(1, Move.of("d4"));

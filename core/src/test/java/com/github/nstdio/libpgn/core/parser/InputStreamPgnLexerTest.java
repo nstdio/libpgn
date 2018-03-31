@@ -1,8 +1,8 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.TokenTypes;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class InputStreamPgnLexerTest {
     @Test
-    public void tagPair() throws Exception {
+    public void tagPair() {
         final String input = "[Event \"Rapid 15m+4s\"]\n" +
                 "[Empty \"\"]\n" +
                 "[Site \"?\"]\n" +
@@ -47,7 +47,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void comments() throws Exception {
+    public void comments() {
         final byte tokens[] = {
                 MOVE_NUMBER, DOT, MOVE_WHITE, NAG, NAG,
                 COMMENT_BEGIN, COMMENT, COMMENT_END,
@@ -77,7 +77,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void moveTextSimple() throws Exception {
+    public void moveTextSimple() {
         final byte[] tokens = {
                 TP_BEGIN, TP_NAME, TP_NAME_VALUE_SEP, TP_VALUE_BEGIN, TP_VALUE, TP_VALUE_END, TP_END,
                 MOVE_NUMBER, DOT, MOVE_WHITE, COMMENT_BEGIN, COMMENT, COMMENT_END, MOVE_BLACK, COMMENT_BEGIN, COMMENT, COMMENT_END,
@@ -97,7 +97,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void moveTextWithVariation() throws Exception {
+    public void moveTextWithVariation() {
         final String input = "[Event \"Rapid 15m+4s\"]\n" +
                 "\n" +
                 "1. d4 (1. Nc3 {Black comment var} d5) Nf6 2. c4 {Comment} e6 1/2-1/2";
@@ -117,7 +117,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void moveTextWithNag() throws Exception {
+    public void moveTextWithNag() {
         final byte[] tokens = {
                 TP_BEGIN, TP_NAME, TP_NAME_VALUE_SEP, TP_VALUE_BEGIN, TP_VALUE, TP_VALUE_END, TP_END,
                 MOVE_NUMBER, DOT, MOVE_WHITE, NAG, NAG, NAG, MOVE_BLACK, NAG,
@@ -135,7 +135,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void blackVariation() throws Exception {
+    public void blackVariation() {
         final byte[] tokens = {
                 TP_BEGIN, TP_NAME, TP_NAME_VALUE_SEP, TP_VALUE_BEGIN, TP_VALUE, TP_VALUE_END, TP_END,
                 MOVE_NUMBER, DOT, MOVE_WHITE, MOVE_BLACK,
@@ -155,7 +155,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void restOfTheLineComment() throws Exception {
+    public void restOfTheLineComment() {
         final byte[] tokens = {
                 MOVE_NUMBER, DOT, MOVE_WHITE, ROL_COMMENT, MOVE_BLACK,
                 GAMETERM
@@ -173,7 +173,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void withoutMoveNumbers() throws Exception {
+    public void withoutMoveNumbers() {
         final byte[] tokens = {
                 MOVE_WHITE, COMMENT_BEGIN, COMMENT, COMMENT_END, MOVE_BLACK,
                 MOVE_WHITE, MOVE_BLACK,
@@ -193,7 +193,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void emptyTagPairValue() throws Exception {
+    public void emptyTagPairValue() {
         final String[] games = {
                 "[Result \"\"]\n" +
                         "[WhiteElo \"\"]\n" +
@@ -212,7 +212,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void skipPrevMove() throws Exception {
+    public void skipPrevMove() {
         final String[] games = {
                 "1.d4(1.d5 d6)1...f5*",
                 "1.d4 (1. d5 d6) 1... f5 *",
@@ -233,7 +233,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void nag() throws Exception {
+    public void nag() {
         final String[] games = {
                 "1. e4 $1$2$3$4$5$6 *",
                 "1. e4$1$2$3$4$5$6 *",
@@ -258,7 +258,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void sequentialComments() throws Exception {
+    public void sequentialComments() {
         final String[] games = {
                 "1. e4 {Comment} {Comment} {Comment} *",
                 "1. e4 {Comment}{Comment}{Comment} *",
@@ -284,14 +284,14 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void emptyInput() throws Exception {
+    public void emptyInput() {
         assertThatLexer("")
                 .nextTokenIsEqualTo(UNDEFINED)
                 .readIsNull();
     }
 
     @Test
-    public void illegalInput() throws Exception {
+    public void illegalInput() {
         final String[] inputs = {
                 "\n", "", "\n\r", "  \t", ";", ".", "\0",
                 "\r\n", "abc",
@@ -302,7 +302,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    @Ignore("todo")
+    @Disabled("todo")
     public void lineNumber() {
         final Map<Integer, String> inputs = new HashMap<>();
 

@@ -1,26 +1,25 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.pgn.TagPair;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.List;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class TagPairParserTest extends MockedEnvAware {
     private Parser<List<TagPair>> parser;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         doReturn(true)
                 .when(mockConfiguration).cacheTagPair();
 
@@ -29,8 +28,8 @@ public class TagPairParserTest extends MockedEnvAware {
     }
 
     @Test
-    @Ignore
-    public void predefinedCache() throws Exception {
+    @Disabled
+    public void predefinedCache() {
         final String white = "White";
         final String value = "Kasparov, Garry";
 
@@ -60,10 +59,11 @@ public class TagPairParserTest extends MockedEnvAware {
 
         final List<TagPair> tagPairs = parser.parse();
 
-        assertTrue(tagPairs.size() == 1);
+        assertThat(tagPairs)
+                .hasSize(1);
 
         final TagPair actual = tagPairs.get(0);
 
-        assertSame(tagPair, actual);
+        assertThat(tagPair).isSameAs(actual);
     }
 }

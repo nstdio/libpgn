@@ -1,7 +1,8 @@
 package com.github.nstdio.libpgn.core.io;
 
-import org.junit.After;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -17,7 +18,7 @@ public class PgnInputStreamTest {
         return PgnInputStreamFactory.of(new ByteArrayInputStream(input.getBytes()));
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         if (stream != null) {
             stream.close();

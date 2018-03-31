@@ -2,29 +2,27 @@ package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.TokenTypes;
 import com.github.nstdio.libpgn.core.exception.PgnSyntaxException;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-@Ignore
-@RunWith(MockitoJUnitRunner.class)
+@Disabled
+@ExtendWith(MockitoExtension.class)
 public class PgnParserConfigTest extends MockedEnvAware {
     private PgnParser parser;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         parser = new PgnParser(mockLexer, mockConfiguration, mockTagPairParser, mockResultParser, mockMoveSequenceParser);
     }
 
     @Test
     public void stopOnError() {
-        final String input = "a";
-
         when(mockLexer.last()).thenReturn(TokenTypes.TP_NAME);
         when(mockConfiguration.gameLimit()).thenReturn(Integer.MAX_VALUE);
         when(mockConfiguration.stopOnError()).thenReturn(false);

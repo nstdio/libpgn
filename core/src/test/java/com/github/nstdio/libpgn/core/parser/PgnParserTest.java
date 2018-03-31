@@ -6,24 +6,21 @@ import com.github.nstdio.libpgn.core.internal.ArrayUtils;
 import com.github.nstdio.libpgn.core.pgn.Move;
 import com.github.nstdio.libpgn.core.pgn.MoveText;
 import com.github.nstdio.libpgn.core.pgn.TagPair;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
 
 
 public class PgnParserTest {
     private PgnParser parser;
 
     @Test
-    @Ignore
-    public void emptyTagPair() throws Exception {
+    @Disabled
+    public void emptyTagPair() {
         String input = "[Event \"Leipzig8990 m\"]\n" +
                 "[Site \"Leipzig\"]\n" +
                 "[Date \"1889.??.??\"]\n" +
@@ -56,8 +53,8 @@ public class PgnParserTest {
         final Game game = games.get(0);
         final List<MoveText> moves = new ArrayList<>();
 
-        assertNotNull(game);
-        assertEquals(game.tagPairSection(), tagPairs);
+        assertThat(game).isNotNull();
+        assertThat(game.tagPairSection()).isEqualTo(tagPairs);
 
         moves.add(MoveText.of(1, Move.of("d4", "Better was e4."), Move.of("f5")));
         moves.add(MoveText.of(2, "c4", "c5"));
@@ -65,8 +62,8 @@ public class PgnParserTest {
         moves.add(MoveText.of(4, "Nc3", "Qxc5"));
         moves.add(MoveText.of(5, "e4", "fxe4"));
 
-        assertEquals(game.moves(), moves);
-        assertEquals(game.gameResult(), Game.Result.WHITE);
+        assertThat(game.moves()).isEqualTo(moves);
+        assertThat(game.gameResult()).isEqualTo(Game.Result.WHITE);
     }
 
     private InputStreamPgnLexer createLexer(final String input) {
@@ -74,7 +71,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void movetext() throws Exception {
+    public void movetext() {
         String input = "1.d4 {White Comment} f5 {Black Comment} 2.c4 c5 3.dxc5 Qa5+ 4.Nc3 Qxc5 *";
 
         final List<Game> games = new PgnParser(createLexer(input)).parse();
@@ -89,11 +86,11 @@ public class PgnParserTest {
         moves.add(MoveText.of(3, "dxc5", "Qa5+"));
         moves.add(MoveText.of(4, "Nc3", "Qxc5"));
 
-        Assert.assertThat(games.get(0).moves(), is(moves));
+        assertThat(games.get(0).moves()).isEqualTo(moves);
     }
 
     @Test
-    public void moveWithVariation() throws Exception {
+    public void moveWithVariation() {
         String[] input = {
                 "1.d4(1.d5 d6)1...f5{Black Comment}*",
                 "1.d4 (1. d5 d6) 1... f5 {Black Comment}*",
@@ -180,7 +177,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void nestedVariations() throws Exception {
+    public void nestedVariations() {
         String[] inputs = {
                 "1. e4 (1. d4 (1. d3 {3e Nested comment whit} (1. c5 {3 Nested comment white} c6 {3 Nested comment black}) 1... d5)) 1... c5 (1... e5 2. Nf3) 2. Nf3 *"
         };
@@ -211,7 +208,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void moveNumber() throws Exception {
+    public void moveNumber() {
         String[] inputs = {
                 "100. e4 d5   101  . Nc3 e5 *",
                 "100 . e4 d5 101 . Nc3 e5 *",
@@ -224,7 +221,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void nag() throws Exception {
+    public void nag() {
         String[] inputs = {
                 "1. e4 $1$2$3 d5 *",
                 "1. e4 $3$1$2 d5 *",
@@ -241,7 +238,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void sequentialComments() throws Exception {
+    public void sequentialComments() {
         final String[] inputs = {
                 "1. e4 {Comment} {Comment} {Comment} e5 *",
                 "1. e4 {Comment}{Comment}{Comment} e5 *",
@@ -258,8 +255,8 @@ public class PgnParserTest {
     }
 
     @Test
-    @Ignore
-    public void predefinedTagPairCache() throws Exception {
+    @Disabled
+    public void predefinedTagPairCache() {
         final TagPair tagPair = TagPair.of("White", "Kasparov, Garry");
         final TagPair tagPair2 = TagPair.of("Black", "Karpov, Anatoly");
 
@@ -280,12 +277,12 @@ public class PgnParserTest {
 
         final List<TagPair> tagPairs = parse.get(0).tagPairSection();
 
-        assertSame(tagPair, tagPairs.get(0));
-        assertSame(tagPair2, tagPairs.get(1));
+        assertThat(tagPair).isSameAs(tagPairs.get(0));
+        assertThat(tagPair2).isSameAs(tagPairs.get(1));
     }
 
     @Test
-    public void skipComment() throws Exception {
+    public void skipComment() {
         final String[] inputs = {
                 "1. e4 {Comment} {Other Comment} d5 {Comment} *",
         };
@@ -307,7 +304,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void skipTagPair() throws Exception {
+    public void skipTagPair() {
         String input = "[Event \"Leipzig8990 m\"]\n" +
                 "[Site \"Leipzig\"]\n" +
                 "[Date \"1889.??.??\"]\n" +
@@ -339,8 +336,8 @@ public class PgnParserTest {
             List<Game> games = new PgnParser(createLexer(pgn)).parse();
             final Game game = games.get(0);
 
-            assertEquals(moves, game.moves());
-            assertEquals(Game.Result.UNKNOWN, game.gameResult());
+            assertThat(moves).isEqualTo(game.moves());
+            assertThat(Game.Result.UNKNOWN).isEqualTo(game.gameResult());
         }
     }
 }

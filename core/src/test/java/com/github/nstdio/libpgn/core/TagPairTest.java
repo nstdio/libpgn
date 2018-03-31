@@ -1,7 +1,7 @@
 package com.github.nstdio.libpgn.core;
 
 import com.github.nstdio.libpgn.core.pgn.TagPair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 

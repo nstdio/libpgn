@@ -3,20 +3,20 @@ package com.github.nstdio.libpgn.core.parser;
 import com.github.nstdio.libpgn.core.Configuration;
 import com.github.nstdio.libpgn.core.pgn.Move;
 import com.github.nstdio.libpgn.core.pgn.MoveText;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.MOVE_WHITE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MoveParserTest {
     @Mock
     private PgnLexer lexer;
@@ -33,22 +33,21 @@ public class MoveParserTest {
 
     private InputParser<Move, Byte> moveParser;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         moveParser = new MoveParser(lexer, config, nag, comment, variation, inlineNag);
     }
 
     @Test
-    public void nagAsComments() throws Exception {
+    public void nagAsComments() {
         final short[] expectedNag = {3, 7};
         final String commentText = "Comment";
         final String nagDelim = ". ";
 
         when(lexer.last()).thenReturn(MOVE_WHITE);
         when(lexer.read()).thenReturn("Nf3".getBytes());
-        when(config.nagLimit()).thenReturn(8);
         when(config.threatNagAsComment()).thenReturn(nagDelim);
-        when(nag.parse(anyObject())).then(invocationOnMock -> expectedNag);
+        when(nag.parse(any())).then(invocationOnMock -> expectedNag);
         when(comment.tryParse()).then(invocationOnMock -> commentText.getBytes());
 
         final Move move = moveParser.parse(MOVE_WHITE);

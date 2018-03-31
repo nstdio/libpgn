@@ -1,6 +1,7 @@
 package com.github.nstdio.libpgn.core.fen;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,7 +20,6 @@ public class FENsTest {
         map.put("pP2p3/pp1p2pp/2P2p2/4p3/2P5/8/PP2PPPP/RNBQKBNR b KQkq - 0 4", C_WHITE_KING | C_WHITE_QUEEN | C_BLACK_KING | C_BLACK_QUEEN);
         map.put("r1b4r/pp2kppp/2nN1n2/4p3/2P5/8/P3PPPP/R1B1KB1R w KQ - 1 13", C_WHITE_KING | C_WHITE_QUEEN);
         map.put("3rr3/pp4pp/3B1k2/2P1p3/3nP3/3B1PPb/P4K1P/R6R b - - 2 23", C_NONE);
-        map.put("r3kb1r/p1pN2pp/1N6/8/8/1n6/P3PKPP/2B2n1R w kq - 2 14", C_BLACK_KING | C_BLACK_QUEEN);
         map.put("r3kb1r/p1pN2pp/1N6/8/8/1n6/P3PKPP/2B2n1R w kq - 2 14", C_BLACK_KING | C_BLACK_QUEEN);
         map.put("N3kb1r/p1pN2pp/8/8/8/1n6/P3PKPP/2B2n1R b k - 0 14", C_BLACK_KING);
         map.put("rnbqkb1r/pppp1ppp/4p3/8/4n3/5N2/PPPPBPPP/RNBQK1R1 b Qkq - 1 4", C_WHITE_QUEEN | C_BLACK_KING | C_BLACK_QUEEN);

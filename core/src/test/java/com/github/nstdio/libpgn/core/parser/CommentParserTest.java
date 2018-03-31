@@ -1,28 +1,27 @@
 package com.github.nstdio.libpgn.core.parser;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.github.nstdio.libpgn.core.Configuration.COMMENT_LENGTH_UNLIMITED;
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CommentParserTest extends MockedEnvAware {
     private Parser<byte[]> commentParser;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         commentParser = new CommentParser(mockLexer, mockConfiguration);
     }
 
     @Test
-    public void sequentialComments() throws Exception {
+    public void sequentialComments() {
         final String firstComment = "First Comment";
         final String secondComment = "Second Comment";
 
@@ -52,7 +51,7 @@ public class CommentParserTest extends MockedEnvAware {
     }
 
     @Test
-    public void commentMaxLength() throws Exception {
+    public void commentMaxLength() {
         final int maxLen = 4;
         final String comment = "Comment";
         final String expected = comment.substring(0, maxLen);
@@ -84,10 +83,10 @@ public class CommentParserTest extends MockedEnvAware {
     }
 
     @Test
-    public void skipComment() throws Exception {
+    public void skipComment() {
         when(mockConfiguration.skipComment()).thenReturn(true);
 
-        assertNull(commentParser.tryParse());
+        assertThat(commentParser.tryParse()).isNull();
     }
 
     private void mockLexerMethodResults(String comment) {
