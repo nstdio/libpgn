@@ -1,7 +1,7 @@
 package com.github.nstdio.libpgn.core;
 
-import com.github.nstdio.libpgn.core.pgn.MoveText;
-import com.github.nstdio.libpgn.core.pgn.TagPair;
+import com.github.nstdio.libpgn.entity.MoveText;
+import com.github.nstdio.libpgn.entity.TagPair;
 
 import java.util.List;
 import java.util.Objects;

@@ -2,10 +2,10 @@ package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
 import com.github.nstdio.libpgn.core.NAG;
-import com.github.nstdio.libpgn.core.internal.ArrayUtils;
-import com.github.nstdio.libpgn.core.internal.Pair;
-import com.github.nstdio.libpgn.core.pgn.Move;
-import com.github.nstdio.libpgn.core.pgn.MoveText;
+import com.github.nstdio.libpgn.common.ArrayUtils;
+import com.github.nstdio.libpgn.common.Pair;
+import com.github.nstdio.libpgn.entity.Move;
+import com.github.nstdio.libpgn.entity.MoveText;
 
 import java.util.List;
 import java.util.Objects;

@@ -1,7 +1,7 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.Game;
+import com.github.nstdio.libpgn.entity.Game;
 import com.github.nstdio.libpgn.core.GameIterator;
 
 import java.util.Iterator;

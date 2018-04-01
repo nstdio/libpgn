@@ -1,11 +1,12 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.Game;
+import com.github.nstdio.libpgn.entity.Game;
 import com.github.nstdio.libpgn.core.exception.PgnException;
-import com.github.nstdio.libpgn.core.pgn.Move;
-import com.github.nstdio.libpgn.core.pgn.MoveText;
-import com.github.nstdio.libpgn.core.pgn.TagPair;
+import com.github.nstdio.libpgn.entity.Move;
+import com.github.nstdio.libpgn.entity.MoveText;
+import com.github.nstdio.libpgn.entity.Result;
+import com.github.nstdio.libpgn.entity.TagPair;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import static com.github.nstdio.libpgn.core.parser.ExceptionBuilder.syntaxExcept
 
 public abstract class AbstractPgnParser extends AbstractParser {
     private final Parser<List<TagPair>> tagPairParser;
-    private final Parser<Game.Result> resultParser;
+    private final Parser<Result> resultParser;
     private final InputParser<List<MoveText>, Byte> moveTextSequenceParser;
 
     /**
@@ -42,7 +43,7 @@ public abstract class AbstractPgnParser extends AbstractParser {
 
     AbstractPgnParser(final PgnLexer lexer, final Configuration config,
                       final Parser<List<TagPair>> tagPairParser,
-                      final Parser<Game.Result> resultParser,
+                      final Parser<Result> resultParser,
                       final InputParser<List<MoveText>, Byte> moveTextSequenceParser) {
         super(lexer, config);
         this.tagPairParser = tagPairParser;

@@ -1,11 +1,12 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.Game;
-import com.github.nstdio.libpgn.core.internal.ArrayUtils;
-import com.github.nstdio.libpgn.core.pgn.Move;
-import com.github.nstdio.libpgn.core.pgn.MoveText;
-import com.github.nstdio.libpgn.core.pgn.TagPair;
+import com.github.nstdio.libpgn.entity.Game;
+import com.github.nstdio.libpgn.common.ArrayUtils;
+import com.github.nstdio.libpgn.entity.Move;
+import com.github.nstdio.libpgn.entity.MoveText;
+import com.github.nstdio.libpgn.entity.Result;
+import com.github.nstdio.libpgn.entity.TagPair;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -63,7 +64,7 @@ public class PgnParserTest {
         moves.add(MoveText.of(5, "e4", "fxe4"));
 
         assertThat(game.moves()).isEqualTo(moves);
-        assertThat(game.gameResult()).isEqualTo(Game.Result.WHITE);
+        assertThat(game.gameResult()).isEqualTo(Result.WHITE);
     }
 
     private InputStreamPgnLexer createLexer(final String input) {
@@ -328,7 +329,7 @@ public class PgnParserTest {
         assertThat(firstGame.tagPairSection()).isNull();
 
         assertThat(firstGame.moves().get(0).white().map(Move::move).orElse(null)).containsExactly("d4".getBytes());
-        assertThat(firstGame.gameResult()).isEqualTo(Game.Result.UNKNOWN);
+        assertThat(firstGame.gameResult()).isEqualTo(Result.UNKNOWN);
     }
 
     private void assertMovesEquals(String[] inputs, List<MoveText> moves) {
@@ -337,7 +338,7 @@ public class PgnParserTest {
             final Game game = games.get(0);
 
             assertThat(moves).isEqualTo(game.moves());
-            assertThat(Game.Result.UNKNOWN).isEqualTo(game.gameResult());
+            assertThat(Result.UNKNOWN).isEqualTo(game.gameResult());
         }
     }
 }

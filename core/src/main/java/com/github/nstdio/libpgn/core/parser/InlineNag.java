@@ -1,9 +1,9 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.NAG;
-import com.github.nstdio.libpgn.core.internal.ArrayUtils;
-import com.github.nstdio.libpgn.core.internal.CollectionUtils;
-import com.github.nstdio.libpgn.core.internal.Pair;
+import com.github.nstdio.libpgn.common.ArrayUtils;
+import com.github.nstdio.libpgn.common.CollectionUtils;
+import com.github.nstdio.libpgn.common.Pair;
 
 import java.util.Set;
 import java.util.TreeSet;

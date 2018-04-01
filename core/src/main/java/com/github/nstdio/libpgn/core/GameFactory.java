@@ -3,6 +3,7 @@ package com.github.nstdio.libpgn.core;
 import com.github.nstdio.libpgn.core.parser.InputStreamPgnLexer;
 import com.github.nstdio.libpgn.core.parser.PageablePgnParser;
 import com.github.nstdio.libpgn.core.parser.PgnParser;
+import com.github.nstdio.libpgn.entity.Game;
 
 import java.io.File;
 import java.io.InputStream;

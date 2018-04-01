@@ -1,7 +1,7 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.internal.ArrayUtils;
+import com.github.nstdio.libpgn.common.ArrayUtils;
 
 import java.util.Arrays;
 

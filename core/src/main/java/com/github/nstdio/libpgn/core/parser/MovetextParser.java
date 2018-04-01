@@ -1,8 +1,8 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.pgn.Move;
-import com.github.nstdio.libpgn.core.pgn.MoveText;
+import com.github.nstdio.libpgn.entity.Move;
+import com.github.nstdio.libpgn.entity.MoveText;
 
 import javax.annotation.Nullable;
 

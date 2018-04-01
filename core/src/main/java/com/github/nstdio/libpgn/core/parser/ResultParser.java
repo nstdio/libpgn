@@ -1,25 +1,25 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.Game;
 import com.github.nstdio.libpgn.core.exception.PgnException;
+import com.github.nstdio.libpgn.entity.Result;
 
 import javax.annotation.Nullable;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.GAMETERM;
 
-class ResultParser extends AbstractParser implements Parser<Game.Result> {
+class ResultParser extends AbstractParser implements Parser<Result> {
 
     ResultParser(PgnLexer lexer, Configuration config) {
         super(lexer, config);
     }
 
     @Override
-    public Game.Result parse() {
+    public Result parse() {
         lastNotEqThrow(GAMETERM);
         String result = read();
 
-        for (Game.Result res : Game.Result.values()) {
+        for (Result res : Result.values()) {
             if (result.equals(res.getTerm())) {
                 return res;
             }
@@ -30,7 +30,7 @@ class ResultParser extends AbstractParser implements Parser<Game.Result> {
 
     @Nullable
     @Override
-    public Game.Result tryParse() {
+    public Result tryParse() {
         return null;
     }
 }

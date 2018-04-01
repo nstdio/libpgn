@@ -1,14 +1,14 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.TokenTypes;
-import com.github.nstdio.libpgn.core.io.PgnInputStream;
-import com.github.nstdio.libpgn.core.io.PgnInputStreamFactory;
+import com.github.nstdio.libpgn.io.PgnInputStream;
+import com.github.nstdio.libpgn.io.PgnInputStreamFactory;
 
 import java.io.*;
 import java.util.Objects;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.*;
-import static com.github.nstdio.libpgn.core.internal.ExceptionUtils.wrapChecked;
+import static com.github.nstdio.libpgn.common.ExceptionUtils.wrapChecked;
 import static com.github.nstdio.libpgn.core.parser.LexicalScope.*;
 
 public class InputStreamPgnLexer implements PgnLexer {

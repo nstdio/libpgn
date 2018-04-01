@@ -1,8 +1,8 @@
 package com.github.nstdio.libpgn.core;
 
 import com.github.nstdio.libpgn.core.GameFilter.GameFilterBuilder;
-import com.github.nstdio.libpgn.core.pgn.MoveText;
-import com.github.nstdio.libpgn.core.pgn.TagPair;
+import com.github.nstdio.libpgn.entity.MoveText;
+import com.github.nstdio.libpgn.entity.TagPair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

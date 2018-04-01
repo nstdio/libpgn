@@ -2,7 +2,7 @@ package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
 import com.github.nstdio.libpgn.core.TokenTypes;
-import com.github.nstdio.libpgn.core.pgn.MoveText;
+import com.github.nstdio.libpgn.entity.MoveText;
 
 import java.util.ArrayList;
 import java.util.Collections;

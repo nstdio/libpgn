@@ -1,8 +1,8 @@
 package com.github.nstdio.libpgn.core.parser;
 
 import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.internal.ArrayUtils;
-import com.github.nstdio.libpgn.core.pgn.TagPair;
+import com.github.nstdio.libpgn.common.ArrayUtils;
+import com.github.nstdio.libpgn.entity.TagPair;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.TreeSet;
 
 import static com.github.nstdio.libpgn.core.TokenTypes.NAG;
-import static com.github.nstdio.libpgn.core.internal.CollectionUtils.toArray;
+import static com.github.nstdio.libpgn.common.CollectionUtils.toArray;
 
 class NagParser extends AbstractParser implements InputParser<short[], short[]> {
 
