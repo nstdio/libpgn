@@ -35,7 +35,7 @@ public final class CollectionUtils {
     }
 
     public static <T> boolean isNotEmptyOrNull(final Collection<T> collection) {
-        return collection == null || collection.isEmpty();
+        return !isEmpty(collection);
     }
 
     public static <T> List<T> nullToEmpty(final List<T> collection) {
