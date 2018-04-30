@@ -7,15 +7,11 @@ import com.github.nstdio.libpgn.io.PgnInputStreamFactory;
 import java.io.*;
 import java.util.Objects;
 
-import static com.github.nstdio.libpgn.core.TokenTypes.*;
 import static com.github.nstdio.libpgn.common.ExceptionUtils.wrapChecked;
+import static com.github.nstdio.libpgn.core.TokenTypes.*;
 import static com.github.nstdio.libpgn.core.parser.LexicalScope.*;
 
 public class InputStreamPgnLexer implements PgnLexer {
-    private static final int[] MOVE_TERMS = {'\r', '\n', '\t', ' ', '{', '(', ')', '$', ';', '*'};
-    private static final int[] NAG_TERMS = {' ', '\r', '\n', '\t', '$', '{', '(', ')', '*'};
-    private static final int[] MOVE_NUMBER_TERMS = {' ', '\r', '\n', '\t', '.'};
-
     private final PgnInputStream in;
     private byte scope = SCOPE_UNDEFINED;
     private byte lastToken = UNDEFINED;
@@ -202,7 +198,7 @@ public class InputStreamPgnLexer implements PgnLexer {
                 case UNDEFINED:
                 case MOVE_BLACK:
                     lastToken = MOVE_WHITE;
-                    tokenLength = in.until(MOVE_TERMS);
+                    tokenLength = in.until(' ', '\r', '\n', '\t', '{', '(', ')', '$', ';', '*');
                     break;
                 case MOVE_WHITE:
                 case COMMENT_END:
@@ -211,7 +207,7 @@ public class InputStreamPgnLexer implements PgnLexer {
                 case SKIP_PREV_MOVE:
                 case ROL_COMMENT:
                     lastToken = MOVE_BLACK;
-                    tokenLength = in.until(MOVE_TERMS);
+                    tokenLength = in.until(' ', '\r', '\n', '\t', '{', '(', ')', '$', ';', '*');
                     break;
             }
         } else {
@@ -227,7 +223,7 @@ public class InputStreamPgnLexer implements PgnLexer {
                 case '8':
                 case '9':
                     lastToken = MOVE_NUMBER;
-                    final int whiteSpace = in.until(MOVE_NUMBER_TERMS) + 1;
+                    final int whiteSpace = in.until(' ', '\r', '\n', '\t', '.', '\0', '\0', '\0', '\0', '\0') + 1;
 
                     tokenLength = whiteSpace == 1 ? 1 : whiteSpace - 1;
                     break;
@@ -266,7 +262,7 @@ public class InputStreamPgnLexer implements PgnLexer {
                     break;
                 case '$':
                     lastToken = NAG;
-                    tokenLength = in.until(NAG_TERMS);
+                    tokenLength = in.until(' ', '\r', '\n', '\t', '$', '{', '(', ')', '*', '\0');
                     break;
                 case '\n':
                     next();

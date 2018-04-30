@@ -48,12 +48,12 @@ public class PgnInputStreamTest {
         final String input = "abc";
         stream = ofString(input);
 
-        assertThat(stream.until(value -> value == 'a')).isEqualTo(1);
-        assertThat(stream.until(value -> value == 'b')).isEqualTo(2);
-        assertThat(stream.until(value -> value == 'c')).isEqualTo(3);
+        assertThat(stream.until('a')).isEqualTo(1);
+        assertThat(stream.until('b')).isEqualTo(2);
+        assertThat(stream.until('c')).isEqualTo(3);
 
         assertThat(stream.read()).isEqualTo('a');
-        assertThat(stream.until(value -> value == 'b')).isEqualTo(1);
+        assertThat(stream.until('b')).isEqualTo(1);
     }
 
     @Test
@@ -62,7 +62,7 @@ public class PgnInputStreamTest {
         stream = ofString("abcdefg");
 
         stream.skip(1);
-        assertThat(stream.until(value -> value == 'f')).isEqualTo(5);
+        assertThat(stream.until('f')).isEqualTo(5);
         assertThat(stream.read()).isEqualTo('b');
     }
 
@@ -70,7 +70,7 @@ public class PgnInputStreamTest {
     public void readUntilNotFound() {
         stream = ofString("abc");
 
-        assertThatExceptionOfType(EOFException.class).isThrownBy(() -> stream.until(value -> value == 'd'));
+        assertThatExceptionOfType(EOFException.class).isThrownBy(() -> stream.until('d'));
     }
 
     @Test
@@ -82,7 +82,7 @@ public class PgnInputStreamTest {
         stream.skip(input.length());
 
         assertThatExceptionOfType(EOFException.class)
-                .isThrownBy(() -> stream.until(value -> value == 'c'));
+                .isThrownBy(() -> stream.until('c'));
     }
 
     @Test

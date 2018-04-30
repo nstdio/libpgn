@@ -1,13 +1,8 @@
 package com.github.nstdio.libpgn.io;
 
-import com.github.nstdio.libpgn.io.PgnInputStream;
-
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 
-/**
- *
- */
 class BufferedPgnInputStream extends PgnInputStream {
     static final int DEFAULT_SIZE = 8192 * 2;
 

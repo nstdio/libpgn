@@ -25,38 +25,6 @@ public abstract class PgnInputStream extends FilterInputStream {
         return read;
     }
 
-    /**
-     * Reads from the stream bytes until first occurrence of {@code b}. Subsequent call of {@link #read()} should return
-     * the {@code b} byte.
-     *
-     * @param predicate The terminator byte.
-     *
-     * @return The necessary reads count to reach the {@code b} or {@code -1} when stream is ended or {@code b} never
-     * occurred.
-     *
-     * @throws IOException if an I/O error occurs.
-     */
-    int until(final IntPredicate predicate) throws IOException {
-        int current;
-        int rc = 0;
-
-        mark(0);
-        do {
-            current = read();
-            rc++;
-
-            if (predicate.test(current)) {
-                reset();
-                return rc;
-            }
-
-        } while (current != EOF);
-
-        reset();
-
-        return EOF;
-    }
-
     public int until(final int i1) throws IOException {
         int current;
         int rc = 0;
@@ -78,24 +46,21 @@ public abstract class PgnInputStream extends FilterInputStream {
         return EOF;
     }
 
-    public int until(final int[] stops) throws IOException {
-        int cur;
+    public int until(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9, int i10) throws IOException {
+        int c;
         int rc = 0;
 
         mark(0);
         do {
-            cur = read();
+            c = read();
             rc++;
 
-            //noinspection ForLoopReplaceableByForEach
-            for (int i = 0, sz = stops.length; i < sz; i++) {
-                if (cur == stops[i]) {
-                    reset();
-                    return rc;
-                }
+            if (c == i1 || c == i2 || c == i3 || c == i4 || c == i5 || c == i6 || c == i7 || c == i8 || c == i9 || c == i10) {
+                reset();
+                return rc;
             }
 
-        } while (cur != EOF);
+        } while (c != EOF);
 
         reset();
 
