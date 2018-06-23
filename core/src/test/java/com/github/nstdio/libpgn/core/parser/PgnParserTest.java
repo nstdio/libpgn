@@ -1,19 +1,17 @@
 package com.github.nstdio.libpgn.core.parser;
 
-import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.entity.Game;
 import com.github.nstdio.libpgn.common.ArrayUtils;
-import com.github.nstdio.libpgn.entity.Move;
-import com.github.nstdio.libpgn.entity.MoveText;
-import com.github.nstdio.libpgn.entity.Result;
-import com.github.nstdio.libpgn.entity.TagPair;
+import com.github.nstdio.libpgn.core.Configuration;
+import com.github.nstdio.libpgn.entity.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.stream.StreamSupport;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 
 
 public class PgnParserTest {
@@ -21,7 +19,7 @@ public class PgnParserTest {
 
     @Test
     @Disabled
-    public void emptyTagPair() {
+    void emptyTagPair() {
         String input = "[Event \"Leipzig8990 m\"]\n" +
                 "[Site \"Leipzig\"]\n" +
                 "[Date \"1889.??.??\"]\n" +
@@ -72,7 +70,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void movetext() {
+    void movetext() {
         String input = "1.d4 {White Comment} f5 {Black Comment} 2.c4 c5 3.dxc5 Qa5+ 4.Nc3 Qxc5 *";
 
         final List<Game> games = new PgnParser(createLexer(input)).parse();
@@ -91,7 +89,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void moveWithVariation() {
+    void moveWithVariation() {
         String[] input = {
                 "1.d4(1.d5 d6)1...f5{Black Comment}*",
                 "1.d4 (1. d5 d6) 1... f5 {Black Comment}*",
@@ -112,7 +110,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void blackVariations() {
+    void blackVariations() {
         String[] inputs = {
                 "1. e4 (1. d4 Nf6) c5 (1... e5 2. Nf3) 2. Nf3 d6 *",
                 "1.e4(1.d4 Nf6)c5(1...e5 2.Nf3)2.Nf3 d6*"
@@ -136,7 +134,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void nestedSimpleVariation() {
+    void nestedSimpleVariation() {
         String[] inputs = {
                 "1. e4 (1. d4 (1. d3 (1. c5 c6)) 1... d5 (1... d6)) 1... c5 2. Nf3 c6 *",
         };
@@ -159,7 +157,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void variationWithComment() {
+    void variationWithComment() {
         String[] inputs = {
                 "1.e4 (1. d4 (1. d3 {3d .1}) {Comment})*",
                 "1.e4 (1. d4 {Comment} (1. d3 {3d .1}))*",
@@ -178,7 +176,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void nestedVariations() {
+    void nestedVariations() {
         String[] inputs = {
                 "1. e4 (1. d4 (1. d3 {3e Nested comment whit} (1. c5 {3 Nested comment white} c6 {3 Nested comment black}) 1... d5)) 1... c5 (1... e5 2. Nf3) 2. Nf3 *"
         };
@@ -209,7 +207,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void moveNumber() {
+    void moveNumber() {
         String[] inputs = {
                 "100. e4 d5   101  . Nc3 e5 *",
                 "100 . e4 d5 101 . Nc3 e5 *",
@@ -222,7 +220,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void nag() {
+    void nag() {
         String[] inputs = {
                 "1. e4 $1$2$3 d5 *",
                 "1. e4 $3$1$2 d5 *",
@@ -239,7 +237,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void sequentialComments() {
+    void sequentialComments() {
         final String[] inputs = {
                 "1. e4 {Comment} {Comment} {Comment} e5 *",
                 "1. e4 {Comment}{Comment}{Comment} e5 *",
@@ -257,7 +255,7 @@ public class PgnParserTest {
 
     @Test
     @Disabled
-    public void predefinedTagPairCache() {
+    void predefinedTagPairCache() {
         final TagPair tagPair = TagPair.of("White", "Kasparov, Garry");
         final TagPair tagPair2 = TagPair.of("Black", "Karpov, Anatoly");
 
@@ -283,7 +281,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void skipComment() {
+    void skipComment() {
         final String[] inputs = {
                 "1. e4 {Comment} {Other Comment} d5 {Comment} *",
         };
@@ -305,7 +303,7 @@ public class PgnParserTest {
     }
 
     @Test
-    public void skipTagPair() {
+    void skipTagPair() {
         String input = "[Event \"Leipzig8990 m\"]\n" +
                 "[Site \"Leipzig\"]\n" +
                 "[Date \"1889.??.??\"]\n" +

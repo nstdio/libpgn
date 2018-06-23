@@ -40,7 +40,8 @@ public class InputStreamPgnLexer implements PgnLexer {
      * @throws UncheckedIOException if an I/O error occurs.
      */
     public static InputStreamPgnLexer of(final File file) {
-        return of(PgnInputStreamFactory.of(file));
+        Objects.requireNonNull(file);
+        return new InputStreamPgnLexer(PgnInputStreamFactory.of(file));
     }
 
     /**
