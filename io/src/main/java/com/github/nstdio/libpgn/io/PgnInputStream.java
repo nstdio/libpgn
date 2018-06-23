@@ -5,13 +5,17 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
-import java.util.function.IntPredicate;
 
-public abstract class PgnInputStream extends FilterInputStream {
+public class PgnInputStream extends FilterInputStream {
     private static final int EOF = -1;
 
     PgnInputStream(final InputStream in) {
         super(Objects.requireNonNull(in));
+
+        if (!in.markSupported()) {
+            throw new IllegalArgumentException("The InputStream must support the mark/reset." +
+                    " Probably should use use the java.io.BufferedInputStream");
+        }
     }
 
     @Override

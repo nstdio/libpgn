@@ -1,15 +1,13 @@
 package com.github.nstdio.libpgn.io;
 
-import lombok.*;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.archivers.ArchiveInputStream;
-import org.apache.commons.compress.archivers.ArchiveStreamFactory;
-import org.apache.commons.compress.archivers.sevenz.SevenZFile;
-import org.apache.commons.compress.compressors.CompressorInputStream;
-import org.apache.commons.compress.compressors.CompressorStreamFactory;
+import static com.github.nstdio.libpgn.common.ExceptionUtils.wrapChecked;
 
-import javax.annotation.Nonnull;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.LinkedHashMap;
@@ -20,7 +18,20 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
 
-import static com.github.nstdio.libpgn.common.ExceptionUtils.wrapChecked;
+import javax.annotation.Nonnull;
+
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.archivers.sevenz.SevenZFile;
+import org.apache.commons.compress.compressors.CompressorInputStream;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -42,7 +53,7 @@ public final class PgnInputStreamFactory {
         producers.put(Pattern.compile("\\.bz2$"), LoggingInputStreamProducer.of(new BZip2SteamProducer(plain)));
         producers.put(Pattern.compile("\\.7z$"), LoggingInputStreamProducer.of(SevenZipStreamProducer.of()));
         producers.put(Pattern.compile("\\.zip$"), LoggingInputStreamProducer.of(new ZipFileStreamProducer()));
-        producers.put(Pattern.compile("\\.pgn$"), LoggingInputStreamProducer.of(plain));
+        producers.put(Pattern.compile("\\.pgn$"), LoggingInputStreamProducer.of(plain.andThen(buffered())));
         producers.put(Pattern.compile("\\.rar$"), NoOpStreamProducer.of());
     }
 
@@ -51,9 +62,12 @@ public final class PgnInputStreamFactory {
     }
 
     public static PgnInputStream of(final InputStream in) {
-        return in instanceof BufferedInputStream ?
-                new BufferedPgnInputStream((BufferedInputStream) in) :
-                new BufferedPgnInputStream(in);
+        if (in instanceof PgnInputStream) {
+            log.info("The input is already PgnInputStream, do no constructing new object.");
+            return (PgnInputStream) in;
+        }
+
+        return new PgnInputStream(in);
     }
 
     private static PgnInputStream ofFile(final File file) {
@@ -100,8 +114,9 @@ public final class PgnInputStreamFactory {
             return zipFile.stream()
                     .map(entry -> wrapChecked(() -> zipFile.getInputStream(entry)))
                     .reduce(SequenceInputStream::new)
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("Cannot create InputStream from File: %s", file.getAbsoluteFile()))
+                    .map(buffered())
+                    .orElseThrow(() -> new IllegalArgumentException("Cannot create InputStream from File: "
+                            + file.getAbsoluteFile())
                     );
         }
     }
@@ -182,6 +197,7 @@ public final class PgnInputStreamFactory {
                         wrapChecked(ais::getNextEntry);
                         return new IteratingArchiveInputStream(ais);
                     })
+                    .andThen(buffered())
                     .apply(file);
         }
     }
@@ -255,7 +271,6 @@ public final class PgnInputStreamFactory {
         public int read() throws IOException {
             return file.read();
         }
-
 
         @Override
         public void close() throws IOException {
