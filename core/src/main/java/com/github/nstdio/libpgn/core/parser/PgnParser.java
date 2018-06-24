@@ -29,8 +29,10 @@ public class PgnParser extends AbstractPgnParser implements Iterable<Game> {
      * For testing propose only
      */
     PgnParser(final PgnLexer lexer, final Configuration config, final Parser<List<TagPair>> tagPairParser,
-              final Parser<Result> resultParser, final InputParser<List<MoveText>, Byte> movetextSequenceParser) {
-        super(lexer, config, tagPairParser, resultParser, movetextSequenceParser);
+              final Parser<Result> resultParser,
+              final InputParser<List<MoveText>, Byte> movetextSequenceParser,
+              final Parser<byte[]> commentParser) {
+        super(lexer, config, tagPairParser, resultParser, movetextSequenceParser, commentParser);
     }
 
     @Deprecated

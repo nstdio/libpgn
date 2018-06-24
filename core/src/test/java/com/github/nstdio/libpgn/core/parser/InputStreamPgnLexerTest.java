@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class InputStreamPgnLexerTest {
     @Test
-    public void tagPair() {
+    void tagPair() {
         final String input = "[Event \"Rapid 15m+4s\"]\n" +
                 "[Empty \"\"]\n" +
                 "[Site \"?\"]\n" +
@@ -47,7 +47,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void comments() {
+    void comments() {
         final byte tokens[] = {
                 MOVE_NUMBER, DOT, MOVE_WHITE, NAG, NAG,
                 COMMENT_BEGIN, COMMENT, COMMENT_END,
@@ -77,7 +77,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void moveTextSimple() {
+    void moveTextSimple() {
         final byte[] tokens = {
                 TP_BEGIN, TP_NAME, TP_NAME_VALUE_SEP, TP_VALUE_BEGIN, TP_VALUE, TP_VALUE_END, TP_END,
                 MOVE_NUMBER, DOT, MOVE_WHITE, COMMENT_BEGIN, COMMENT, COMMENT_END, MOVE_BLACK, COMMENT_BEGIN, COMMENT, COMMENT_END,
@@ -97,7 +97,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void moveTextWithVariation() {
+    void moveTextWithVariation() {
         final String input = "[Event \"Rapid 15m+4s\"]\n" +
                 "\n" +
                 "1. d4 (1. Nc3 {Black comment var} d5) Nf6 2. c4 {Comment} e6 1/2-1/2";
@@ -117,7 +117,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void moveTextWithNag() {
+    void moveTextWithNag() {
         final byte[] tokens = {
                 TP_BEGIN, TP_NAME, TP_NAME_VALUE_SEP, TP_VALUE_BEGIN, TP_VALUE, TP_VALUE_END, TP_END,
                 MOVE_NUMBER, DOT, MOVE_WHITE, NAG, NAG, NAG, MOVE_BLACK, NAG,
@@ -135,7 +135,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void blackVariation() {
+    void blackVariation() {
         final byte[] tokens = {
                 TP_BEGIN, TP_NAME, TP_NAME_VALUE_SEP, TP_VALUE_BEGIN, TP_VALUE, TP_VALUE_END, TP_END,
                 MOVE_NUMBER, DOT, MOVE_WHITE, MOVE_BLACK,
@@ -155,7 +155,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void restOfTheLineComment() {
+    void restOfTheLineComment() {
         final byte[] tokens = {
                 MOVE_NUMBER, DOT, MOVE_WHITE, ROL_COMMENT, MOVE_BLACK,
                 GAMETERM
@@ -173,7 +173,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void withoutMoveNumbers() {
+    void withoutMoveNumbers() {
         final byte[] tokens = {
                 MOVE_WHITE, COMMENT_BEGIN, COMMENT, COMMENT_END, MOVE_BLACK,
                 MOVE_WHITE, MOVE_BLACK,
@@ -193,7 +193,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void emptyTagPairValue() {
+    void emptyTagPairValue() {
         final String[] games = {
                 "[Result \"\"]\n" +
                         "[WhiteElo \"\"]\n" +
@@ -212,7 +212,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void skipPrevMove() {
+    void skipPrevMove() {
         final String[] games = {
                 "1.d4(1.d5 d6)1...f5*",
                 "1.d4 (1. d5 d6) 1... f5 *",
@@ -233,7 +233,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void nag() {
+    void nag() {
         final String[] games = {
                 "1. e4 $1$2$3$4$5$6 *",
                 "1. e4$1$2$3$4$5$6 *",
@@ -258,7 +258,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void sequentialComments() {
+    void sequentialComments() {
         final String[] games = {
                 "1. e4 {Comment} {Comment} {Comment} *",
                 "1. e4 {Comment}{Comment}{Comment} *",
@@ -284,14 +284,14 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void emptyInput() {
+    void emptyInput() {
         assertThatLexer("")
                 .nextTokenIsEqualTo(UNDEFINED)
                 .readIsNull();
     }
 
     @Test
-    public void illegalInput() {
+    void illegalInput() {
         final String[] inputs = {
                 "\n", "", "\n\r", "  \t", ";", ".", "\0",
                 "\r\n", "abc",
@@ -303,7 +303,7 @@ public class InputStreamPgnLexerTest {
 
     @Test
     @Disabled("todo")
-    public void lineNumber() {
+    void lineNumber() {
         final Map<Integer, String> inputs = new HashMap<>();
 
         inputs.put(3, "1. e4 {This is\n multiline\n comment} d5");
@@ -315,7 +315,7 @@ public class InputStreamPgnLexerTest {
     }
 
     @Test
-    public void poll() {
+    void poll() {
         final String input = "1. e4 $6$2$3$4$5$1$7 *";
 
         final InputStreamPgnLexer lexer = InputStreamPgnLexer.of(input.getBytes());
@@ -332,5 +332,18 @@ public class InputStreamPgnLexerTest {
                 .nextTokenIsEqualTo(NAG).readIsEqualTo("$7")
                 .nextTokenIsEqualTo(TokenTypes.GAMETERM).readIsEqualTo("*")
                 .nextTokenIsEqualTo(TokenTypes.UNDEFINED).readIsNull();
+    }
+
+    @Test
+    void preGameComment() {
+        final String input = "{Comment} 1. e4 *";
+
+        assertThatLexer(InputStreamPgnLexer.of(input.getBytes()))
+                .commentReadIsEqualTo("Comment")
+                .nextTokenIsEqualTo(MOVE_NUMBER).readIsEqualTo("1")
+                .nextTokenIsEqualTo(DOT).readIsEqualTo(".")
+                .nextTokenIsEqualTo(MOVE_WHITE).readIsEqualTo("e4")
+                .nextTokenIsEqualTo(GAMETERM).readIsEqualTo("*")
+                .nextTokenIsEqualTo(UNDEFINED).readIsNull();
     }
 }

@@ -1,18 +1,24 @@
 package com.github.nstdio.libpgn.core.parser;
 
-import com.github.nstdio.libpgn.common.ArrayUtils;
-import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.entity.*;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
-import java.util.stream.StreamSupport;
-
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.in;
-
+import com.github.nstdio.libpgn.common.ArrayUtils;
+import com.github.nstdio.libpgn.core.Configuration;
+import com.github.nstdio.libpgn.entity.Game;
+import com.github.nstdio.libpgn.entity.Move;
+import com.github.nstdio.libpgn.entity.MoveText;
+import com.github.nstdio.libpgn.entity.Result;
+import com.github.nstdio.libpgn.entity.TagPair;
 
 public class PgnParserTest {
     private PgnParser parser;
@@ -138,7 +144,6 @@ public class PgnParserTest {
         String[] inputs = {
                 "1. e4 (1. d4 (1. d3 (1. c5 c6)) 1... d5 (1... d6)) 1... c5 2. Nf3 c6 *",
         };
-
 
         final List<MoveText> d3Var = singletonList(MoveText.of(1, "c5", "c6"));
         final List<MoveText> d5Var = singletonList(MoveText.ofBlack(1, "d6"));
@@ -328,6 +333,18 @@ public class PgnParserTest {
 
         assertThat(firstGame.moves().get(0).white().map(Move::move).orElse(null)).containsExactly("d4".getBytes());
         assertThat(firstGame.gameResult()).isEqualTo(Result.UNKNOWN);
+    }
+
+    @Test
+    void preGameComment() {
+        final String input = "{Comment} 1. e4 *";
+
+        final PgnParser games = new PgnParser(createLexer(input));
+        final Game game = games.next();
+
+        assertThat(game)
+                .isNotNull()
+                .satisfies(g -> assertThat(g.comment()).isEqualTo("Comment".getBytes()));
     }
 
     private void assertMovesEquals(String[] inputs, List<MoveText> moves) {

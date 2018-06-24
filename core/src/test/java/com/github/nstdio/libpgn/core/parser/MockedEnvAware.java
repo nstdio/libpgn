@@ -24,4 +24,7 @@ public class MockedEnvAware {
 
     @Mock
     InputParser<List<MoveText>, Byte> mockMoveSequenceParser;
+
+    @Mock
+    Parser<byte[]> mockCommentParser;
 }

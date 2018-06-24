@@ -167,6 +167,9 @@ public class InputStreamPgnLexer implements PgnLexer {
             case '[':
                 scope = SCOPE_TAG_PAIR;
                 break;
+            case '{': // the game comment
+                scope = SCOPE_MOVE_TEXT;
+                break;
             default:
                 scope = Character.isLetterOrDigit(read) ? SCOPE_MOVE_TEXT : SCOPE_UNDEFINED;
                 break;

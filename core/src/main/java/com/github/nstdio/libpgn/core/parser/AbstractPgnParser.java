@@ -19,6 +19,7 @@ public abstract class AbstractPgnParser extends AbstractParser {
     private final Parser<List<TagPair>> tagPairParser;
     private final Parser<Result> resultParser;
     private final InputParser<List<MoveText>, Byte> moveTextSequenceParser;
+    private final Parser<byte[]> commentParser;
 
     /**
      * Exception bag.
@@ -30,9 +31,9 @@ public abstract class AbstractPgnParser extends AbstractParser {
 
         tagPairParser = new TagPairParser(lexer, config);
         resultParser = new ResultParser(lexer, config);
+        commentParser = new CommentParser(lexer, config);
 
         NagParser nagParser = new NagParser(lexer, config);
-        CommentParser commentParser = new CommentParser(lexer, config);
 
         final VariationParser variation = new VariationParser(lexer, config);
         final InputParser<Move, Byte> moveParser = new MoveParser(lexer, config, nagParser, commentParser, variation);
@@ -44,11 +45,13 @@ public abstract class AbstractPgnParser extends AbstractParser {
     AbstractPgnParser(final PgnLexer lexer, final Configuration config,
                       final Parser<List<TagPair>> tagPairParser,
                       final Parser<Result> resultParser,
-                      final InputParser<List<MoveText>, Byte> moveTextSequenceParser) {
+                      final InputParser<List<MoveText>, Byte> moveTextSequenceParser,
+                      final Parser<byte[]> commentParser) {
         super(lexer, config);
         this.tagPairParser = tagPairParser;
         this.resultParser = resultParser;
         this.moveTextSequenceParser = moveTextSequenceParser;
+        this.commentParser = commentParser;
     }
 
     public Game next() {
@@ -70,11 +73,22 @@ public abstract class AbstractPgnParser extends AbstractParser {
                         moveTextSequenceParser.parse(GAMETERM),
                         resultParser.parse()
                 );
+            case COMMENT_BEGIN:
+                final byte[] comment = commentParser.parse();
+
+                // preparation for move parser
+                lexer.next();
+
+                return new Game(
+                        null,
+                        comment,
+                        moveTextSequenceParser.parse(GAMETERM),
+                        resultParser.parse()
+                );
             default:
                 throw syntaxException(lexer, TP_BEGIN, MOVE_NUMBER);
         }
     }
-
 
     public boolean hasExceptions() {
         return !exceptions.isEmpty();

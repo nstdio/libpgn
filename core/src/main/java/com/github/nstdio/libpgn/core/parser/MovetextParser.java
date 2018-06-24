@@ -25,15 +25,18 @@ class MovetextParser extends AbstractParser implements Parser<MoveText> {
 
         lexer.next();
 
-        if (lexer.last() == DOT) {
-            lexer.next();
-            white = moveInputParser.parse(MOVE_WHITE);
-        } else if (lexer.last() == SKIP_PREV_MOVE) {
-            lexer.skip();
-            lexer.next();
-            black = moveInputParser.parse(MOVE_BLACK);
-        } else {
-            throw syntaxException(lexer, DOT, SKIP_PREV_MOVE);
+        switch (lexer.last()) {
+            case DOT:
+                lexer.next();
+                white = moveInputParser.parse(MOVE_WHITE);
+                break;
+            case SKIP_PREV_MOVE:
+                lexer.skip();
+                lexer.next();
+                black = moveInputParser.parse(MOVE_BLACK);
+                break;
+            default:
+                throw syntaxException(lexer, DOT, SKIP_PREV_MOVE);
         }
 
         if (lexer.last() == MOVE_NUMBER) { // variation parsed in past

@@ -1,24 +1,31 @@
 package com.github.nstdio.libpgn.entity;
 
-import lombok.ToString;
+import static com.github.nstdio.libpgn.common.ArrayUtils.EMPTY_STRING_ARRAY;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static com.github.nstdio.libpgn.common.ArrayUtils.EMPTY_STRING_ARRAY;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import lombok.ToString;
 
 @SuppressWarnings("WeakerAccess")
 @ToString
 public final class Game {
     private final List<TagPair> tagPairs;
+    private final byte[] comment;
     private final List<MoveText> moves;
     private final Result result;
 
     public Game(final List<TagPair> tagPairs, final List<MoveText> moves, final Result result) {
+        this(tagPairs, null, moves, result);
+    }
+
+    public Game(final List<TagPair> tagPairs, final byte[] comment, final List<MoveText> moves, final Result result) {
         this.tagPairs = tagPairs;
+        this.comment = comment;
         this.moves = moves;
         this.result = result;
     }
@@ -29,6 +36,10 @@ public final class Game {
 
     public List<TagPair> tagPairSection() {
         return tagPairs;
+    }
+
+    public byte[] comment() {
+        return comment;
     }
 
     public Result gameResult() {

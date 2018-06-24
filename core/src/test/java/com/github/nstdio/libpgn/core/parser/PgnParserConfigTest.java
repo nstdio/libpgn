@@ -18,7 +18,8 @@ public class PgnParserConfigTest extends MockedEnvAware {
 
     @BeforeEach
     public void setUp() {
-        parser = new PgnParser(mockLexer, mockConfiguration, mockTagPairParser, mockResultParser, mockMoveSequenceParser);
+        parser = new PgnParser(mockLexer, mockConfiguration, mockTagPairParser, mockResultParser,
+                mockMoveSequenceParser, mockCommentParser);
     }
 
     @Test

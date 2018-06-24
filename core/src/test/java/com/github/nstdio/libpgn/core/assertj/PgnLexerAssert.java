@@ -3,6 +3,7 @@ package com.github.nstdio.libpgn.core.assertj;
 import com.github.nstdio.libpgn.core.TokenTypes;
 import com.github.nstdio.libpgn.core.parser.InputStreamPgnLexer;
 import org.assertj.core.api.AbstractAssert;
+import org.assertj.core.description.Description;
 
 import java.util.stream.IntStream;
 
@@ -20,7 +21,10 @@ public class PgnLexerAssert extends AbstractAssert<PgnLexerAssert, InputStreamPg
     }
 
     public PgnLexerAssert nextTokenIsEqualTo(final byte expectedToken) {
-        assertThat(actual.next()).isEqualTo(expectedToken);
+        final byte actualToken = this.actual.next();
+        assertThat(actualToken)
+                .as("Actual: %s, Expected: %s", TokenTypes.descOf(actualToken), TokenTypes.descOf(expectedToken))
+                .isEqualTo(expectedToken);
         return this;
     }
 
