@@ -1,6 +1,5 @@
 package com.github.nstdio.libpgn.entity;
 
-import com.github.nstdio.libpgn.entity.TagPair;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -14,11 +13,11 @@ public class TagPairTest {
     public void creatingWithNulls() {
         assertThatNullPointerException()
                 .isThrownBy(() -> TagPair.of(null, new byte[1]))
-                .withMessage("tag");
+                .withMessageContaining("tag");
 
         assertThatNullPointerException()
                 .isThrownBy(() -> TagPair.of(new byte[1], null))
-                .withMessage("value");
+                .withMessageContaining("value");
     }
 
     @Test

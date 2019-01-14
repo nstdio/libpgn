@@ -176,7 +176,6 @@ public class InputStreamPgnLexer implements PgnLexer {
         }
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void moveText() throws IOException {
         lastRead = in.read();
         final int current = lastRead;

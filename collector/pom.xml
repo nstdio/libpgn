@@ -5,6 +5,7 @@
     <parent>
         <artifactId>parent</artifactId>
         <groupId>com.github.nstdio.libpgn</groupId>
+        <relativePath>../pom.xml</relativePath>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -15,7 +16,7 @@
         <dependency>
             <groupId>com.github.nstdio.libpgn</groupId>
             <artifactId>entity</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
