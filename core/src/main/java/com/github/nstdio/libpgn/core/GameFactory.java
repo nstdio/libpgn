@@ -1,20 +1,28 @@
 package com.github.nstdio.libpgn.core;
 
+import static com.github.nstdio.libpgn.core.Configuration.defaultConfiguration;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import com.github.nstdio.libpgn.core.parser.InputStreamPgnLexer;
 import com.github.nstdio.libpgn.core.parser.PageablePgnParser;
 import com.github.nstdio.libpgn.core.parser.PgnParser;
 import com.github.nstdio.libpgn.entity.Game;
-
-import java.io.File;
-import java.io.InputStream;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static com.github.nstdio.libpgn.core.Configuration.defaultConfiguration;
 
 public class GameFactory {
 
@@ -48,38 +56,49 @@ public class GameFactory {
                 .onClose(lexer::close);
     }
 
+    /**
+     * Creates the games stream.
+     * <p>
+     * WARNING: The caller must perform {@link Stream#close()} to free up resources.
+     *
+     * @param in     The input stream of PGN database to use when constructing lexer.
+     * @param config The parser configuration.
+     *
+     * @return The stream of games.
+     */
     public static Stream<Game> stream(InputStream in, Configuration config) {
         final InputStreamPgnLexer lexer = InputStreamPgnLexer.of(in);
         return StreamSupport.stream(new PgnParser(lexer, config).spliterator(), false)
                 .onClose(lexer::close);
     }
 
+    /**
+     * Creates the games stream.
+     * <p>
+     * WARNING: The caller must perform {@link Stream#close()} to free up resources.
+     *
+     * @param file   The PGN database file.
+     * @param config The parser configuration.
+     *
+     * @return The stream of games.
+     */
     public static Stream<Game> stream(File file, Configuration config) {
         final InputStreamPgnLexer lexer = InputStreamPgnLexer.of(file);
         return StreamSupport.stream(new PgnParser(lexer, config).spliterator(), false)
                 .onClose(lexer::close);
     }
 
+    /**
+     * Creates the games stream with default configuration.
+     * <p>
+     * WARNING: The caller must perform {@link Stream#close()} to free up resources.
+     *
+     * @param file The PGN database file.
+     *
+     * @return The stream of games.
+     */
     public static Stream<Game> stream(File file) {
         return stream(file, defaultConfiguration());
-    }
-
-    public static List<Game> from(File file, Configuration config) {
-        try (final InputStreamPgnLexer lexer = InputStreamPgnLexer.of(file)) {
-            return new PgnParser(lexer, config).parse();
-        }
-    }
-
-    public static List<Game> from(File file) {
-        return from(file, defaultConfiguration());
-    }
-
-    public static List<Game> from(String path) {
-        return from(new File(path));
-    }
-
-    public static List<Game> from(String path, Configuration configuration) {
-        return from(new File(path), configuration);
     }
 
     /**
@@ -215,7 +234,11 @@ public class GameFactory {
                 .filter(files -> files.size() > 0)
                 .ifPresent(files -> {
                     final Stream<File> fileStream = parallel ? files.parallelStream() : files.stream();
-                    fileStream.forEach(file -> containerConsumer.accept(file, from(file, config)));
+                    fileStream.forEach(file -> {
+                        try (Stream<Game> gameStream = stream(file, config)) {
+                            containerConsumer.accept(file, gameStream.collect(Collectors.toList()));
+                        }
+                    });
                 });
     }
 

@@ -1,9 +1,8 @@
 package com.github.nstdio.libpgn.io;
 
-import com.github.nstdio.libpgn.common.ThrowingRunnable;
-import com.github.nstdio.libpgn.entity.Game;
-import com.github.nstdio.libpgn.entity.Move;
-import com.github.nstdio.libpgn.entity.MoveText;
+import static com.github.nstdio.libpgn.common.ArrayUtils.isEmptyOrNull;
+import static com.github.nstdio.libpgn.common.CollectionUtils.isNotEmptyOrNull;
+import static com.github.nstdio.libpgn.common.ExceptionUtils.wrapChecked;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -12,9 +11,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import static com.github.nstdio.libpgn.common.ArrayUtils.isEmptyOrNull;
-import static com.github.nstdio.libpgn.common.CollectionUtils.isNotEmptyOrNull;
-import static com.github.nstdio.libpgn.common.ExceptionUtils.wrapChecked;
+import com.github.nstdio.libpgn.common.ThrowingRunnable;
+import com.github.nstdio.libpgn.entity.Game;
+import com.github.nstdio.libpgn.entity.Move;
+import com.github.nstdio.libpgn.entity.MoveText;
 
 public class PgnOutputStreamImpl extends FilterOutputStream implements PgnOutputStream {
 
@@ -53,9 +53,9 @@ public class PgnOutputStreamImpl extends FilterOutputStream implements PgnOutput
             if (moves.get(0).white().isPresent()) {
                 write('.');
             } else {
-                write('.');
-                write('.');
-                write('.');
+                //@formatter:off
+                write('.'); write('.'); write('.');
+                //@formatter:on
             }
 
             writeSpace();

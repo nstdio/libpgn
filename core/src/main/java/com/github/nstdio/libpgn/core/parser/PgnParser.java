@@ -1,11 +1,6 @@
 package com.github.nstdio.libpgn.core.parser;
 
-import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.entity.Game;
-import com.github.nstdio.libpgn.core.GameIterator;
-import com.github.nstdio.libpgn.entity.MoveText;
-import com.github.nstdio.libpgn.entity.Result;
-import com.github.nstdio.libpgn.entity.TagPair;
+import static java.util.stream.Collectors.toList;
 
 import java.util.Iterator;
 import java.util.List;
@@ -13,8 +8,18 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.StreamSupport;
 
-import static java.util.stream.Collectors.toList;
+import javax.annotation.Nonnull;
 
+import com.github.nstdio.libpgn.core.Configuration;
+import com.github.nstdio.libpgn.core.GameIterator;
+import com.github.nstdio.libpgn.entity.Game;
+import com.github.nstdio.libpgn.entity.MoveText;
+import com.github.nstdio.libpgn.entity.Result;
+import com.github.nstdio.libpgn.entity.TagPair;
+
+/**
+ * The main entry point to parsing process.
+ */
 public class PgnParser extends AbstractPgnParser implements Iterable<Game> {
     public PgnParser(final PgnLexer lexer) {
         this(lexer, Configuration.defaultConfiguration());
@@ -22,7 +27,6 @@ public class PgnParser extends AbstractPgnParser implements Iterable<Game> {
 
     public PgnParser(final PgnLexer lexer, final Configuration config) {
         super(lexer, config);
-
     }
 
     /**
@@ -40,6 +44,7 @@ public class PgnParser extends AbstractPgnParser implements Iterable<Game> {
         return StreamSupport.stream(spliterator(), false).collect(toList());
     }
 
+    @Nonnull
     @Override
     public Iterator<Game> iterator() {
         return new GameIterator(this);
