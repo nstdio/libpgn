@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Represents the chess move.
+ * Represents the chess full move.
  */
 public interface MoveText {
     static MoveText ofWhite(int moveNo, String move) {
@@ -55,9 +55,24 @@ public interface MoveText {
         return MoveTextFactory.moves(moveNoStart, moves);
     }
 
+    /**
+     * Gets the move sequential number.
+     *
+     * @return The move number.
+     */
     int moveNo();
 
+    /**
+     * Gets the half move made by white.
+     *
+     * @return The white's move.
+     */
     Optional<Move> white();
 
+    /**
+     * Gets the half move made by black.
+     *
+     * @return The back's move.
+     */
     Optional<Move> black();
 }

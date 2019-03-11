@@ -1,14 +1,15 @@
 package com.github.nstdio.libpgn.entity;
 
-import com.github.nstdio.libpgn.common.ArrayUtils;
+import static com.github.nstdio.libpgn.entity.MoveFactory.Holder.IMMUTABLE;
+import static com.github.nstdio.libpgn.entity.MoveFactory.Holder.MUTABLE;
 
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import static com.github.nstdio.libpgn.entity.MoveFactory.Holder.IMMUTABLE;
-import static com.github.nstdio.libpgn.entity.MoveFactory.Holder.MUTABLE;
+import javax.annotation.Nonnull;
+
+import com.github.nstdio.libpgn.common.ArrayUtils;
 
 /**
  * Represents a color agnostic move definition. Provides some convenient factory method for various use cases.
@@ -168,7 +169,7 @@ public interface Move {
      *
      * @see Move#ofImmutable(byte[], byte[], short[], List)
      */
-    static Move ofImmutable(byte[] move, byte[] comment, short nag[]) {
+    static Move ofImmutable(byte[] move, byte[] comment, short[] nag) {
         return ofImmutable(move, comment, nag, Collections.emptyList());
     }
 
@@ -240,9 +241,9 @@ public interface Move {
     short[] nag();
 
     /**
-     * The NAGs as shorts. The underlying implementation may make defensive copies to achieve immutability.
+     * The variation to this move. The underlying implementation may make defensive copies to achieve immutability.
      *
-     * @return The NAGs as shorts.
+     * @return The variations.
      */
     @Nonnull
     List<MoveText> variations();

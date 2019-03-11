@@ -33,16 +33,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The central point for creating an instance of {@code PgnInputStream}. This factory can deal with not just plain
+ * {@code .pgn} files but with archived files too.
+ */
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PgnInputStreamFactory {
     private static final Map<Pattern, Function<File, InputStream>> producers;
-    private static Supplier<CompressorStreamFactory> compressorStreamFactory = () -> {
-        final CompressorStreamFactory compressorStreamFactory = new CompressorStreamFactory();
-        compressorStreamFactory.setDecompressConcatenated(true);
-
-        return compressorStreamFactory;
-    };
+    private static Supplier<CompressorStreamFactory> compressorStreamFactory = () -> new CompressorStreamFactory(true);
 
     static {
         final StreamProducer plain = new StreamProducer();
@@ -57,10 +56,26 @@ public final class PgnInputStreamFactory {
         producers.put(Pattern.compile("\\.rar$"), NoOpStreamProducer.of());
     }
 
+    /**
+     * Creates the {@code PgnInputStream} from provided file.
+     *
+     * @param file The input file.
+     *
+     * @return The input stream.
+     */
     public static PgnInputStream of(final File file) {
         return ofFile(file);
     }
 
+    /**
+     * Creates the {@code PgnInputStream} from provided input stream.
+     *
+     * @param in The source input stream.
+     *
+     * @return The wrapped input stream.
+     *
+     * @throws IllegalArgumentException When {@code in} does not support marking.
+     */
     public static PgnInputStream of(final InputStream in) {
         if (in instanceof PgnInputStream) {
             log.info("The input is already PgnInputStream, do no constructing new object.");
