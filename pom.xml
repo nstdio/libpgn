@@ -28,6 +28,7 @@
         <lombok.version>1.18.4</lombok.version>
         <slf4j-api.version>1.8.0-beta2</slf4j-api.version>
         <commons-compress.version>1.18</commons-compress.version>
+        <xz.version>1.8</xz.version>
         <mockito-junit-jupiter.version>2.17.0</mockito-junit-jupiter.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

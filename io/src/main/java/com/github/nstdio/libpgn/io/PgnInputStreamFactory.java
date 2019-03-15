@@ -14,7 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
 
@@ -41,19 +40,26 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PgnInputStreamFactory {
     private static final Map<Pattern, Function<File, InputStream>> producers;
-    private static Supplier<CompressorStreamFactory> compressorStreamFactory = () -> new CompressorStreamFactory(true);
+    private static final CompressorStreamFactory STREAM_FACTORY;
 
     static {
         final StreamProducer plain = new StreamProducer();
 
-        producers = new LinkedHashMap<>(6);
+        producers = new LinkedHashMap<>();
 
-        producers.put(Pattern.compile("\\.(tar\\.[xg]z)$"), LoggingInputStreamProducer.of(new ArchiveStreamProducer(plain)));
-        producers.put(Pattern.compile("\\.bz2$"), LoggingInputStreamProducer.of(new BZip2SteamProducer(plain)));
-        producers.put(Pattern.compile("\\.7z$"), LoggingInputStreamProducer.of(SevenZipStreamProducer.of()));
-        producers.put(Pattern.compile("\\.zip$"), LoggingInputStreamProducer.of(new ZipFileStreamProducer()));
         producers.put(Pattern.compile("\\.pgn$"), LoggingInputStreamProducer.of(plain.andThen(buffered())));
-        producers.put(Pattern.compile("\\.rar$"), NoOpStreamProducer.of());
+
+        if (commonsCompressAtClasspath()) {
+            STREAM_FACTORY = new CompressorStreamFactory(true);
+
+            producers.put(Pattern.compile("\\.(tar\\.[xg]z)$"), LoggingInputStreamProducer.of(new ArchiveStreamProducer(plain)));
+            producers.put(Pattern.compile("\\.bz2$"), LoggingInputStreamProducer.of(new BZip2SteamProducer(plain)));
+            producers.put(Pattern.compile("\\.7z$"), LoggingInputStreamProducer.of(SevenZipStreamProducer.of()));
+            producers.put(Pattern.compile("\\.zip$"), LoggingInputStreamProducer.of(new ZipFileStreamProducer()));
+            producers.put(Pattern.compile("\\.rar$"), NoOpStreamProducer.of());
+        } else {
+            STREAM_FACTORY = null;
+        }
     }
 
     /**
@@ -96,6 +102,15 @@ public final class PgnInputStreamFactory {
                 .apply(file);
     }
 
+    private static boolean commonsCompressAtClasspath() {
+        try {
+            Class.forName("org.apache.commons.compress.compressors.CompressorStreamFactory");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
     @Nonnull
     private static Function<InputStream, BufferedInputStream> buffered() {
         return is -> is instanceof BufferedInputStream ? (BufferedInputStream) is : new BufferedInputStream(is);
@@ -103,7 +118,7 @@ public final class PgnInputStreamFactory {
 
     @Nonnull
     private static Function<InputStream, CompressorInputStream> compressorStream() {
-        return is -> wrapChecked(() -> compressorStreamFactory.get().createCompressorInputStream(is));
+        return is -> wrapChecked(() -> STREAM_FACTORY.createCompressorInputStream(is));
     }
 
     private static Function<InputStream, InputStream> bufferedCompressorStream() {
