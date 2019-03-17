@@ -59,35 +59,29 @@ class InlineNag {
                         }
                         break;
                     case '+':
-                        switch (nCh) {
-                            case '-':
-                                if (firstOccurrence == -1) {
-                                    firstOccurrence = i;
-                                }
-                                i++;
-                                nags.add((short) 18);
-                                break;
+                        if (nCh == '-') {
+                            if (firstOccurrence == -1) {
+                                firstOccurrence = i;
+                            }
+                            i++;
+                            nags.add((short) 18);
                         }
                         break;
                     case '-':
-                        switch (nCh) {
-                            case '+':
-                                if (firstOccurrence == -1) {
-                                    firstOccurrence = i;
-                                }
-                                i++;
-                                nags.add((short) 19);
-                                break;
+                        if (nCh == '+') {
+                            if (firstOccurrence == -1) {
+                                firstOccurrence = i;
+                            }
+                            i++;
+                            nags.add((short) 19);
                         }
                     case 'R':
-                        switch (nCh) {
-                            case 'R':
-                                if (firstOccurrence == -1) {
-                                    firstOccurrence = i;
-                                }
-                                i++;
-                                nags.add((short) 145);
-                                break;
+                        if (nCh == 'R') {
+                            if (firstOccurrence == -1) {
+                                firstOccurrence = i;
+                            }
+                            i++;
+                            nags.add((short) 145);
                         }
                         break;
                     case 'N':
