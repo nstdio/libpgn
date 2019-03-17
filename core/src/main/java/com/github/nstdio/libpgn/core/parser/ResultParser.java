@@ -1,12 +1,12 @@
 package com.github.nstdio.libpgn.core.parser;
 
-import com.github.nstdio.libpgn.core.Configuration;
-import com.github.nstdio.libpgn.core.exception.PgnException;
-import com.github.nstdio.libpgn.entity.Result;
+import static com.github.nstdio.libpgn.core.TokenTypes.GAMETERM;
 
 import javax.annotation.Nullable;
 
-import static com.github.nstdio.libpgn.core.TokenTypes.GAMETERM;
+import com.github.nstdio.libpgn.core.Configuration;
+import com.github.nstdio.libpgn.core.exception.PgnException;
+import com.github.nstdio.libpgn.entity.Result;
 
 class ResultParser extends AbstractParser implements Parser<Result> {
 
@@ -17,15 +17,20 @@ class ResultParser extends AbstractParser implements Parser<Result> {
     @Override
     public Result parse() {
         lastNotEqThrow(GAMETERM);
-        String result = read();
 
-        for (Result res : Result.values()) {
-            if (result.equals(res.getTerm())) {
-                return res;
-            }
+        // TODO: Skip reading and use token length.
+        byte[] resultBytes = readBytes();
+
+        switch (resultBytes.length) {
+            case 1:
+                return Result.UNKNOWN;
+            case 7:
+                return Result.DRAW;
+            case 3:
+                return resultBytes[0] == 49 ? Result.WHITE : Result.BLACK;
+            default:
+                throw new PgnException("Bad game termination: " + new String(resultBytes));
         }
-
-        throw new PgnException("Bad game termination.");
     }
 
     @Nullable
