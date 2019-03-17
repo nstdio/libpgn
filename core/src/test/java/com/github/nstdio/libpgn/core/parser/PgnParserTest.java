@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -54,7 +55,7 @@ public class PgnParserTest {
         tagPairs.add(TagPair.of("BlackElo", ""));
         tagPairs.add(TagPair.of("ECO", "A84"));
 
-        final List<Game> games = parser.parse();
+        final List<Game> games = parser.stream().collect(Collectors.toList());
         final Game game = games.get(0);
         final List<MoveText> moves = new ArrayList<>();
 
@@ -79,7 +80,7 @@ public class PgnParserTest {
     void movetext() {
         String input = "1.d4 {White Comment} f5 {Black Comment} 2.c4 c5 3.dxc5 Qa5+ 4.Nc3 Qxc5 *";
 
-        final List<Game> games = new PgnParser(createLexer(input)).parse();
+        final List<Game> games = new PgnParser(createLexer(input)).stream().collect(Collectors.toList());
 
         List<MoveText> moves = new ArrayList<>();
 
@@ -277,7 +278,7 @@ public class PgnParserTest {
                 "[Black \"Karpov, Anatoly\"]\n" +
                 "1. e4 *";
 
-        final List<Game> parse = new PgnParser(createLexer(input), config).parse();
+        final List<Game> parse = new PgnParser(createLexer(input), config).stream().collect(Collectors.toList());
 
         final List<TagPair> tagPairs = parse.get(0).tagPairSection();
 
@@ -296,7 +297,7 @@ public class PgnParserTest {
                 .build();
 
         for (String input : inputs) {
-            final List<Game> games = new PgnParser(createLexer(input), config).parse();
+            final List<Game> games = new PgnParser(createLexer(input), config).stream().collect(Collectors.toList());
             for (MoveText movetext : games.get(0).moves()) {
                 assertThat(movetext.white().map(Move::comment))
                         .hasValue(ArrayUtils.EMPTY_BYTE_ARRAY);
@@ -326,7 +327,7 @@ public class PgnParserTest {
                 .skipTagPairSection(true)
                 .build();
 
-        List<Game> games = new PgnParser(createLexer(input), config).parse();
+        List<Game> games = new PgnParser(createLexer(input), config).stream().collect(Collectors.toList());
 
         final Game firstGame = games.get(0);
         assertThat(firstGame.tagPairSection()).isNull();
@@ -349,7 +350,7 @@ public class PgnParserTest {
 
     private void assertMovesEquals(String[] inputs, List<MoveText> moves) {
         for (String pgn : inputs) {
-            List<Game> games = new PgnParser(createLexer(pgn)).parse();
+            List<Game> games = new PgnParser(createLexer(pgn)).stream().collect(Collectors.toList());
             final Game game = games.get(0);
 
             assertThat(moves).isEqualTo(game.moves());

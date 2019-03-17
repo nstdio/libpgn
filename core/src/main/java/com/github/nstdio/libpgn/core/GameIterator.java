@@ -1,11 +1,11 @@
 package com.github.nstdio.libpgn.core;
 
-import com.github.nstdio.libpgn.core.parser.AbstractPgnParser;
-import com.github.nstdio.libpgn.entity.Game;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+
+import com.github.nstdio.libpgn.core.parser.AbstractPgnParser;
+import com.github.nstdio.libpgn.entity.Game;
 
 public class GameIterator implements Iterator<Game> {
     private final AbstractPgnParser parser;

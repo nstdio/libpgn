@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
@@ -39,9 +40,28 @@ public class PgnParser extends AbstractPgnParser implements Iterable<Game> {
         super(lexer, config, tagPairParser, resultParser, movetextSequenceParser, commentParser);
     }
 
+    /**
+     * Parses remaining games and materialize it as a {@code Game}s.
+     *
+     * @deprecated This is method is very high level at should not be supported. Please use {@link #stream()} instead.
+     */
     @Deprecated
     public List<Game> parse() {
-        return StreamSupport.stream(spliterator(), false).collect(toList());
+        try (Stream<Game> stream = stream()) {
+            return stream.collect(toList());
+        }
+    }
+
+    /**
+     * Creates the game stream from games. Sequentially parsing input and applying it as a stream element.
+     * <p>
+     * Note that returned stream should be {@code close}d after use.
+     *
+     * @return The sequential stream of games.
+     */
+    public Stream<Game> stream() {
+        return StreamSupport.stream(spliterator(), false)
+                .onClose(lexer::close);
     }
 
     @Nonnull

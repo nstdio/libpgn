@@ -11,6 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import java.util.stream.Collectors;
+
 @Disabled
 @ExtendWith(MockitoExtension.class)
 public class PgnParserConfigTest extends MockedEnvAware {
@@ -28,7 +30,7 @@ public class PgnParserConfigTest extends MockedEnvAware {
         when(mockConfiguration.gameLimit()).thenReturn(Integer.MAX_VALUE);
         when(mockConfiguration.stopOnError()).thenReturn(false);
 
-        assertThat(parser.parse()).isEmpty();
+        assertThat(parser.stream().collect(Collectors.toList())).isEmpty();
         assertThat(parser.hasExceptions()).isTrue();
         assertThat(parser.exceptions()).hasAtLeastOneElementOfType(PgnSyntaxException.class);
     }
