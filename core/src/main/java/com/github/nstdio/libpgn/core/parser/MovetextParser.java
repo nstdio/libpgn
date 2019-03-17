@@ -36,14 +36,14 @@ class MovetextParser extends AbstractParser implements Parser<MoveText> {
                 black = moveInputParser.parse(MOVE_BLACK);
                 break;
             default:
-                throw syntaxException(lexer, DOT, SKIP_PREV_MOVE);
+                throw syntaxException(lexer, lexer.last(), SKIP_PREV_MOVE);
         }
 
         if (lexer.last() == MOVE_NUMBER) { // variation parsed in past
             if (white != null) {
                 final String moveNumber2 = read();
                 if (lexer.next() != SKIP_PREV_MOVE && !moveNumber.equals(moveNumber2)) { // "1. d4 (1. d5) 45... f5"
-                    throw syntaxException(lexer, SKIP_PREV_MOVE);
+                    throw syntaxException(lexer, lexer.last(), SKIP_PREV_MOVE);
                 }
                 // discarding the "..." token.
                 lexer.skip();

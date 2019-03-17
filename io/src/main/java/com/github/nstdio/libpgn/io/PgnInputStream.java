@@ -29,6 +29,7 @@ public class PgnInputStream extends FilterInputStream {
         return read;
     }
 
+    @Deprecated
     public int until(final int i1) throws IOException {
         int current;
         int rc = 0;
@@ -50,6 +51,7 @@ public class PgnInputStream extends FilterInputStream {
         return EOF;
     }
 
+    @Deprecated
     public int until(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9, int i10) throws IOException {
         int c;
         int rc = 0;

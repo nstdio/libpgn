@@ -120,7 +120,7 @@ public class TokenTypes {
      */
     public static final byte NAG_LITERAL = 21;
 
-    private static final String[] LITERALS = {
+    private static final String[] NAMES = {
             "UNDEFINED",
             "TP_BEGIN",
             "TP_NAME",
@@ -150,6 +150,6 @@ public class TokenTypes {
      * @return The string description of token.
      */
     public static String descOf(byte token) {
-        return LITERALS[token];
+        return NAMES[token];
     }
 }

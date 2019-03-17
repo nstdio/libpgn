@@ -51,7 +51,7 @@ class TagPairParser extends AbstractParser implements Parser<List<TagPair>> {
             value = ArrayUtils.EMPTY_BYTE_ARRAY;
             nextNotEqThrow(TP_END);
         } else {
-            throw syntaxException(lexer, TP_VALUE, TP_VALUE_END);
+            throw syntaxException(lexer, lexer.last(), TP_VALUE, TP_VALUE_END);
         }
 
         lexer.next();

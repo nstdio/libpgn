@@ -16,9 +16,9 @@ abstract class AbstractParser {
     }
 
 
-    void lastNotEqThrow(byte token) {
-        if (lexer.last() != token) {
-            throw syntaxException(lexer, token);
+    void lastNotEqThrow(byte expectedToken) {
+        if (lexer.last() != expectedToken) {
+            throw syntaxException(lexer, lexer.last(), expectedToken);
         }
     }
 
@@ -31,9 +31,8 @@ abstract class AbstractParser {
     }
 
     void nextNotEqThrow(byte expectedToken) {
-        final byte nextToken = lexer.next();
-        if (nextToken != expectedToken) {
-            throw syntaxException(lexer, expectedToken);
+        if (lexer.next() != expectedToken) {
+            throw syntaxException(lexer, lexer.last(), expectedToken);
         }
     }
 }

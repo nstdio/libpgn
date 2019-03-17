@@ -86,7 +86,7 @@ public abstract class AbstractPgnParser extends AbstractParser {
                         resultParser.parse()
                 );
             default:
-                throw syntaxException(lexer, TP_BEGIN, MOVE_NUMBER);
+                throw syntaxException(lexer, lexer.last(), TP_BEGIN, MOVE_NUMBER, COMMENT_BEGIN);
         }
     }
 

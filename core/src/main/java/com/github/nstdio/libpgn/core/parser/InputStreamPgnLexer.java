@@ -1,15 +1,43 @@
 package com.github.nstdio.libpgn.core.parser;
 
+import static com.github.nstdio.libpgn.common.ExceptionUtils.wrapChecked;
+import static com.github.nstdio.libpgn.core.TokenTypes.COMMENT;
+import static com.github.nstdio.libpgn.core.TokenTypes.COMMENT_BEGIN;
+import static com.github.nstdio.libpgn.core.TokenTypes.COMMENT_END;
+import static com.github.nstdio.libpgn.core.TokenTypes.DOT;
+import static com.github.nstdio.libpgn.core.TokenTypes.GAMETERM;
+import static com.github.nstdio.libpgn.core.TokenTypes.MOVE_BLACK;
+import static com.github.nstdio.libpgn.core.TokenTypes.MOVE_NUMBER;
+import static com.github.nstdio.libpgn.core.TokenTypes.MOVE_WHITE;
+import static com.github.nstdio.libpgn.core.TokenTypes.NAG;
+import static com.github.nstdio.libpgn.core.TokenTypes.ROL_COMMENT;
+import static com.github.nstdio.libpgn.core.TokenTypes.SKIP_PREV_MOVE;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_BEGIN;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_END;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_NAME;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_NAME_VALUE_SEP;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_VALUE;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_VALUE_BEGIN;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_VALUE_END;
+import static com.github.nstdio.libpgn.core.TokenTypes.UNDEFINED;
+import static com.github.nstdio.libpgn.core.TokenTypes.VARIATION_BEGIN;
+import static com.github.nstdio.libpgn.core.TokenTypes.VARIATION_END;
+import static com.github.nstdio.libpgn.core.parser.LexicalScope.SCOPE_GAMETERM;
+import static com.github.nstdio.libpgn.core.parser.LexicalScope.SCOPE_MOVE_TEXT;
+import static com.github.nstdio.libpgn.core.parser.LexicalScope.SCOPE_TAG_PAIR;
+import static com.github.nstdio.libpgn.core.parser.LexicalScope.SCOPE_UNDEFINED;
+
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.util.Objects;
+
 import com.github.nstdio.libpgn.core.TokenTypes;
 import com.github.nstdio.libpgn.io.PgnInputStream;
 import com.github.nstdio.libpgn.io.PgnInputStreamFactory;
-
-import java.io.*;
-import java.util.Objects;
-
-import static com.github.nstdio.libpgn.common.ExceptionUtils.wrapChecked;
-import static com.github.nstdio.libpgn.core.TokenTypes.*;
-import static com.github.nstdio.libpgn.core.parser.LexicalScope.*;
 
 public class InputStreamPgnLexer implements PgnLexer {
     private final PgnInputStream in;
@@ -289,23 +317,13 @@ public class InputStreamPgnLexer implements PgnLexer {
             case '"':
                 switch (lastToken) {
                     case TP_VALUE:
-                        lastToken = TP_VALUE_END;
-                        tokenLength = 1;
-                        break;
-                    case TP_NAME:
-                        lastToken = TP_VALUE_BEGIN;
-                        tokenLength = 1;
-                        break;
-                    case TP_NAME_VALUE_SEP:
-                        lastToken = TP_VALUE_BEGIN;
-                        tokenLength = 1;
-                        break;
                     case TP_VALUE_BEGIN:
                         lastToken = TP_VALUE_END;
                         tokenLength = 1;
                         break;
                     default:
-                        lastToken = UNDEFINED;
+                        lastToken = TP_VALUE_BEGIN;
+                        tokenLength = 1;
                         break;
                 }
                 break;
@@ -330,11 +348,12 @@ public class InputStreamPgnLexer implements PgnLexer {
                     switch (lastToken) {
                         case TP_BEGIN:
                             lastToken = TP_NAME;
-                            tokenLength = in.until(' ');
+                            determineTokenLength(' ', TP_NAME_VALUE_SEP);
                             break;
                         case TP_VALUE_BEGIN:
+                        case TP_NAME_VALUE_SEP: // The opening quote is missing.
                             lastToken = TP_VALUE;
-                            tokenLength = in.until('"');
+                            determineTokenLength('"', TP_VALUE_BEGIN, TP_VALUE_END);
                             break;
                         default:
                             lastToken = UNDEFINED;
@@ -345,6 +364,15 @@ public class InputStreamPgnLexer implements PgnLexer {
                     next();
                 }
                 break;
+        }
+    }
+
+    private void determineTokenLength(int terminal, byte... expectedTokens) throws IOException {
+        try {
+            tokenLength = in.until(terminal);
+        } catch (EOFException e) {
+            terminate();
+            throw ExceptionBuilder.unexpectedEOF(this, e, expectedTokens);
         }
     }
 

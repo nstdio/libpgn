@@ -1,17 +1,51 @@
 package com.github.nstdio.libpgn.core.parser;
 
-import com.github.nstdio.libpgn.core.TokenTypes;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.github.nstdio.libpgn.core.TokenTypes.*;
+import static com.github.nstdio.libpgn.core.TokenTypes.COMMENT;
+import static com.github.nstdio.libpgn.core.TokenTypes.COMMENT_BEGIN;
+import static com.github.nstdio.libpgn.core.TokenTypes.COMMENT_END;
+import static com.github.nstdio.libpgn.core.TokenTypes.DOT;
+import static com.github.nstdio.libpgn.core.TokenTypes.GAMETERM;
+import static com.github.nstdio.libpgn.core.TokenTypes.MOVE_BLACK;
+import static com.github.nstdio.libpgn.core.TokenTypes.MOVE_NUMBER;
+import static com.github.nstdio.libpgn.core.TokenTypes.MOVE_WHITE;
+import static com.github.nstdio.libpgn.core.TokenTypes.NAG;
+import static com.github.nstdio.libpgn.core.TokenTypes.ROL_COMMENT;
+import static com.github.nstdio.libpgn.core.TokenTypes.SKIP_PREV_MOVE;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_BEGIN;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_END;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_NAME;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_NAME_VALUE_SEP;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_VALUE;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_VALUE_BEGIN;
+import static com.github.nstdio.libpgn.core.TokenTypes.TP_VALUE_END;
+import static com.github.nstdio.libpgn.core.TokenTypes.UNDEFINED;
+import static com.github.nstdio.libpgn.core.TokenTypes.VARIATION_BEGIN;
+import static com.github.nstdio.libpgn.core.TokenTypes.VARIATION_END;
 import static com.github.nstdio.libpgn.core.assertj.Assertions.assertThatLexer;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import com.github.nstdio.libpgn.core.TokenTypes;
+
 public class InputStreamPgnLexerTest {
+    private static Stream<Arguments> lineNumberSource() {
+        return Stream.of(
+                Arguments.of(1, "1. e4 {No new lines should be counted as one line} d5"),
+                Arguments.of(2, "1. e4\n {Two lines} \nd5"),
+                Arguments.of(3, "1. e4 {This is\n multiline\n comment} d5"),
+                Arguments.of(4, "1.\n e4 {\nThis is multiline \ncomment} d5")
+        );
+    }
+
     @Test
     void tagPair() {
         final String input = "[Event \"Rapid 15m+4s\"]\n" +
@@ -48,7 +82,7 @@ public class InputStreamPgnLexerTest {
 
     @Test
     void comments() {
-        final byte tokens[] = {
+        final byte[] tokens = {
                 MOVE_NUMBER, DOT, MOVE_WHITE, NAG, NAG,
                 COMMENT_BEGIN, COMMENT, COMMENT_END,
                 MOVE_BLACK, COMMENT_BEGIN, COMMENT, COMMENT_END,
@@ -301,17 +335,11 @@ public class InputStreamPgnLexerTest {
                 .readIsNull());
     }
 
-    @Test
-    @Disabled("todo")
-    void lineNumber() {
-        final Map<Integer, String> inputs = new HashMap<>();
-
-        inputs.put(3, "1. e4 {This is\n multiline\n comment} d5");
-        inputs.put(1, "1. e4 {This is comment} d5");
-        inputs.put(5, "1.\n e4 {\nThis\n is multiline \ncomment} d5");
-
-        inputs.forEach((key, value) -> assertThatLexer(value).linesCountIsEqualTo(key));
-
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("lineNumberSource")
+    void lineNumber(int lines, String input) {
+        assertThatLexer(input).linesCountIsEqualTo(lines);
     }
 
     @Test
@@ -338,12 +366,37 @@ public class InputStreamPgnLexerTest {
     void preGameComment() {
         final String input = "{Comment} 1. e4 *";
 
-        assertThatLexer(InputStreamPgnLexer.of(input.getBytes()))
+        assertThatLexer(input)
                 .commentReadIsEqualTo("Comment")
                 .nextTokenIsEqualTo(MOVE_NUMBER).readIsEqualTo("1")
                 .nextTokenIsEqualTo(DOT).readIsEqualTo(".")
                 .nextTokenIsEqualTo(MOVE_WHITE).readIsEqualTo("e4")
                 .nextTokenIsEqualTo(GAMETERM).readIsEqualTo("*")
                 .nextTokenIsEqualTo(UNDEFINED).readIsNull();
+    }
+
+    @Test
+    void tagPairNameIsMissing() {
+        final String input = "[\"Value\"] 1. e4 *";
+
+        assertThatLexer(input)
+                .nextTokenIsEqualTo(TP_BEGIN).readIsEqualTo("[")
+                .nextTokenIsEqualTo(TP_VALUE_BEGIN).readIsEqualTo("\"")
+                .nextTokenIsEqualTo(TP_VALUE).readIsEqualTo("Value")
+                .nextTokenIsEqualTo(TP_VALUE_END).readIsEqualTo("\"")
+                .nextTokenIsEqualTo(TP_END).readIsEqualTo("]");
+    }
+
+    @Test
+    void tagPairNameOpeningQuoteIsMissing() {
+        final String input = "[Name Value\"]";
+
+        assertThatLexer(input)
+                .nextTokenIsEqualTo(TP_BEGIN).readIsEqualTo("[")
+                .nextTokenIsEqualTo(TP_NAME).readIsEqualTo("Name")
+                .nextTokenIsEqualTo(TP_NAME_VALUE_SEP).readIsEqualTo(" ")
+                .nextTokenIsEqualTo(TP_VALUE).readIsEqualTo("Value")
+                .nextTokenIsEqualTo(TP_VALUE_END).readIsEqualTo("\"")
+                .nextTokenIsEqualTo(TP_END).readIsEqualTo("]");
     }
 }
