@@ -24,7 +24,7 @@
         <mockito-core.version>2.23.4</mockito-core.version>
         <jsr305.version>3.0.2</jsr305.version>
         <concurrentlinkedhashmap-lru.version>1.4.2</concurrentlinkedhashmap-lru.version>
-        <assertj-core.version>3.8.0</assertj-core.version>
+        <assertj-core.version>3.27.7</assertj-core.version>
         <lombok.version>1.18.4</lombok.version>
         <slf4j-api.version>1.8.0-beta2</slf4j-api.version>
         <commons-compress.version>1.18</commons-compress.version>
